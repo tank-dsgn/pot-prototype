@@ -1,0 +1,12 @@
+{
+  "name": "pot-prototype",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "node serve.mjs",
+    "build": "node build.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.126.0"
+  }
+}
