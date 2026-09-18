@@ -1,0 +1,1229 @@
+<title>Pot Prototype</title>
+<meta name="description" content="Clickable iOS prototype of Pot — identify and grow plants">
+<style>
+/* ---------- tokens: Pot DS "1.Tokens" (Light / Dark) ---------- */
+:root{
+  --bg:#f1efec; --on-bgr:#d6d3d1; --surface:#ffffff; --surface2:#f5f5f4;
+  --text:#1c1917; --text2:#57534e; --text3:#78716c; --link:#15803d;
+  --brand:#15803d; --icon:#78716c; --icon2:#a8a29e; --border:#e7e5e4;
+  --btn2:#ffffff; --btn2-text:#1c1917; --ink:#000000; --dark:#052e16;
+  --pill:#e7e5e4; --pill-text:#57534e; --pill-on:#ffffff; --pill-on-text:#1c1917;
+  --soft-stone:#f5f5f4; --darkgrey:#475569; --chev-bg:#f3f4f6; --chev:#000000;
+  --disabled:#e7e5e4; --disabled-text:#f5f5f4;
+  --grad:linear-gradient(90deg,#07813c,#029c45);
+  --stage:#e4e1dc; --stage-ink:#44403c; --stage-muted:#8a847d;
+  --shadow-card:0 2px 6px rgba(0,0,0,.05);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --stage:#141210; --stage-ink:#e7e5e4; --stage-muted:#8a847d;
+  }
+}
+:root[data-theme="dark"]{ --stage:#141210; --stage-ink:#e7e5e4; --stage-muted:#8a847d; }
+
+/* phone palette follows its own switch (system = viewer theme) */
+.phone{ --x:0 }
+.phone.dark{
+  --bg:#0c0a09; --on-bgr:#44403c; --surface:#1c1917; --surface2:#292524;
+  --text:#ffffff; --text2:#e7e5e4; --text3:#d6d3d1; --link:#22c55e;
+  --icon:#d6d3d1; --icon2:#a8a29e; --border:#292524;
+  --btn2:#fafaf9; --btn2-text:#1c1917; --ink:#ffffff; --dark:#14532d;
+  --pill:#292524; --pill-text:#d6d3d1; --pill-on:#fafaf9; --pill-on-text:#1c1917;
+  --soft-stone:#166534; --darkgrey:#cbd5e1; --chev-bg:#292524; --chev:#e7e5e4;
+  --disabled:#292524; --disabled-text:#57534e;
+  --shadow-card:0 2px 6px rgba(0,0,0,.4);
+}
+
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0;background:var(--stage);color:var(--stage-ink);
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display","Helvetica Neue",Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;overflow:hidden}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer;text-align:inherit}
+button:focus-visible,input:focus-visible,[tabindex]:focus-visible{outline:2px solid #22c55e;outline-offset:2px}
+p,h1,h2,h3{margin:0}
+
+/* ---------- stage ---------- */
+.stage{height:100%;display:flex;align-items:center;justify-content:center;gap:48px;padding-inline:24px;box-sizing:border-box}
+.panel{width:236px;display:flex;flex-direction:column;gap:22px;font-size:13px;line-height:18px}
+.panel h1{font-size:28px;line-height:32px;font-weight:700;letter-spacing:-.02em}
+.panel h1 span{color:#16a34a}
+.panel .sub{color:var(--stage-muted);margin-top:4px}
+.panel .lab{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--stage-muted);margin-bottom:8px}
+.seg{display:flex;background:rgba(120,113,108,.18);border-radius:999px;padding:2px}
+.seg button{flex:1;padding:6px 0;border-radius:999px;text-align:center;font-weight:600;font-size:13px;color:var(--stage-muted)}
+.seg button[aria-pressed="true"]{background:var(--stage-ink);color:var(--stage)}
+.jump{display:flex;flex-direction:column;gap:1px;max-height:44vh;overflow:auto}
+.jump button{padding:5px 8px;border-radius:6px;display:flex;gap:8px}
+.jump button:hover{background:rgba(120,113,108,.15)}
+.jump button b{font-weight:500;color:var(--stage-muted);font-variant-numeric:tabular-nums;min-width:26px}
+.jump button.on{background:rgba(22,163,74,.16)}
+.hint{color:var(--stage-muted)}
+
+.frame{position:relative;flex:none}
+.phone{position:absolute;left:0;top:0;width:440px;height:956px;border-radius:64px;overflow:hidden;background:var(--bg);
+  transform-origin:0 0;box-shadow:0 0 0 12px #1c1917,0 0 0 13px #3f3a36,0 30px 80px rgba(0,0,0,.35);isolation:isolate}
+@media (max-width:560px){
+  body{background:var(--bg)}
+  .stage{padding:0;display:block}
+  .panel{display:none}
+  .frame{width:100%!important;height:100%!important;overflow:hidden}
+  .phone{border-radius:0;box-shadow:none}
+  .phone .sb{height:6px}.phone .sb>*{display:none!important}
+  .phone .hi{display:none}
+  .phone .float-nav{padding-top:12px}
+}
+
+/* ---------- screen scaffolding ---------- */
+.screen{position:absolute;inset:0;isolation:isolate;-webkit-user-select:none;user-select:none;display:flex;flex-direction:column;background:var(--bg);color:var(--text)}
+.screen[hidden]{display:none!important}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.sb{flex:none;height:50px;box-sizing:border-box;padding-top:21px;display:flex;align-items:center;justify-content:space-between;color:var(--ink);position:relative;z-index:3}
+.sb.inv{color:#fff}
+.sb .t{flex:1;text-align:center;font-weight:600;font-size:17px;line-height:22px;padding-left:16px;padding-right:6px}
+.sb .lv{flex:1;display:flex;gap:7px;justify-content:center;align-items:center;padding-right:16px;padding-left:6px}
+.sb .gap{width:124px}
+.hi{position:absolute;left:50%;bottom:8px;width:144px;height:5px;margin-left:-72px;border-radius:100px;background:var(--ink);z-index:30;pointer-events:none}
+.hi.w{background:#fff}
+
+.i{display:inline-block;flex:none;width:24px;height:24px;background:currentColor;-webkit-mask:var(--m) center/contain no-repeat;mask:var(--m) center/contain no-repeat}
+.img{flex:none;display:block}
+.k20{width:20px;height:20px}
+
+/* type */
+.lt{font-size:34px;line-height:41px}
+.t1{font-size:28px;line-height:34px}
+.t2{font-size:22px;line-height:28px;font-weight:700}
+.t3{font-size:20px;line-height:25px}
+.hd{font-size:17px;line-height:22px;font-weight:600}
+.bd{font-size:17px;line-height:22px}
+.co{font-size:16px;line-height:21px}
+.sh{font-size:15px;line-height:20px}
+.fn{font-size:13px;line-height:18px}
+.c1{font-size:12px;line-height:16px}
+.b{font-weight:700}.s{font-weight:600}.m{font-weight:500}
+.c-2{color:var(--text2)}.c-3{color:var(--text3)}.c-link{color:var(--link)}
+
+/* buttons */
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;height:50px;border-radius:12px;font-weight:600;font-size:17px;line-height:22px;width:100%;transition:transform .12s,opacity .2s}
+.btn:active{transform:scale(.98)}
+.btn.pri{background:var(--grad);color:#fff;font-size:18px;letter-spacing:-.23px}
+.btn.pri.r16{border-radius:16px}
+.btn.alt{background:var(--btn2);color:var(--btn2-text)}
+.btn.ter{background:var(--on-bgr);color:var(--text)}
+.btn[disabled]{background:var(--disabled);color:var(--disabled-text);cursor:default}
+.btn[disabled]:active{transform:none}
+.link{color:var(--link);font-weight:600}
+
+/* header rows */
+.nav{flex:none;height:44px;display:flex;align-items:center;gap:8px;padding-inline:16px;position:relative;z-index:2}
+.nav .ttl{flex:1;text-align:center}
+.nav .ic{width:24px;height:24px;display:grid;place-items:center;color:var(--icon)}
+.big-title{flex:none;height:60px;display:flex;align-items:center;justify-content:center}
+.big-title h2{font-size:34px;line-height:41px;font-weight:700}
+
+/* segmented */
+.segc{display:flex;height:40px;background:var(--on-bgr);border-radius:999px;padding:2px;box-sizing:border-box;position:relative}
+.segc button{flex:1;z-index:1;text-align:center;font-weight:600;font-size:16px;color:var(--text2);border-radius:999px;transition:color .2s}
+.segc button[aria-selected="true"]{color:var(--text)}
+.segc .thumb{position:absolute;top:2px;bottom:2px;left:2px;border-radius:999px;background:var(--btn2);border:.5px solid rgba(0,0,0,.04);
+  box-shadow:0 3px 8px rgba(0,0,0,.12),0 3px 1px rgba(0,0,0,.04);transition:transform .28s cubic-bezier(.3,.7,.2,1)}
+.segc.dim{background:var(--bg)}
+.phone.dark .segc button[aria-selected="true"]{color:#1c1917}
+
+/* tab bar */
+.tabbar{flex:none;height:83px;background:var(--surface);position:relative;display:flex;padding:12px 36px 0;box-sizing:border-box;z-index:4}
+.tabbar.lift{box-shadow:0 4px 8px rgba(0,0,0,.25)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;line-height:16px;font-weight:500;color:var(--text2);height:48px}
+.tab.on{color:var(--brand)}
+.phone.dark .tab.on{color:#22c55e}
+.cam{position:absolute;left:50%;top:-13px;width:64px;height:64px;margin-left:-32px;border-radius:50%;background:var(--brand);display:grid;place-items:center;color:#fff}
+.cam::before{content:"";position:absolute;inset:-4px -2.5px;border-radius:50%;background:var(--surface);z-index:-1}
+.cam .i{width:35px;height:31px}
+
+/* cards */
+.card{background:var(--surface);border-radius:16px;box-shadow:var(--shadow-card)}
+.pad{padding:16px}
+.sec{display:flex;flex-direction:column;gap:12px;padding:20px 16px 4px}
+.divider{height:1px;background:var(--border)}
+.row-li{display:flex;gap:12px;align-items:center}
+.surf{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;flex:none}
+.surf img{width:24px;height:24px}
+.y{background:#fefce8}.o{background:#fff7ed}.bl{background:#eff6ff}.am{background:#fffbeb}.gr{background:#f0fdf4}.pu{background:#faf5ff}.rd{background:#fee2e2}
+
+.tag{display:inline-flex;align-items:center;gap:4px;height:32px;box-sizing:border-box;padding:6px 12px;border-radius:12px;background:var(--surface);font-weight:600;font-size:15px;line-height:20px;white-space:nowrap}
+.tag.r{background:#fef2f2;color:#1c1917}.tag.or{background:#fff7ed;color:#1c1917}
+/* Common Problems, dark (Figma 1262:65348) */
+.phone.dark .surf.prob-d{background:#7f1d1d}.phone.dark .surf.prob-p{background:#c2410c}
+.phone.dark .surf.prob-d img,.phone.dark .surf.prob-p img{filter:brightness(0) invert(1)}
+.phone.dark .tag.r{background:rgba(194,65,12,.2);color:#fff}.phone.dark .tag.or{background:rgba(254,215,170,.2);color:#fff}
+.tag .i{width:20px;height:20px;color:var(--icon)}
+.alert{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:#fffbeb;color:#d97706;font-size:15px;line-height:20px}
+.alert.gr{background:var(--soft-stone);color:var(--darkgrey)}
+.alert ul{margin:6px 0 0;padding-left:16px}
+.alert li{margin-top:6px}
+
+/* bottom action */
+.action{flex:none;background:var(--surface);padding:12px 16px 34px;z-index:4}
+
+/* accordions */
+.acc{border-bottom:1px solid var(--border)}
+.acc>button{width:100%;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0;font-weight:600;font-size:17px;line-height:22px;color:var(--text2)}
+.chev{width:24px;height:24px;border-radius:50%;background:var(--chev-bg);display:grid;place-items:center;color:var(--chev);flex:none;transition:transform .25s,background .2s}
+.chev svg{width:24px;height:24px}
+.acc.open .chev{background:#bbf7d0;color:#15803d;transform:rotate(180deg)}
+.acc .body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease}
+.acc.open .body{grid-template-rows:1fr}
+.acc .body>div{overflow:hidden}
+.acc .body ol,.steps{margin:0;padding:0 0 16px;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:10px}
+.acc .body li,.steps li{counter-increment:s;display:flex;gap:6px;font-size:17px;line-height:22px;color:var(--text2)}
+.acc .body li::before,.steps li::before{content:counter(s) ".";font-weight:700;font-size:15px;color:var(--text3);width:16px;flex:none;margin-top:1px}
+.steps li b{display:block;font-weight:600}
+.faq .acc>button{color:var(--text2)}
+.faq .acc .body p{padding-bottom:12px;color:var(--text2);font-size:17px;line-height:22px}
+
+/* inputs */
+.field{height:50px;border-radius:12px;background:var(--btn2);display:flex;align-items:center;padding:0 16px;gap:4px}
+.field input{-webkit-user-select:text;user-select:text;flex:1;border:0;background:none;font:inherit;font-size:17px;letter-spacing:-.43px;color:#1c1917;outline:none;min-width:0}
+.field input::placeholder{color:#78716c}
+.field .eye{width:24px;height:24px;display:grid;place-items:center;color:#a8a29e}
+
+/* misc */
+.pot{width:250px;height:250px;margin-block:0 16px}
+.alert-ios{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.3);display:grid;place-items:center;animation:fade .2s}
+.alert-ios .box{width:270px;border-radius:14px;overflow:hidden;background:rgba(242,242,242,.86);-webkit-backdrop-filter:blur(25px);backdrop-filter:blur(25px);text-align:center;animation:pop .25s cubic-bezier(.2,.9,.3,1.2);color:#1c1917}
+.phone.dark .alert-ios .box{background:rgba(40,40,40,.86);color:#fff}
+.alert-ios .tx{padding:19px 16px 15px;display:flex;flex-direction:column;gap:2px}
+.alert-ios .tx p{font-size:13px;line-height:18px;color:#57534e}
+.phone.dark .alert-ios .tx p{color:#d6d3d1}
+.alert-ios .acts{display:flex;border-top:.33px solid rgba(128,128,128,.55)}
+.alert-ios .acts button{flex:1;height:44px;text-align:center;color:#15803d;font-size:17px}
+.phone.dark .alert-ios .acts button{color:#22c55e}
+.alert-ios .acts button+button{border-left:.33px solid rgba(128,128,128,.55)}
+.toast{position:absolute;left:50%;bottom:120px;transform:translateX(-50%);z-index:50;background:var(--text);color:var(--bg);box-shadow:0 6px 20px rgba(0,0,0,.2);padding:10px 16px;border-radius:999px;font-size:15px;font-weight:600;white-space:nowrap;display:flex;gap:8px;align-items:center;animation:drop .3s cubic-bezier(.2,.9,.3,1.2)}
+@keyframes fade{from{opacity:0}}
+@keyframes pop{from{transform:scale(1.15);opacity:0}}
+@keyframes drop{from{transform:translate(-50%,20px);opacity:0}}
+
+.spin{width:40px;height:40px;position:relative;animation:spin 1s steps(8) infinite;flex:none}
+.spin i{position:absolute;left:43.33%;top:0;width:13.33%;height:33.33%;border-radius:8px;background:currentColor;transform-origin:50% 150%}
+.spin i:nth-child(1){opacity:1}
+.spin i:nth-child(2){transform:rotate(45deg);opacity:.15}
+.spin i:nth-child(3){transform:rotate(90deg);opacity:.27}
+.spin i:nth-child(4){transform:rotate(135deg);opacity:.39}
+.spin i:nth-child(5){transform:rotate(180deg);opacity:.51}
+.spin i:nth-child(6){transform:rotate(225deg);opacity:.63}
+.spin i:nth-child(7){transform:rotate(270deg);opacity:.75}
+.spin i:nth-child(8){transform:rotate(315deg);opacity:.87}
+@keyframes spin{to{transform:rotate(-360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}*{transition-duration:0s!important}}
+
+/* screen-specific */
+#s-garden .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;padding:10px 16px 24px}
+.pcard{background:var(--surface);border-radius:12px;box-shadow:0 1px 1.5px rgba(0,0,0,.11);overflow:hidden;display:flex;flex-direction:column;gap:12px;padding-bottom:12px;text-align:left}
+.pcard img{width:100%;height:206px;object-fit:cover;border-radius:8px 8px 0 0}
+.pcard .nm{font-family:"Arial Rounded MT Bold","SF Pro Rounded",-apple-system,sans-serif;font-size:16px;line-height:22px;padding-inline:12px}
+.pcard .cm{font-size:14px;line-height:22px;font-weight:500;color:var(--text3);padding-inline:12px}
+.pcard .new{position:absolute;margin:10px;background:#15803d;color:#fff;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px}
+.plist{display:flex;flex-direction:column;gap:18px;padding:10px 16px 24px}
+.plist button{display:flex;align-items:center;gap:15px}
+.plist img{width:56px;height:56px;border-radius:8px;object-fit:cover}
+.plist .tx{flex:1;min-width:0}
+.empty{display:flex;flex-direction:column;justify-content:center;padding:0 16px 24px}
+.empty .fan{flex:none}
+.empty-tx{height:84px;margin-top:50px;display:flex;flex-direction:column;justify-content:flex-end;gap:8px;text-align:center}
+.empty .btn{flex:none;margin-top:16px}
+.fan{position:relative;width:276px;height:192px;margin:0 auto}
+.fan div{position:absolute;top:0;width:118px;height:159px;border-radius:16px;background:var(--surface);box-shadow:0 4px 12px rgba(0,0,0,.15);display:grid;place-items:center}
+.fan .l{left:18px;top:12px;transform:rotate(-17deg)}
+.fan .r{right:18px;top:12px;transform:rotate(17deg)}
+.fan .c{left:69px;width:138px;height:183px;top:0}
+.fan img{width:80px;height:80px;object-fit:contain}
+.fan .l img,.fan .r img{opacity:1}
+.phone.dark #emptyScans .fan .l img,.phone.dark #emptyScans .fan .r img{opacity:.2}
+
+#s-tips{background:var(--dark);color:#fff}
+.bubble{border-radius:99px;overflow:hidden;background:#fff;box-sizing:border-box;position:relative}
+.bubble img{position:absolute;max-width:none}
+
+#s-camera{background:#052e16}
+.cam-top{position:absolute;left:16px;right:16px;top:60px;display:flex;justify-content:space-between;align-items:center;z-index:3}
+.glass{background:rgba(0,0,0,.5);color:#fff;border-radius:99px;padding:10px;font-weight:600;font-size:17px;line-height:22px}
+.xbtn{width:36px;height:36px;border-radius:50%;background:#fff;display:grid;place-items:center;color:#78716c}
+.shutter{width:72px;height:72px;border-radius:50%;border:4px solid #fff;display:grid;place-items:center;box-sizing:border-box;transition:transform .1s}
+.shutter::after{content:"";width:56px;height:56px;border-radius:50%;background:#fff}
+.shutter:active{transform:scale(.92)}
+.sq{width:62px;height:62px;border-radius:12px;background:rgba(0,0,0,.5);display:grid;place-items:center;color:#fff}
+.flash{position:absolute;inset:0;background:#fff;z-index:20;pointer-events:none;animation:flash .35s forwards}
+@keyframes flash{from{opacity:.9}to{opacity:0}}
+
+#s-recog{background:linear-gradient(-17.77deg,rgba(28,79,28,.6) 34.4%,rgba(91,224,91,.6) 103.26%),#000;color:#fff}
+.step{display:flex;gap:12px;align-items:center;font-size:20px;line-height:25px;opacity:.35;transition:opacity .3s}
+.step.on{opacity:1}
+
+.hero{position:relative;height:380px;flex:none;overflow:hidden;background:#fff}
+.hero img{width:100%;height:100%;object-fit:cover}
+.float-nav{position:absolute;left:0;right:0;top:0;padding:50px 16px 12px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(0,0,0,.24),transparent);z-index:5;transition:background .2s}
+.float-nav.solid{background:var(--bg)}
+.circ{width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.5);display:grid;place-items:center;color:#fff}
+.sharebtn{height:32px;border-radius:99px;background:rgba(0,0,0,.5);color:#fff;display:flex;gap:10px;align-items:center;padding:0 8px;font-weight:600;font-size:16px}
+.qf{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.qf .card{padding:8px 12px;display:flex;gap:12px;align-items:center;white-space:nowrap;min-width:0}
+.kv{display:flex;flex-direction:column;gap:4px;padding:12px 0}
+.kv+.kv{border-top:1px solid var(--border)}
+.kvr{display:flex;justify-content:space-between;align-items:center;min-height:53px;border-bottom:1px solid var(--border);gap:12px}
+.kvr:last-child{border-bottom:0}
+.swatch{width:32px;height:32px;border-radius:8px}
+.more{color:var(--link);font-weight:600}
+.clamp{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+.pills{display:flex;gap:8px;overflow-x:auto;padding:4px 16px;scrollbar-width:none}
+.pills::-webkit-scrollbar{display:none}
+.pills button{flex:none;height:36px;padding:0 20px;border-radius:99px;background:var(--pill);color:var(--pill-text);font-weight:600;font-size:15px;transition:background .2s,color .2s}
+.pills button[aria-selected="true"]{background:var(--pill-on);color:var(--pill-on-text)}
+.care-head{flex:none;background:var(--bg);box-shadow:0 8px 8px rgba(0,0,0,0);position:relative;z-index:2}
+.care-head::after{content:"";position:absolute;left:0;right:0;bottom:-12px;height:12px;background:linear-gradient(var(--bg),transparent);pointer-events:none}
+
+.scale{display:flex;justify-content:space-between;gap:3px}
+.scale span{flex:1;height:24px;border-radius:4px;color:#fff;font-size:13px;display:grid;place-items:center;opacity:.3}
+.scale span.on{opacity:1}
+.track{position:relative;height:30px;border-radius:6px;background:var(--border)}
+.track i{position:absolute;top:0;bottom:0;border-radius:6px}
+.axis{position:relative;height:20px;font-size:15px;font-weight:600}
+.axis span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.axis span.e{font-weight:400;color:var(--text3)}
+.axis span.l{transform:none}.axis span.rr{transform:translateX(-100%)}
+.tip{display:inline-block;background:var(--text);color:var(--bg);font-size:14px;border-radius:6px;padding:2px 8px}
+.legend{display:flex;gap:16px;justify-content:center;font-size:14px;font-weight:500}
+.legend span{display:flex;gap:6px;align-items:center}
+.legend i{width:10px;height:10px;border-radius:50%}
+table.ft{width:100%;border-collapse:collapse;font-size:15px;line-height:20px}
+table.ft th{text-align:left;font-weight:600;font-size:16px;color:var(--text2);padding:12px 8px 16px 0;vertical-align:top}
+table.ft td{padding:16px 8px 16px 0;border-top:1px solid var(--border);color:var(--text2)}
+table.ft td.mu{color:var(--text3)}
+table.ft td:first-child{color:var(--text2)}
+
+.set-group{background:var(--surface);border-radius:8px;padding:0 16px;box-shadow:0 2px 3px rgba(0,0,0,.05)}
+.set-row{display:flex;align-items:center;gap:8px;height:56px;width:100%;color:var(--text);font-size:17px}
+.set-row+.set-row{border-top:1px solid var(--border)}
+.set-row .i.g{color:var(--link)}
+.set-row .i.ch{color:#a8a29e}
+.set-row .lbl{flex:1}
+.set-row .val{color:#78716c;font-size:15px}
+</style>
+
+<div class="stage">
+  <aside class="panel" aria-label="Prototype controls">
+    <div>
+      <h1><span>Pot</span> prototype</h1>
+      <p class="sub">Identify &amp; grow plants · iPhone 16 Pro Max, 440×956</p>
+    </div>
+    <div>
+      <div class="lab">Theme</div>
+      <div class="seg" id="themeSeg">
+        <button data-mode="light" aria-pressed="false">Light</button>
+        <button data-mode="dark" aria-pressed="false">Dark</button>
+        <button data-mode="system" aria-pressed="true">Auto</button>
+      </div>
+    </div>
+    <div>
+      <div class="lab">Screens</div>
+      <nav class="jump" id="jump"></nav>
+    </div>
+    <p class="hint">Tap through like on a phone. On a phone, open the link and add it to the Home Screen for full-screen use.</p>
+  </aside>
+
+  <div class="frame" id="frame">
+  <div class="phone" id="phone">
+
+    <!-- 1. Loading -->
+    <section class="screen" id="s-loading" data-title="Loading">
+      <div class="sb"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;margin-top:40px;padding-inline:35px">
+        <p class="lt b" style="color:var(--link)">Pot</p>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <p class="t1 b c-2">Identify &amp; Grow Plants</p>
+          <p style="font-size:22px;line-height:28px" class="c-3">Care Tips &amp; Home Collection</p>
+        </div>
+      </div>
+      <img src="assets/cactus-happy.png" alt="Pot, the cactus mascot" style="width:320px;height:320px;margin:84px auto 60px;flex:none">
+      <div style="display:flex;justify-content:center;margin-top:-4px;color:#15803d"><div class="spin"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="hi"></div>
+    </section>
+
+    <!-- 2.1 Sign in -->
+    <section class="screen" id="s-signin" data-title="Sign In" hidden>
+      <div class="sb"></div>
+      <div class="scroll" style="display:flex;flex-direction:column;padding:64px 16px 0">
+        <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
+          <img class="pot" src="assets/cactus-happy.png" alt="Pot, the cactus mascot">
+          <p class="lt">Get started</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;margin-top:24px">
+          <button class="btn alt" data-go="garden-empty" data-auth="1"><i class="i" style="--m:url(assets/ic-apple.svg);width:22px;height:24px;color:#78716c"></i>Continue with Apple</button>
+          <button class="btn ter" data-go="email"><i class="i" style="--m:url(assets/ic-mail.svg);color:var(--icon)"></i>Continue with Email</button>
+        </div>
+        <p class="bd c-3" style="text-align:center;margin-top:auto;padding:24px 0 34px">By continuing to use Pot,<br>you agree to the <button class="s c-2" data-go="terms">Term of Use</button> and <button class="s c-2" data-go="privacy">Privacy Policy</button></p>
+      </div>
+      <div class="hi"></div>
+    </section>
+
+    <!-- 2.4 / 2.7 Email -->
+    <section class="screen" id="s-email" data-title="Sign In – Email" hidden>
+      <div class="sb"></div>
+      <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-arrow-left.svg)"></i></button></div>
+      <div class="scroll" style="padding:20px 16px 24px">
+        <form id="emailForm" style="display:flex;flex-direction:column;gap:12px;align-items:center" novalidate>
+          <img class="pot" src="assets/cactus-happy.png" alt="">
+          <p class="lt" id="emailTitle" style="text-align:center;margin-bottom:20px">Sign in with your email</p>
+          <label class="field" style="width:100%"><input id="em-email" type="email" placeholder="Email" autocomplete="email" aria-label="Email"></label>
+          <label class="field" style="width:100%"><input id="em-pass" type="password" placeholder="Password" autocomplete="current-password" aria-label="Password"><button type="button" class="eye" id="eye" aria-label="Show password"><i class="i" style="--m:url(assets/ic-eye.svg);width:23px;height:17px"></i></button></label>
+          <button class="btn" id="emailSubmit" type="submit" disabled style="font-size:18px">Sign In</button>
+          <div style="display:flex;flex-direction:column;gap:8px;text-align:center;font-size:17px;line-height:22px">
+            <p class="c-3" id="emailQ">Don’t have an account yet?</p>
+            <button type="button" class="link" id="emailSwap">Sign up</button>
+            <button type="button" class="link" id="emailForgot" data-go="forgot">Forgot your password?</button>
+          </div>
+        </form>
+      </div>
+      <div class="hi"></div>
+    </section>
+
+    <!-- 2.5 Forgot -->
+    <section class="screen" id="s-forgot" data-title="Forgot Password" hidden>
+      <div class="sb"></div>
+      <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-arrow-left.svg)"></i></button></div>
+      <div class="scroll" style="padding:20px 16px 24px">
+        <form id="forgotForm" style="display:flex;flex-direction:column;gap:12px;align-items:center" novalidate>
+          <img class="pot" src="assets/cactus-happy.png" alt="">
+          <p class="lt" style="text-align:center">Forgot Password</p>
+          <p class="bd c-3" style="text-align:center;margin-bottom:20px">Please enter the email address associated with your account</p>
+          <label class="field" style="width:100%"><input id="fg-email" type="email" placeholder="Email" autocomplete="email" aria-label="Email"></label>
+          <button class="btn" id="forgotSubmit" type="submit" disabled style="font-size:18px">Send</button>
+          <p class="bd c-3" style="margin-top:4px">Already have an account?</p>
+          <button type="button" class="link bd" data-back>Sign in</button>
+        </form>
+      </div>
+      <div class="hi"></div>
+    </section>
+
+    <!-- 2.6 Check mail -->
+    <section class="screen" id="s-checkmail" data-title="Check Mail" hidden>
+      <div class="sb"></div>
+      <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-arrow-left.svg)"></i></button></div>
+      <div class="scroll" style="padding:20px 16px 24px;display:flex;flex-direction:column;align-items:center;gap:12px">
+        <img class="pot" src="assets/cactus-happy.png" alt="">
+        <p class="lt">Check your email</p>
+        <p class="bd c-3" style="text-align:center;margin-bottom:20px">We have sent password reset instructions to <span id="sentTo">your email</span></p>
+        <button class="btn pri" data-go="email" data-mode="signin" data-replace>Sign In</button>
+      </div>
+      <div class="hi"></div>
+    </section>
+
+    <!-- 3.7 Garden empty -->
+    <section class="screen" id="s-garden-empty" data-title="My Garden – Empty" hidden>
+      <div class="sb"></div>
+      <div class="big-title"><h2>My Garden</h2></div>
+      <div style="padding:16px 16px 0"><div class="segc" data-seg><div class="thumb"></div><button aria-selected="true">My Plants</button><button aria-selected="false">Past Scans</button></div></div>
+      <div class="scroll empty" id="emptyPlants">
+        <div class="fan">
+          <div class="l"><img src="assets/ic-garden-lg-muted.svg" alt="" style="filter:grayscale(1);opacity:.5"></div>
+          <div class="r"><img src="assets/ic-garden-lg-muted.svg" alt="" style="filter:grayscale(1);opacity:.5"></div>
+          <div class="c"><img src="assets/ic-garden-lg.svg" alt=""></div>
+        </div>
+        <div class="empty-tx"><p class="hd">Add your first plant</p></div>
+        <button class="btn pri r16" data-scan>Add a Plant</button>
+      </div>
+      <div class="scroll empty" id="emptyScans" hidden>
+        <div class="fan">
+          <div class="l"><img src="assets/ic-first-scan-muted.svg" alt=""></div>
+          <div class="r"><img src="assets/ic-first-scan-muted.svg" alt="" style="transform:scaleX(-1)"></div>
+          <div class="c"><img src="assets/ic-first-scan.svg" alt=""></div>
+        </div>
+        <div class="empty-tx"><p class="t2">Scan your first plant</p><p class="bd c-2">Click on the camera below to scan your first plant and see its history!</p></div>
+        <button class="btn pri r16" data-scan>Add a Plant</button>
+      </div>
+      <nav class="tabbar">
+        <button class="tab on" aria-current="page"><i class="i" style="--m:url(assets/ic-garden.svg);width:18px;height:22px;margin-top:1px"></i>My Garden</button>
+        <button class="tab" data-go="settings"><i class="i" style="--m:url(assets/ic-settings.svg)"></i>Settings</button>
+        <button class="cam" data-scan aria-label="Scan a plant"><i class="i" style="--m:url(assets/ic-camera.svg)"></i></button>
+      </nav>
+      <div class="hi"></div>
+    </section>
+
+    <!-- 3.8 / 4.1 Garden -->
+    <section class="screen" id="s-garden" data-title="My Garden" hidden>
+      <div class="sb"></div>
+      <div class="big-title"><h2>My Garden</h2></div>
+      <div style="padding:16px"><div class="segc" id="gardenSeg" data-seg><div class="thumb"></div><button aria-selected="true" data-pane="plants">My Plants</button><button aria-selected="false" data-pane="scans">Past Scans</button></div></div>
+      <div class="scroll">
+        <div class="grid" id="gardenGrid"></div>
+        <div class="plist" id="scanList" hidden></div>
+      </div>
+      <nav class="tabbar lift">
+        <button class="tab on" aria-current="page"><i class="i" style="--m:url(assets/ic-garden.svg);width:18px;height:22px;margin-top:1px"></i>My Garden</button>
+        <button class="tab" data-go="settings"><i class="i" style="--m:url(assets/ic-settings.svg)"></i>Settings</button>
+        <button class="cam" data-scan aria-label="Scan a plant"><i class="i" style="--m:url(assets/ic-camera.svg)"></i></button>
+      </nav>
+      <div class="hi"></div>
+    </section>
+
+    <!-- 5.1 Snap tips -->
+    <section class="screen" id="s-tips" data-title="Snap Tips" hidden>
+      <div class="sb inv"></div>
+      <div class="nav" style="color:#fff"><span style="width:24px"></span><p class="ttl t3 s" style="letter-spacing:-.45px">Snap Tips</p><button class="ic" style="color:#fff" data-close-tips aria-label="Close"><i class="i" style="--m:url(assets/ic-close.svg)"></i></button></div>
+      <div class="scroll" style="display:flex;flex-direction:column;align-items:center;padding-top:76px;gap:24px">
+        <div style="position:relative;display:flex;flex-direction:column;align-items:center">
+          <div class="bubble" style="width:168px;height:168px;border:4px solid #5fd39c;background:#000"><img src="assets/ficus-dark.jpg" alt="Plant centred in frame" style="left:-23px;top:0;width:205px;height:205px"></div>
+          <img src="assets/badge-ok.svg" alt="" style="width:40px;height:40px;margin-top:-24px;position:relative">
+          <p class="t2" style="text-align:center;margin-top:11px">One plant at a time,<br>keep in center</p>
+        </div>
+        <div style="display:flex;gap:8px;justify-content:center;width:100%">
+          <div style="width:128px;display:flex;flex-direction:column;align-items:center">
+            <div class="bubble" style="width:92px;height:92px;border:4px solid #ff631b"><img src="assets/ficus-dark.jpg" alt="Too close" style="left:-95px;top:-67px;width:300px;height:300px"></div>
+            <img src="assets/badge-x.svg" alt="" style="width:24px;height:24px;margin-top:-12px;position:relative">
+            <p class="bd" style="margin-top:9px">Too close</p>
+          </div>
+          <div style="width:112px;display:flex;flex-direction:column;align-items:center">
+            <div class="bubble" style="width:92px;height:92px;border:4px solid #ff3d1b;background:linear-gradient(90deg,#09181d 12%,#000 87%)"><img src="assets/ficus-dark.jpg" alt="Too far" style="left:12px;top:24px;width:68px;height:68px"></div>
+            <img src="assets/badge-x.svg" alt="" style="width:24px;height:24px;margin-top:-12px;position:relative">
+            <p class="bd" style="margin-top:9px">Too far</p>
+          </div>
+          <div style="width:144px;display:flex;flex-direction:column;align-items:center">
+            <div class="bubble" style="width:92px;height:92px;border:4px solid #ff3d1b;background:#000"><img src="assets/many-plants.jpg" alt="Too many plants" style="left:-4px;top:-26px;width:133px;height:118px;object-fit:cover"></div>
+            <img src="assets/badge-x.svg" alt="" style="width:24px;height:24px;margin-top:-12px;position:relative">
+            <p class="bd" style="margin-top:9px;white-space:nowrap">Too many plants</p>
+          </div>
+        </div>
+      </div>
+      <div style="padding:0 16px 58px"><button class="btn pri r16" data-tips-continue>Continue</button></div>
+      <div class="hi w"></div>
+    </section>
+
+    <!-- 5.2 Camera -->
+    <section class="screen" id="s-camera" data-title="Camera" hidden>
+      <div style="position:absolute;inset:0 0 174px;overflow:hidden"><img src="assets/ficus-variegated.jpg" alt="Camera viewfinder" style="position:absolute;left:-265px;top:-24px;width:969px;height:auto;max-width:none;animation:drift 9s ease-in-out infinite alternate"></div>
+      <style>@keyframes drift{to{transform:translate(-14px,10px) scale(1.02)}}@media (prefers-reduced-motion:reduce){#s-camera img{animation:none!important}}</style>
+      <div class="sb inv"></div>
+      <div class="cam-top">
+        <button class="glass" data-go="tips" data-tipsmode="view">📷 Snap Tips</button>
+        <button class="xbtn" data-back aria-label="Close camera"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M2 2l10 10M12 2 2 12"/></svg></button>
+      </div>
+      <img src="assets/cam-frame.svg" alt="" style="position:absolute;left:23px;top:200px;width:397px;height:400px;z-index:2">
+      <p style="position:absolute;left:56px;width:330px;top:659px;box-sizing:border-box;padding:16px;border-radius:8px;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);color:#fff;text-align:center;z-index:2" class="bd">Please make sure your plant is the only object in the frame 🪴</p>
+      <div style="position:absolute;left:0;right:0;bottom:0;height:174px;background:#052e16;z-index:2">
+        <button class="sq" style="position:absolute;left:67px;top:56px" data-toast="Photo library isn’t part of this prototype" aria-label="Choose from library"><i class="i" style="--m:url(assets/ic-picture.svg)"></i></button>
+        <button class="shutter" id="shutter" style="position:absolute;left:183px;bottom:51px" aria-label="Take photo"></button>
+        <button class="sq" id="flashBtn" style="position:absolute;left:309px;top:56px" aria-label="Flash" aria-pressed="false"><i class="i" style="--m:url(assets/ic-flash.svg);width:21px;height:24px"></i></button>
+      </div>
+      <div class="hi w"></div>
+    </section>
+
+    <!-- 5.5 Recognising -->
+    <section class="screen" id="s-recog" data-title="Recognising" hidden>
+      <div class="sb inv"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:32px;padding:64px 51px 0">
+        <div style="display:flex;flex-direction:column;gap:24px;align-items:center;width:100%">
+          <div style="width:100%;height:430px;border-radius:24px;overflow:hidden"><img src="assets/ficus-recog.jpg" alt="Captured photo" style="width:127%;margin-left:-12%;margin-top:-3%;max-width:none"></div>
+          <p class="lt b" id="recogTitle">Recognizing</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:24px">
+          <div class="step on"><img src="assets/ic-tick.svg" alt="" style="width:24px;height:24px;padding:0 3px;box-sizing:border-box">Uploaded</div>
+          <div class="step on" id="stepScan"><div class="spin" style="width:30px;height:30px;color:#eab308" id="scanSpin"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span id="scanLbl">Scanning</span></div>
+        </div>
+      </div>
+      <div class="hi w"></div>
+    </section>
+
+    <!-- 8. Plant details -->
+    <section class="screen" id="s-details" data-title="Plant Details" hidden>
+      <div class="sb" id="detSb" style="position:absolute;left:0;right:0;top:0;color:#fff;z-index:6"></div>
+      <div class="float-nav" id="detNav">
+        <button class="circ" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-arrow-left-white.svg);width:20px;height:20px"></i></button>
+        <p class="hd plant-name" id="detNavTitle" style="opacity:0;transition:opacity .2s">Peanut</p>
+        <button class="sharebtn" data-toast="Share sheet opens here"><i class="i" style="--m:url(assets/ic-share.svg);width:14px;height:16px"></i>Share</button>
+      </div>
+      <div class="scroll" id="detScroll">
+        <div class="hero"><img id="detImg" src="assets/peanuts.jpg" alt=""></div>
+        <div style="display:flex;flex-direction:column;gap:16px;padding:16px 16px 4px">
+          <div style="display:flex;flex-direction:column;gap:4px">
+            <p class="lt b plant-name">Peanut</p>
+            <p class="sh c-2 plant-latin" style="font-style:italic;letter-spacing:-.23px">Arachis hypogaea</p>
+          </div>
+          <p class="bd c-2"><span id="aboutTx"></span> <button class="more" id="aboutMore">Show More</button></p>
+        </div>
+        <div class="pills" id="detTags" style="padding:12px 16px 0;gap:12px"></div>
+
+        <div class="sec">
+          <p class="t2">Quick facts</p>
+          <div class="qf" id="qfGrid"></div>
+          <button class="card" data-go="toxicity" id="qfTox" style="padding:8px 16px;display:flex;align-items:center;gap:8px"></button>
+          <div class="card" style="padding:0 16px 4px" id="basicFacts"></div>
+        </div>
+
+        <div class="sec only-peanut">
+          <p class="t2">Characteristics</p>
+          <div class="card" style="padding:12px 16px 8px;display:flex;flex-direction:column;gap:12px">
+            <div class="segc dim" id="charSeg" data-seg><div class="thumb"></div><button aria-selected="false" data-c="plant">Plant</button><button aria-selected="true" data-c="flower">Flower</button><button aria-selected="false" data-c="fruit">Fruit</button></div>
+            <div id="charBody"></div>
+          </div>
+          <button class="card" data-toast="Growth timeline isn’t part of this prototype" style="padding:0 16px 16px;display:flex;flex-direction:column;text-align:left">
+            <div style="display:flex;justify-content:space-between;align-items:center;height:40px;padding:12px 0 10px;width:100%;border-bottom:1px solid var(--border)"><span class="hd c-2">Development</span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i></div>
+            <div class="row-li" style="padding:10px 0 12px;border-bottom:1px solid var(--border);width:100%"><span class="surf gr"><img src="assets/ic-sprouts.svg" alt="" style="filter:invert(33%) sepia(84%) saturate(600%) hue-rotate(100deg) brightness(85%)"></span><div><p class="fn c-3">Grows very quickly</p><p class="co s" style="color:var(--link)">Fast Growth Speed</p></div></div>
+            <img src="assets/grow-stages.png" alt="Five growth stages from seedling to mature plant" style="width:100%;height:auto;margin-top:0">
+            <div class="kv" style="padding:8px 0;width:100%"><p class="sh c-3">Propagation</p><p class="co">Stem cuttings, Leaf cuttings</p></div>
+            <div class="kv" style="padding:8px 0;border:0;width:100%"><p class="sh c-3">Cycle</p><p class="co">Perennial</p></div>
+          </button>
+        </div>
+
+        <div class="sec">
+          <p class="t2">Care Profile</p>
+          <div class="card" id="careProfile" style="padding:12px 16px 16px;display:flex;flex-direction:column;gap:12px"></div>
+        </div>
+
+        <div class="sec">
+          <p class="t2" style="padding:6px 0">How-tos</p>
+          <div id="howtos" style="display:flex;flex-direction:column;gap:16px"></div>
+        </div>
+
+        <div class="sec">
+          <p class="t2">Basic Info</p>
+          <div class="card" style="padding:0 16px 12px" id="basicInfo"></div>
+        </div>
+
+        <div class="sec only-peanut">
+          <p class="t2">FAQ</p>
+          <div class="card" style="border-radius:24px;padding:24px 16px 8px">
+            <div id="faqShort"></div>
+            <button class="link bd" data-go="faq" style="display:block;margin:8px auto 4px;padding:6px 14px">View All</button>
+          </div>
+        </div>
+
+        <div class="sec">
+          <p class="t2">Common Problems</p>
+          <div class="card pad" style="display:flex;flex-direction:column;gap:12px">
+            <div class="row-li" style="gap:8px"><span class="surf rd prob-d"><img src="assets/cp-diseases.svg" alt=""></span><div><p class="fn c-3">Diseases</p><p class="co s c-2">Caused by fungi, bacteria, or viruses</p></div></div>
+            <div style="display:flex;flex-wrap:wrap;gap:12px" id="diseases"></div>
+            <div class="divider"></div>
+            <div class="row-li" style="gap:8px"><span class="surf o prob-p"><img src="assets/cp-pests.svg" alt=""></span><div><p class="fn c-3">Pests</p><p class="co s c-2">Caused by insects or parasites</p></div></div>
+            <div style="display:flex;flex-wrap:wrap;gap:12px" id="pests"></div>
+          </div>
+        </div>
+
+        <div class="sec only-peanut" style="padding-bottom:24px">
+          <p class="t2">Amazing stories</p>
+          <div id="stories" style="display:flex;flex-direction:column;gap:16px"></div>
+        </div>
+      </div>
+      <div class="action" id="detAction"><button class="btn pri" id="addBtn" data-add>Add Plant to my Garden</button><button class="btn alt in-garden" data-garden hidden>✓ Already in My Garden</button></div>
+      <div class="hi"></div>
+    </section>
+
+    <!-- 8.1–8.7 Care -->
+    <section class="screen" id="s-care" data-title="Care Guide" hidden>
+      <div class="care-head">
+        <div class="sb"></div>
+        <div class="nav" style="height:60px">
+          <button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button>
+          <div class="ttl" style="display:flex;flex-direction:column;gap:2px"><p class="hd plant-name">Peanut</p><p class="sh c-2 plant-latin">Arachis hypogaea</p></div>
+          <button class="ic" data-toast="Share sheet opens here" aria-label="Share"><i class="i" style="--m:url(assets/ic-share.svg);width:20px;height:22px"></i></button>
+        </div>
+        <div class="pills" id="carePills" role="tablist"></div>
+      </div>
+      <div class="scroll" id="careScroll"><div id="careBody" style="display:flex;flex-direction:column;gap:16px;padding:13px 16px 16px"></div></div>
+      <div class="action care-act"><button class="btn pri" data-add>Add Plant to my Garden</button><button class="btn alt in-garden" data-garden hidden>✓ Already in My Garden</button></div>
+      <div class="hi"></div>
+    </section>
+
+    <!-- 8.8 FAQ -->
+    <section class="screen" id="s-faq" data-title="FAQ" hidden>
+      <div class="sb"></div>
+      <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button><p class="ttl hd">Popular Questions</p><span style="width:24px"></span></div>
+      <div class="scroll" style="padding:24px 16px 16px"><div class="card faq" style="border-radius:16px;padding:8px 16px" id="faqAll"></div></div>
+      <div class="action care-act"><button class="btn pri" data-add>Add Plant to my Garden</button><button class="btn alt in-garden" data-garden hidden>✓ Already in My Garden</button></div>
+      <div class="hi"></div>
+    </section>
+
+    <!-- 8.9 Toxicity -->
+    <section class="screen" id="s-toxicity" data-title="Toxicity" hidden>
+      <div class="sb"></div>
+      <div class="nav" style="height:60px">
+        <button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button>
+        <div class="ttl" style="display:flex;flex-direction:column;gap:2px"><p class="hd plant-name">Peanut</p><p class="sh c-2 plant-latin">Arachis hypogaea</p></div>
+        <button class="ic" data-toast="Share sheet opens here" aria-label="Share"><i class="i" style="--m:url(assets/ic-share.svg);width:20px;height:22px"></i></button>
+      </div>
+      <div class="scroll" style="padding:16px;display:flex;flex-direction:column;gap:16px">
+        <div id="toxBody" style="display:flex;flex-direction:column;gap:16px"></div>
+      </div>
+      <div class="action care-act"><button class="btn pri" data-add>Add Plant to my Garden</button><button class="btn alt in-garden" data-garden hidden>✓ Already in My Garden</button></div>
+      <div class="hi"></div>
+    </section>
+
+    <!-- 12.1 Settings -->
+    <section class="screen" id="s-settings" data-title="Settings" hidden>
+      <div class="sb"></div>
+      <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button><p class="ttl hd">Settings</p><span style="width:24px"></span></div>
+      <div class="scroll" style="padding:16px;display:flex;flex-direction:column;gap:16px">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <p class="t3 s">Account</p>
+          <div class="set-group">
+            <button class="set-row" data-toast="Signed in as j.black@gmail.com"><i class="i g" style="--m:url(assets/ic-diamond.svg);width:22px;height:21px;margin-inline:1px"></i><span class="lbl">My Account</span><i class="i ch" style="--m:url(assets/ic-chevron-right2.svg);width:8px;height:14px;margin-inline:8px"></i></button>
+            <button class="set-row" data-toast="No purchases to restore"><i class="i g" style="--m:url(assets/ic-user.svg);width:22px;height:22px;margin-inline:1px"></i><span class="lbl">Restore Purchase</span><i class="i ch" style="--m:url(assets/ic-chevron-right2.svg);width:8px;height:14px;margin-inline:8px"></i></button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <p class="t3 s">Legal</p>
+          <div class="set-group">
+            <button class="set-row" data-go="privacy"><i class="i g" style="--m:url(assets/ic-shield.svg);width:20px;height:22px;margin-inline:2px"></i><span class="lbl">Privacy Policy</span><i class="i ch" style="--m:url(assets/ic-chevron-right2.svg);width:8px;height:14px;margin-inline:8px"></i></button>
+            <button class="set-row" data-go="terms"><i class="i g" style="--m:url(assets/ic-file.svg);width:18px;height:22px;margin-inline:3px"></i><span class="lbl">Terms of Use</span><i class="i ch" style="--m:url(assets/ic-chevron-right2.svg);width:8px;height:14px;margin-inline:8px"></i></button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <p class="t3 s">About App</p>
+          <div class="set-group">
+            <button class="set-row" data-toast="Pot 1.0 (prototype)"><i class="i g" style="--m:url(assets/ic-info.svg)"></i><span class="lbl">App Info</span><i class="i ch" style="--m:url(assets/ic-chevron-right2.svg);width:8px;height:14px;margin-inline:8px"></i></button>
+            <button class="set-row" id="rateBtn"><i class="i g" style="--m:url(assets/ic-star.svg)"></i><span class="lbl">Rate App</span><i class="i ch" style="--m:url(assets/ic-chevron-right2.svg);width:8px;height:14px;margin-inline:8px"></i></button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <p class="t3 s">Appearance <span class="fn c-3" style="font-weight:400">· prototype</span></p>
+          <div class="segc" id="apSeg" data-seg><div class="thumb"></div><button aria-selected="false" data-mode="light">Light</button><button aria-selected="false" data-mode="dark">Dark</button><button aria-selected="true" data-mode="system">Auto</button></div>
+          <button class="set-group set-row" style="justify-content:center;color:var(--link);font-weight:600" id="restart">Restart prototype</button>
+        </div>
+      </div>
+      <div class="hi"></div>
+    </section>
+
+    <!-- 13.x Legal -->
+    <section class="screen" id="s-legal" data-title="Legal" hidden>
+      <div class="sb"></div>
+      <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button><p class="ttl hd" id="legalTitle">Privacy Policy</p><span style="width:24px"></span></div>
+      <div class="scroll" style="padding:16px"><div class="card pad" id="legalBody" style="display:flex;flex-direction:column;gap:12px"></div></div>
+      <div class="hi"></div>
+    </section>
+
+  </div>
+  </div>
+</div>
+
+<script>
+(() => {
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const phone = $('#phone');
+const store = { get(k){ try { return localStorage.getItem('pot:'+k); } catch { return null; } }, set(k,v){ try { localStorage.setItem('pot:'+k, v); } catch {} } };
+
+/* ---------- status bar ---------- */
+const SB = '<span class="t">9:41</span><span class="gap"></span><span class="lv"><i class="i" style="--m:url(assets/sb-cell.svg);width:19px;height:12px"></i><i class="i" style="--m:url(assets/sb-wifi.svg);width:17px;height:12px"></i><i class="i" style="--m:url(assets/sb-battery.svg);width:27px;height:13px"></i></span>';
+$$('.sb').forEach(s => s.innerHTML = SB);
+
+/* ---------- theme ---------- */
+const mq = matchMedia('(prefers-color-scheme: dark)');
+let mode = store.get('mode') || 'system';
+function applyTheme() {
+  const hostDark = document.documentElement.dataset.theme ? document.documentElement.dataset.theme === 'dark' : mq.matches;
+  const dark = mode === 'dark' || (mode === 'system' && hostDark);
+  phone.classList.toggle('dark', dark);
+  $$('#themeSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === mode));
+  setSeg($('#apSeg'), $$('#apSeg button').findIndex(b => b.dataset.mode === mode));
+}
+mq.addEventListener('change', applyTheme);
+new MutationObserver(applyTheme).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+function setMode(m){ mode = m; store.set('mode', m); applyTheme(); }
+$$('#themeSeg button').forEach(b => b.onclick = () => setMode(b.dataset.mode));
+
+/* ---------- segmented controls ---------- */
+function setSeg(seg, idx) {
+  if (!seg) return;
+  const btns = $$('button', seg), th = $('.thumb', seg);
+  btns.forEach((b, i) => b.setAttribute('aria-selected', i === idx));
+  const w = (seg.clientWidth - 4) / btns.length;
+  th.style.width = w + 'px';
+  th.style.transform = `translateX(${w * idx}px)`;
+}
+$$('[data-seg]').forEach(seg => {
+  const btns = $$('button', seg);
+  btns.forEach((b, i) => b.addEventListener('click', () => {
+    if (b.dataset.toast) return toast(b.dataset.toast);
+    setSeg(seg, i);
+    if (seg.id === 'apSeg') setMode(b.dataset.mode);
+    if (seg.closest('#s-garden-empty')) { $('#emptyPlants').hidden = i !== 0; $('#emptyScans').hidden = i !== 1; }
+    if (seg.id === 'gardenSeg') { $('#gardenGrid').hidden = i !== 0; $('#scanList').hidden = i !== 1; $('#s-garden .scroll').scrollTop = 0; }
+    if (seg.id === 'charSeg') renderChar(b.dataset.c);
+  }));
+});
+const layoutSegs = () => $$('[data-seg]').forEach(seg => { const i = $$('button', seg).findIndex(b => b.getAttribute('aria-selected') === 'true'); setSeg(seg, Math.max(0, i)); });
+
+/* ---------- navigation ---------- */
+const state = { stack: ['loading'], authed: false, camAsked: false, camAllowed: false, added: false, tipsSeen: false, plant: 'peanut', fromScan: false };
+const cur = () => state.stack[state.stack.length - 1];
+const modal = new Set(['tips', 'camera', 'recog']);
+const alias = { privacy: 'legal', terms: 'legal' };
+function screenEl(id){ return $('#s-' + (alias[id] || id)); }
+let settleT, anims = [];
+function show(id, dir) {
+  const next = screenEl(id);
+  // leaving the scanner cancels its auto-advance
+  if (id !== 'recog') recogT.forEach(clearTimeout);
+  // finish any transition still running, so exactly one screen is on stage
+  clearTimeout(settleT);
+  anims.forEach(a => a.cancel()); anims = [];
+  const others = $$('.screen').filter(s => !s.hidden && s !== next);
+  const prev = others.find(s => s === screenEl(prevId)) || others[others.length - 1];
+  others.forEach(s => { if (s !== prev) s.hidden = true; });
+  $$('.screen').forEach(s => s.style.zIndex = '');
+  next.hidden = false;
+  if (dir !== 'back') $$('.scroll', next).forEach(el => el.scrollTop = 0);
+  onDetScroll();
+  layoutSegs();
+  $$('#jump button').forEach(b => b.classList.toggle('on', b.dataset.id === id));
+  if (!prev) return;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const opts = { duration: reduce ? 1 : 380, easing: 'cubic-bezier(.2,.8,.2,1)' };
+  const isModal = modal.has(dir === 'back' ? prevId : id);
+  const back = dir === 'back';
+  // the moving layer sits on top: the new screen, or the old one when it slides away
+  (back ? prev : next).style.zIndex = 3;
+  (back ? next : prev).style.zIndex = 1;
+  const run = (el, frames) => anims.push(el.animate(frames, opts));
+  if (dir === 'fade') run(next, [{ opacity: 0 }, { opacity: 1 }]);
+  else if (isModal && !back) run(next, [{ transform: 'translateY(100%)' }, { transform: 'none' }]);
+  else if (isModal && back) run(prev, [{ transform: 'none' }, { transform: 'translateY(100%)' }]);
+  else if (!back) { run(next, [{ transform: 'translateX(100%)' }, { transform: 'none' }]); run(prev, [{ transform: 'none' }, { transform: 'translateX(-30%)' }]); }
+  else { run(prev, [{ transform: 'none' }, { transform: 'translateX(100%)' }]); run(next, [{ transform: 'translateX(-30%)' }, { transform: 'none' }]); }
+  settleT = setTimeout(() => { prev.hidden = true; prev.style.zIndex = next.style.zIndex = ''; anims = []; }, opts.duration);
+}
+let prevId = null;
+function go(id, { replace = false, dir = 'fwd' } = {}) {
+  prevId = cur();
+  if (enter[id]) enter[id]();
+  if (replace) state.stack[state.stack.length - 1] = id; else state.stack.push(id);
+  show(id, dir);
+}
+function reset(id, dir = 'fade') { prevId = cur(); if (enter[id]) enter[id](); state.stack = [id]; show(id, dir); }
+function back() {
+  if (state.stack.length < 2) return;
+  prevId = state.stack.pop();
+  const id = cur();
+  if (enter[id]) enter[id](true);
+  show(id, 'back');
+}
+const gardenId = () => state.added ? 'garden' : 'garden-empty';
+
+phone.addEventListener('click', e => {
+  const t = e.target.closest('button');
+  if (!t || !phone.contains(t)) return;
+  if (t.hasAttribute('data-back')) return back();
+  if (t.dataset.toast && !t.closest('[data-seg]')) return toast(t.dataset.toast);
+  if (t.hasAttribute('data-scan')) return startScan();
+  if (t.hasAttribute('data-add')) return addPlant();
+  if (t.hasAttribute('data-garden')) return reset('garden', 'fade');
+  if (t.dataset.go) {
+    const id = t.dataset.go;
+    if (t.dataset.auth) { state.authed = true; return reset(gardenId(), 'fwd'); }
+    if (id === 'email') emailMode(t.dataset.mode || 'signin');
+    if (id === 'privacy' || id === 'terms') legal(id);
+    if (id === 'tips') state.tipsMode = t.dataset.tipsmode || 'first';
+    if (t.dataset.care) careTab = t.dataset.care;
+    return go(id, { replace: t.hasAttribute('data-replace') });
+  }
+});
+
+/* ---------- toast & alert ---------- */
+let toastT;
+function toast(msg) {
+  $('.toast', phone)?.remove();
+  const el = document.createElement('div');
+  el.className = 'toast'; el.setAttribute('role', 'status'); el.textContent = msg;
+  phone.append(el); clearTimeout(toastT);
+  toastT = setTimeout(() => el.remove(), 2200);
+}
+function iosAlert(title, text, actions) {
+  const wrap = document.createElement('div');
+  wrap.className = 'alert-ios';
+  wrap.innerHTML = `<div class="box" role="alertdialog" aria-label="${title}"><div class="tx"><b class="hd" style="letter-spacing:-.43px">${title}</b>${text ? `<p>${text}</p>` : ''}</div><div class="acts"></div></div>`;
+  actions.forEach(a => { const b = document.createElement('button'); b.textContent = a.label; if (a.bold) b.style.fontWeight = 600; b.onclick = () => { wrap.remove(); a.do && a.do(); }; $('.acts', wrap).append(b); });
+  phone.append(wrap);
+  $('.acts button:last-child', wrap).focus();
+}
+
+/* ---------- auth ---------- */
+function emailMode(m) {
+  const up = m === 'signup';
+  $('#emailTitle').textContent = up ? 'Sign up with your email' : 'Sign in with your email';
+  $('#emailSubmit').textContent = up ? 'Sign Up' : 'Sign In';
+  $('#emailQ').textContent = up ? 'Already have an account?' : 'Don’t have an account yet?';
+  $('#emailSwap').textContent = up ? 'Sign in' : 'Sign up';
+  $('#emailSwap').dataset.to = up ? 'signin' : 'signup';
+  $('#emailForgot').hidden = up;
+  $('#em-pass').autocomplete = up ? 'new-password' : 'current-password';
+}
+$('#emailSwap').onclick = () => emailMode($('#emailSwap').dataset.to || 'signup');
+const validEmail = v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+function syncEmail() {
+  const ok = validEmail($('#em-email').value) && $('#em-pass').value.length >= 4;
+  $('#emailSubmit').disabled = !ok; $('#emailSubmit').classList.toggle('pri', ok);
+}
+['input', 'change'].forEach(ev => { $('#em-email').addEventListener(ev, syncEmail); $('#em-pass').addEventListener(ev, syncEmail); });
+$('#eye').onclick = () => { const p = $('#em-pass'); p.type = p.type === 'password' ? 'text' : 'password'; $('#eye').setAttribute('aria-label', p.type === 'password' ? 'Show password' : 'Hide password'); };
+$('#emailForm').onsubmit = e => { e.preventDefault(); if ($('#emailSubmit').disabled) return; state.authed = true; reset(gardenId(), 'fwd'); };
+$('#fg-email').addEventListener('input', () => { const ok = validEmail($('#fg-email').value); $('#forgotSubmit').disabled = !ok; $('#forgotSubmit').classList.toggle('pri', ok); });
+$('#forgotForm').onsubmit = e => { e.preventDefault(); if ($('#forgotSubmit').disabled) return; $('#sentTo').textContent = $('#fg-email').value; go('checkmail'); };
+
+/* ---------- scan flow ---------- */
+function startScan() {
+  if (state.camAllowed) return openCamera();
+  iosAlert('“Pot” Would Like to Access the Camera', 'Pot uses the camera to photograph and identify your plants.', [
+    { label: 'Don’t Allow', do: () => iosAlert('Camera access is off', 'To identify plants, allow camera access in Settings › Pot.', [{ label: 'Not Now' }, { label: 'Allow', bold: true, do: allowCam }]) },
+    { label: 'Allow', bold: true, do: allowCam }
+  ]);
+}
+function allowCam() { state.camAllowed = true; openCamera(); }
+function openCamera() {
+  if (!state.tipsSeen) { state.tipsSeen = true; state.tipsMode = 'first'; return go('tips'); }
+  go('camera');
+}
+$('[data-tips-continue]').onclick = () => state.tipsMode === 'first' ? go('camera', { replace: true }) : back();
+$('[data-close-tips]').onclick = () => back();
+$('#flashBtn').onclick = () => { const on = $('#flashBtn').getAttribute('aria-pressed') !== 'true'; $('#flashBtn').setAttribute('aria-pressed', on); $('#flashBtn').style.background = on ? '#eab308' : ''; toast(on ? 'Flash on' : 'Flash off'); };
+$('#shutter').onclick = () => {
+  const f = document.createElement('div'); f.className = 'flash'; $('#s-camera').append(f); setTimeout(() => f.remove(), 400);
+  setTimeout(() => go('recog', { replace: true, dir: 'fade' }), 250);
+};
+let recogT = [];
+const enter = {
+  recog() {
+    recogT.forEach(clearTimeout);
+    $('#recogTitle').textContent = 'Recognizing';
+    $('#scanSpin').hidden = false; $('#scanLbl').textContent = 'Scanning';
+    $('#stepScan .done')?.remove();
+    recogT = [
+      setTimeout(() => {
+        $('#scanSpin').hidden = true;
+        $('#stepScan').insertAdjacentHTML('afterbegin', '<img class="done" src="assets/ic-tick.svg" alt="" style="width:24px;height:24px;padding:0 3px;box-sizing:border-box">');
+        $('#scanLbl').textContent = 'Identified';
+        $('#recogTitle').textContent = 'It’s a Peanut!';
+      }, 1900),
+      setTimeout(() => { if (cur() === 'recog') { openPlant('peanut', true, { replace: true, dir: 'fade' }); } }, 2900)
+    ];
+  },
+  details() { renderPlant(); },
+  care() { renderPlant(); renderCare(); },
+  toxicity() { renderPlant(); },
+  loading() { setTimeout(() => cur() === 'loading' && reset('signin'), 1800); },
+};
+function addPlant() {
+  state.added = true; state.plant = 'peanut'; state.fromScan = false;
+  renderGarden(true);
+  reset('garden', 'fade');
+  setTimeout(() => toast('✓ Peanut added to My Garden'), 300);
+}
+
+
+/* ---------- plants ---------- */
+const TAG = { heat: ['tag-sun', 'Heat tolerant'], wild: ['tag-elephant', 'Wildlife attractor'], pet: ['tag-cat', 'Pet-friendly'], low: ['tag-sun', 'Low light tolerant'], dry: ['tag-sun', 'Drought tolerant'], bright: ['tag-sun', 'Loves bright light'] };
+const SAFE = { human: 'Non-Toxic', pets: 'Non-toxic to cats and dogs', env: 'Environmentally safe' };
+const PLANTS = {
+  peanut: { dist: 'Native to South America, grown worldwide in warm regions', light: 'Thrives in full sun to partial shade', name: 'Peanut', latin: 'Arachis hypogaea', img: 'peanuts.jpg', common: 'Groundnut, goober, monkey nut',
+    commonFull: 'Ground Nut, Goober, Monkey Nut, Pindar, Earthnut', genus: 'Arachis', tax: 'Dicotyledons → Fabales → Fabaceae → Angiosperms → Plantae',
+    about: 'Peanut is a legume crop grown for its edible seeds.', more: 'Native to South America, it flowers above ground and then pushes its developing pods into the soil to ripen — a habit called geocarpy.',
+    tags: ['heat', 'wild', 'pet'], sun: 'Partial Sun', temp: '0 - 41°C', water: 'Medium', fert: 'Easy', level: 'Hard',
+    tip: 'Only suitable for advanced gardeners due to its specific growing requirements and sensitivity to climate.',
+    toxic: false, tox: { human: 'Non-Toxic', pets: 'Non-toxic but not ideal', env: 'Environmentally safe' },
+    details: [['Human Safety', 'Peanuts are not toxic to humans under normal conditions.'], ['Important', 'Reactions can occur from ingestion, skin contact, or inhalation (e.g., peanut dust).<br>Common in children — store safely if anyone in the household is allergic.'], ['For most people', 'Peanuts are safe and edible, unless there is a known allergy.']],
+    alert: 'Peanuts are one of the most common and severe food allergens. Even small amounts can trigger allergic reactions in sensitive individuals:<ul><li>Skin rashes or itching</li><li>Swelling or difficulty breathing</li><li>Anaphylaxis (life-threatening)</li></ul>' },
+  ficus: { dist: 'Native to India and Southeast Asia', light: 'Thrives in bright, indirect light', name: 'Ficus benghalensis', latin: 'Ficus benghalensis', img: 'plant-1.jpg', common: 'Indian banyan, banyan, banyan fig',
+    commonFull: 'Indian Banyan, Banyan, Banyan Fig, Bargad', genus: 'Ficus', tax: 'Dicotyledons → Rosales → Moraceae → Angiosperms → Plantae',
+    about: 'The banyan is a tropical fig native to India, where it grows into a giant with aerial roots.', more: 'Indoors it stays a compact tree with broad, leathery leaves and forgives the occasional missed watering.',
+    tags: ['heat', 'wild'], sun: 'Bright indirect', temp: '15 - 30°C', water: 'Medium', fert: 'Easy', level: 'Medium',
+    tip: 'Keep it in one bright spot — ficuses drop leaves when they are moved around.',
+    toxic: true, tox: { human: 'Mildly toxic', pets: 'Toxic to cats and dogs', env: 'Environmentally safe' },
+    details: [['Why', 'The milky sap contains compounds that irritate skin and the digestive tract.'], ['Symptoms', 'Drooling, vomiting and skin irritation in pets; a skin rash in sensitive people.'], ['What to do', 'Wear gloves when pruning and keep fallen leaves away from pets.']] },
+  monstera: { dist: 'Native to southern Mexico and Central America', light: 'Thrives in bright, indirect light', name: 'Monstera deliciosa', latin: 'Monstera deliciosa', img: 'plant-2.jpg', common: 'Swiss cheese plant, split-leaf philodendron',
+    commonFull: 'Swiss Cheese Plant, Split-leaf Philodendron, Ceriman', genus: 'Monstera', tax: 'Monocots → Alismatales → Araceae → Angiosperms → Plantae',
+    about: 'Monstera is a climbing aroid from the rainforests of Central America, known for its split leaves.', more: 'The holes appear as the plant matures and gets more light; give it a moss pole to climb.',
+    tags: ['bright'], sun: 'Bright indirect', temp: '18 - 30°C', water: 'Medium', fert: 'Easy', level: 'Easy',
+    tip: 'A forgiving first plant: water when the top few centimetres of soil are dry.',
+    toxic: true, tox: { human: 'Mildly toxic', pets: 'Toxic to cats and dogs', env: 'Environmentally safe' },
+    details: [['Why', 'Leaves and stems contain calcium oxalate crystals.'], ['Symptoms', 'Mouth irritation, drooling and difficulty swallowing if chewed.'], ['What to do', 'Place it out of reach of pets and small children.']] },
+  sansevieria: { dist: 'Native to tropical West Africa', light: 'Tolerates low light, grows faster in bright light', name: 'Sansevieria trifasciata', latin: 'Sansevieria trifasciata', img: 'plant-3.jpg', common: 'Snake plant, mother-in-law’s tongue',
+    commonFull: 'Snake Plant, Mother-in-law’s Tongue, Viper’s Bowstring Hemp', genus: 'Sansevieria', tax: 'Monocots → Asparagales → Asparagaceae → Angiosperms → Plantae',
+    about: 'A West African succulent with stiff, upright leaves that stores water and tolerates low light.', more: 'It is one of the hardest houseplants to kill — overwatering is the main risk.',
+    tags: ['low', 'dry'], sun: 'Low to bright', temp: '15 - 30°C', water: 'Low', fert: 'Easy', level: 'Easy',
+    tip: 'Let the soil dry out completely between waterings, especially in winter.',
+    toxic: true, tox: { human: 'Mildly toxic', pets: 'Toxic to cats and dogs', env: 'Environmentally safe' },
+    details: [['Why', 'The leaves contain saponins.'], ['Symptoms', 'Nausea, vomiting and drooling if eaten.'], ['What to do', 'Keep it where pets cannot chew the leaves.']] },
+  chlorophytum: { dist: 'Native to southern and tropical Africa', light: 'Thrives in partial sun to bright shade', name: 'Chlorophytum comosum', latin: 'Chlorophytum comosum', img: 'plant-4.jpg', common: 'Spider plant, airplane plant',
+    commonFull: 'Spider Plant, Airplane Plant, Ribbon Plant', genus: 'Chlorophytum', tax: 'Monocots → Asparagales → Asparagaceae → Angiosperms → Plantae',
+    about: 'A fast-growing South African perennial with arching striped leaves.', more: 'It sends out baby plantlets on long runners — pot them up for new plants.',
+    tags: ['low', 'pet'], sun: 'Partial Sun', temp: '10 - 27°C', water: 'Medium', fert: 'Easy', level: 'Easy',
+    tip: 'Brown leaf tips usually mean dry air or salty tap water — use filtered water.',
+    toxic: false, tox: SAFE,
+    details: [['Human Safety', 'Not toxic to humans.'], ['Pets', 'Safe for cats and dogs, though cats like to chew the leaves.']] },
+  elastica: { dist: 'Native to Northeast India and Southeast Asia', light: 'Thrives in bright, indirect light', name: 'Ficus elastica', latin: 'Ficus elastica', img: 'ficus-tree2.jpg', common: 'Rubber tree, rubber plant',
+    commonFull: 'Rubber Tree, Rubber Plant, Indian Rubber Bush', genus: 'Ficus', tax: 'Dicotyledons → Rosales → Moraceae → Angiosperms → Plantae',
+    about: 'The rubber tree is a Southeast Asian fig with thick, glossy leaves.', more: 'Indoors it grows into a tall tree; wipe the leaves and rotate the pot so it grows straight.',
+    tags: ['heat'], sun: 'Bright indirect', temp: '15 - 30°C', water: 'Medium', fert: 'Easy', level: 'Medium',
+    tip: 'Water when the top half of the soil is dry and keep it away from cold drafts.',
+    toxic: true, tox: { human: 'Mildly toxic', pets: 'Toxic to cats and dogs', env: 'Environmentally safe' },
+    details: [['Why', 'The milky latex sap irritates skin and the digestive tract.'], ['Symptoms', 'Drooling and vomiting in pets; skin irritation in people.'], ['What to do', 'Wear gloves when pruning and wipe up any sap.']] },
+};
+const GARDEN = ['ficus', 'monstera', 'sansevieria', 'chlorophytum', 'elastica'];
+const P = () => PLANTS[state.plant];
+const inGarden = () => state.plant !== 'peanut' || state.added;
+function openPlant(id, fromScan, opts) { state.plant = id; state.fromScan = fromScan; go('details', opts); }
+const LEVEL = { Easy: ['#15803d', 'gr', 'cactus-happy.png', 'Happy cactus mascot'], Medium: ['#d97706', 'am', 'cactus-happy.png', 'Happy cactus mascot'], Hard: ['#c2410c', 'o', 'cactus.png', 'Grumpy cactus mascot'] };
+const TOXROW = (icon, label, val, bad) => `<div class="row-li"><span class="surf ${bad ? 'rd' : 'gr'}">${bad ? '<i class="i" style="--m:url(assets/ic-alert.svg);color:#b91c1c"></i>' : `<img src="assets/${icon}" alt="">`}</span><div><p class="fn c-3">${label}</p><p class="sh s c-2">${val}</p></div></div>`;
+function renderPlant() {
+  const p = P();
+  $$('.plant-name').forEach(e => e.textContent = p.name);
+  const sub = p.name === p.latin ? p.common.split(',')[0].replace(/^./, c => c.toUpperCase()) : p.latin;
+  $$('.plant-latin').forEach(e => { e.textContent = sub; e.style.fontStyle = sub === p.latin && e.closest('#detScroll') ? 'italic' : 'normal'; });
+  $('#detImg').src = 'assets/' + p.img; $('#detImg').alt = p.name;
+  $('#aboutTx').textContent = p.about; $('#aboutMore').textContent = 'Show More';
+  $('#detTags').innerHTML = p.tags.map(t => `<span class="tag"><i class="i" style="--m:url(assets/${TAG[t][0]}.svg)"></i>${TAG[t][1]}</span>`).join('');
+  $('#qfGrid').innerHTML = [['y', 'qf-sun.svg', 'Light', p.sun], ['o', 'qf-temp.svg', p.temp, 'Temperature'], ['bl', 'qf-water.svg', p.water, 'Watering'], ['am', 'qf-fert.svg', p.fert, 'Fertilizer']]
+    .map(([c, i, k, v]) => `<div class="card"><span class="surf ${c}"><img src="assets/${i}" alt=""></span><div><p class="fn c-3">${k}</p><p class="co s c-2">${v}</p></div></div>`).join('');
+  $('#qfTox').innerHTML = `<span class="surf ${p.toxic ? 'rd' : 'gr'}">${p.toxic ? '<i class="i" style="--m:url(assets/ic-alert.svg);color:#b91c1c"></i>' : '<img src="assets/qf-clover.svg" alt="">'}</span><span class="co" style="flex:1">${p.toxic ? 'Toxic to pets if eaten' : 'Non-toxic to pets and humans'}</span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i>`;
+  $('#basicInfo').innerHTML = kvCard([['Toxicity to Pets', p.tox.pets], ['Weed Potential', 'Not considered a weed'], ['Distribution', p.dist], ['Light Requirements', p.light]]);
+  $('#basicFacts').innerHTML = kvCard([['Genus', p.genus], ['Scientific Name', p.latin], ['Common Names', p.commonFull], ['Taxonomy', p.tax]]);
+  const [col, surf, img, alt] = LEVEL[p.level];
+  $('#careProfile').innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div><p class="lt b" style="color:${col}">${p.level}</p><p class="co c-2">Difficulty</p></div>
+        <div class="row-li" style="gap:8px"><span class="surf ${surf}"><img src="assets/cp-bicep.svg" alt=""></span><div><p class="fn c-3">Toughness</p><p class="hd c-2">${p.level}</p></div></div>
+        <div class="row-li" style="gap:8px"><span class="surf ${surf}"><img src="assets/cp-care.svg" alt=""></span><div><p class="fn c-3">Maintenance</p><p class="hd c-2">${p.level}</p></div></div>
+      </div>
+      <img src="assets/${img}" alt="${alt}" style="width:205px;height:205px;margin-right:-8px">
+    </div>
+    <div class="alert gr"><i class="i" style="--m:url(assets/ic-bulb.svg);width:20px;height:24px"></i><p>${p.tip}</p></div>`;
+  $$('.only-peanut').forEach(e => e.hidden = state.plant !== 'peanut');
+  $('#toxBody').innerHTML = `<div class="card pad" style="display:flex;flex-direction:column;gap:12px"><p class="t2">Toxicity</p>
+      ${TOXROW('tox-face.svg', 'For Human', p.tox.human, p.tox.human !== 'Non-Toxic')}
+      ${TOXROW('qf-clover.svg', 'For Pets', p.tox.pets, p.toxic)}
+      ${TOXROW('qf-clover.svg', 'For the Environment', p.tox.env, false)}</div>
+    <div class="card pad" style="display:flex;flex-direction:column;gap:4px"><p class="t2" style="margin-bottom:8px">Details</p>
+      ${p.details.map(([k, v]) => `<div class="kv" style="padding:8px 0"><p class="sh c-3">${k}</p><p class="co">${v}</p></div>`).join('')}
+      ${p.alert ? `<div class="alert" style="margin-top:12px"><img src="assets/ic-bulb-amber.svg" alt="" width="24" height="24"><div>${p.alert}</div></div>` : ''}</div>`;
+  const has = inGarden();
+  $$('#detAction, .care-act').forEach(a => {
+    a.hidden = has && !state.fromScan;
+    $('[data-add]', a).hidden = has;
+    $('[data-garden]', a).hidden = !has;
+  });
+}
+
+/* ---------- details: scroll-linked nav ---------- */
+const detScroll = $('#detScroll');
+function onDetScroll() {
+  const solid = detScroll.scrollTop > 300;
+  $('#detNav').classList.toggle('solid', solid);
+  $('#detNavTitle').style.opacity = solid ? 1 : 0;
+  $('#detSb').style.color = solid ? 'var(--ink)' : '#fff';
+  $('#detNav .circ').style.background = solid ? 'transparent' : '';
+  $('#detNav .circ').style.color = solid ? 'var(--icon)' : '#fff';
+  $('#detNav .sharebtn').style.background = solid ? 'var(--surface)' : '';
+  $('#detNav .sharebtn').style.color = solid ? 'var(--text2)' : '#fff';
+}
+detScroll.addEventListener('scroll', onDetScroll, { passive: true });
+
+$('#aboutMore').onclick = () => { const open = $('#aboutMore').textContent === 'Show More'; $('#aboutTx').textContent = open ? P().about + ' ' + P().more : P().about; $('#aboutMore').textContent = open ? 'Show Less' : 'Show More'; };
+
+const ALERT = '<i class="i" style="--m:url(assets/ic-alert.svg);color:var(--icon2)"></i>';
+const kvCard = rows => rows.map(([k, v]) => `<div class="kv" style="flex-direction:row;align-items:center;gap:12px"><div style="flex:1;display:flex;flex-direction:column;gap:4px"><p class="sh c-3">${k}</p><p class="co">${v}</p></div>${ALERT}</div>`).join('');
+
+const CHAR = {
+  plant: [['Plant Height', '30 cm to 50 cm'], ['Spread', '30 cm to 60 cm'], ['Leaf Color', ['#65a30d', '#15803d']]],
+  flower: [['Flowering Time', 'Late spring'], ['Flower Size', '3.5 cm to 6 cm'], ['Flower Color', ['#65a30d', '#1f8505']]],
+  fruit: [['Harvest Time', 'Early autumn'], ['Fruit Type', 'Legume pod'], ['Fruit Color', ['#d6b98c', '#a16207']]],
+};
+function renderChar(k) {
+  $('#charBody').innerHTML = CHAR[k].map(([a, b]) => `<div class="kvr"><span class="sh c-3">${a}</span>${Array.isArray(b) ? `<span style="display:flex;gap:8px">${b.map(c => `<span class="swatch" style="background:${c}"></span>`).join('')}</span>` : `<span class="co s">${b}</span>`}</div>`).join('');
+}
+renderChar('flower');
+
+const LI = (surf, icon, k, v) => `<div class="row-li"><span class="surf ${surf}"><img src="assets/${icon}" alt=""></span><div><p class="fn c-3">${k}</p><p class="sh s c-2">${v}</p></div></div>`;
+const HOW = [
+  ['watering', 'Watering', [LI('bl', 'ht-waterdrop.svg', 'Watering', 'Every 24 days'), LI('bl', 'ht-seeding.svg', 'Dry', 'Top layer should be dry')]],
+  ['sunlight', 'Sunlight', [LI('y', 'ht-sun.svg', 'Sun', 'Partial Sun'), LI('y', 'ht-sunfarm.svg', 'Sun/Shade', 'Full Sun/Full Shade')]],
+  ['repotting', 'Repotting', [LI('am', 'ht-season.svg', 'Season', 'Spring, Fall'), LI('am', 'ht-cal-amber.svg', 'Regularity', '2-3 years'), LI('am', 'ht-sprout-pot.svg', 'Soil', 'Potting soil mix')]],
+  ['soil', 'Soil', [LI('o', 'ht-soil.svg', 'Soil types', 'Universal soil, indoor plant soil'), LI('o', 'ht-cal-orange.svg', 'Drainage', 'Well-drained')]],
+  ['climatic', 'Climatic', [LI('pu', 'ht-hardiness.svg', 'Hardiness Zone', '4'), LI('pu', 'ht-temp.svg', 'Temperature', '18 - 20°C'), LI('pu', 'ht-cal-purple.svg', 'Humidity', '20 - 60')]],
+];
+const CHEVR = '<i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i>';
+$('#howtos').innerHTML = HOW.map(([id, t, rows]) => `<button class="card pad" data-go="care" data-care="${id}" style="display:flex;flex-direction:column;gap:12px;text-align:left"><span style="display:flex;justify-content:space-between;align-items:center;width:100%"><span class="hd c-2">${t}</span>${CHEVR}</span>${rows.join('')}</button>`).join('');
+
+const FAQ = [
+  ['What soil pH range is optimal for growing healthy Peanuts?', 'For robust Peanut growth, a slightly acidic to neutral soil pH between 6.0 and 7.0 is generally recommended. This range allows for the efficient uptake of essential nutrients. Soil that is too acidic or too alkaline can hinder nutrient availability and negatively impact plant health and pod production. Regular soil testing can help determine the pH level and the need for amendments like lime or sulfur.'],
+  ['Is excessive heat detrimental to Peanut’s pod development?', 'Peanuts like warmth, but day temperatures above 35°C during flowering reduce pollination and pod set. Mulch the soil and water early in the day during heat waves.'],
+  ['Are there any common pests that specifically target Peanut plants?', 'Leafhoppers, thrips, aphids and lesser cornstalk borers are the usual suspects. Check the undersides of leaves weekly and remove affected foliage early.'],
+  ['How often should Peanut plants be watered during the flowering stage?', 'Flowering and pegging are the thirstiest stages: keep the soil evenly moist, roughly 2.5 cm of water per week, and never let the top layer crust over.'],
+  ['Can companion planting benefit Peanut growth and yield?', 'Yes — corn, squash and marigolds pair well. Peanuts fix nitrogen, so they also leave the bed richer for the crop that follows.'],
+  ['What are the signs of nitrogen deficiency in Peanut plants?', 'Older leaves turn pale yellow first while new growth stays green. Poor nodulation is usually the cause; an inoculant at sowing time prevents it.'],
+];
+const CHEVD = '<span class="chev"><svg viewBox="0 0 24 24" fill="none"><path d="M16 10.5 12.14 14.36a.2.2 0 0 1-.28 0L8 10.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></span>';
+const Q_ICON = '<i class="i" style="--m:url(assets/ic-question.svg);color:var(--icon2)"></i>';
+$('#faqShort').innerHTML = FAQ.slice(0, 3).map(([q]) => `<button data-go="faq" style="display:flex;gap:8px;align-items:center;width:100%;padding:8px 0;border-bottom:1px solid var(--border);text-align:left">${Q_ICON}<span class="co" style="flex:1">${q}</span>${CHEVR}</button>`).join('');
+const acc = (t, body, open) => `<div class="acc${open ? ' open' : ''}"><button aria-expanded="${!!open}"><span>${t}</span>${CHEVD}</button><div class="body"><div>${body}</div></div></div>`;
+$('#faqAll').innerHTML = [['How often should I water Peanuts from the bottom?', '<p>Bottom-water only when the top 3 cm of soil is dry — about once a week indoors. Let the pot soak for 15 minutes, then drain.</p>'], ...FAQ.map(([q, a]) => [q, `<p>${a}</p>`])].map(([q, a], i) => acc(q, a, i === 1)).join('').replace(/border-bottom[^;]*;?/, '');
+phone.addEventListener('click', e => {
+  const b = e.target.closest('.acc > button'); if (!b) return;
+  const a = b.parentElement; const o = !a.classList.contains('open');
+  a.classList.toggle('open', o); b.setAttribute('aria-expanded', o);
+});
+
+['Wilting', 'Yellowing', 'Rust', 'Spots', 'RootRot', 'Curl', 'Stunting', 'Mosaic', 'Mildew', 'Deficiency'].forEach(t => $('#diseases').insertAdjacentHTML('beforeend', `<span class="tag r">${t}</span>`));
+['Aphids', 'Mites', 'Thrips', 'Whiteflies', 'Caterpillars', 'Slugs', 'Weevils', 'Borers', 'Leafminers', 'Scales', 'Mealybugs'].forEach(t => $('#pests').insertAdjacentHTML('beforeend', `<span class="tag or">${t}</span>`));
+const STORIES = [
+  ['Uses', 'Peanut has more under its shell than just a snack favorite. As an oil crop, peanut oil is a healthy cooking medium, rich in unsaturated fats, vitamin E, and phytosterols. Its meal feeds livestock, and the shells become mulch and fuel.'],
+  ['Adaptation Strategies', 'Peanuts have a unique survival trait known as geocarpy — an unusual reproductive method where the plant’s fertilized flowers grow underground. Buried pods are shielded from drought, heat and hungry birds.'],
+  ['History & Legends', 'The peanut has strong historical roots tied to African and American agricultural traditions. Introduced to North America through the transatlantic trade, it became a staple of Southern farms long before it met peanut butter.'],
+];
+$('#stories').innerHTML = STORIES.map(([t, x]) => `<button class="card pad" style="text-align:left;display:flex;flex-direction:column;gap:8px"><span class="hd">${t}</span><span class="co c-2 clamp">${x}</span></button>`).join('');
+$('#stories').addEventListener('click', e => { const b = e.target.closest('button'); if (b) b.lastElementChild.classList.toggle('clamp'); });
+
+/* ---------- care guide ---------- */
+const TABS = [['soil', 'Soil'], ['watering', 'Watering'], ['climatic', 'Climatic'], ['fertilizing', 'Fertilizing'], ['repotting', 'Repotting'], ['sunlight', 'Sunlight']];
+let careTab = 'soil';
+const moisture = 'To maintain a healthy moisture balance, allow the soil to partially dry before watering again. This supports steady, healthy growth. Since soil dries from top to bottom, use a thin wooden stick to check the top 1–2 inches (3–5 cm) for moisture.';
+const tips = 'Most houseplants thrive in loose, well-draining soil with moderate moisture. They grow best when the soil stays evenly damp, but not soggy. Adjust watering to the season — use less water during cooler months to avoid root rot.';
+const viewAll = '<button class="link bd" data-toast="Full article opens here" style="display:block;margin:4px auto 0">View All</button>';
+const card = (inner, extra = '') => `<div class="card pad" style="display:flex;flex-direction:column;gap:12px;${extra}">${inner}</div>`;
+const head = (t, rows) => card(`<p class="t2">${t}</p>${rows.join('')}`);
+const ph = [['#b91c1c'], ['#ef4444'], ['#ea580c'], ['#f59e0b'], ['#facc15'], ['#84cc16', 1], ['#16a34a', 1], ['#15803d', 1], ['#0d9488'], ['#3b82f6'], ['#4338ca'], ['#312e81'], ['#7c3aed'], ['#581c87']];
+const hz = [['#cbd5e1'], ['#94a3b8'], ['#e879f9'], ['#c084fc', 1], ['#818cf8'], ['#6ee7b7'], ['#bef264'], ['#fde047'], ['#fcd34d'], ['#d97706'], ['#c2410c'], ['#dc2626'], ['#991b1b']];
+const scale = arr => `<div class="scale">${arr.map(([c, on], i) => `<span class="${on ? 'on' : ''}" style="background:${c}">${i + 1}</span>`).join('')}</div>`;
+const pos = (v, a, b) => ((v - a) / (b - a) * 100).toFixed(2) + '%';
+const numbered = items => `<ol class="steps">${items.map(([t, d]) => `<li><span>${t ? `<b>${t}</b>` : ''}${d}</span></li>`).join('')}</ol>`;
+const bulb = t => `<div class="alert"><img src="assets/ic-bulb-amber.svg" alt="" width="24" height="24"><p>${t}</p></div>`;
+const accList = (items, openIdx) => `<div>${items.map((t, i) => acc(t[0], t[1] || '<ol><li>Slowly pour water directly onto the soil from above.</li><li>Stop watering when you see water begin to drain from the bottom of the pot.</li></ol>', i === openIdx)).join('')}</div>`;
+
+const CARE = {
+  soil: () => [
+    head('Soil', [LI('o', 'ht-soil.svg', 'Soil types', 'Universal soil, indoor plant soil'), LI('o', 'ht-cal-orange.svg', 'Drainage', 'Well-drained')]),
+    card(`<div style="display:flex;justify-content:space-between;height:40px;align-items:center" class="bd"><span class="c-2">pH</span><span class="s">Neutral</span></div>${scale(ph)}`),
+    card(`<p class="t2">Solutions</p><p class="bd c-2">If your plant’s nutrient deficiency stems from a simple lack of nutrients in your soil, there are several easy ways to remedy the situation.</p>
+      ${numbered([['Use a water-soluble fertilizer.', 'Fertilizers include most or all of the macro and micro-nutrients your plants need to thrive. Adding some to your soil makes those nutrients available and can combat deficiencies.'], ['Apply compost.', 'Though not as finely tuned as artificial fertilizer, compost can nevertheless be rich in important nutrients.'], ['Apply nutrients via foliar application.', 'You can also feed nutrient blends directly to your plant’s leaves, stems, or bark. Foliar nutrients are often taken up quicker than those put in the soil.']])}
+      <img src="assets/ficus-tree2.jpg" alt="Potted tree in bright room" style="width:100%;height:380px;object-fit:cover;border-radius:12px">
+      <p class="t2">Prevention</p><p class="bd c-2">Just as there are several easy ways to combat leaf yellowing caused by nutrient deficiency, there are several easy ways to prevent the ailment in the first place.</p>
+      ${numbered([['Regular fertilizing.', 'Regular additions of fertilizer to your soil are one of the simplest and most effective ways to prevent deficiencies.'], ['Proper watering.', 'Both over and under watering can adversely impact plants’ roots, which in turn makes it harder for them to take up nutrients.'], ['Testing your soil pH.', 'A soil’s acidity or alkalinity affects which nutrients plants can take up. Knowing your pH, you can grow plants that thrive at that level, or adjust it with lime or wood ash.']])}
+      <img src="assets/ficus-tree.jpg" alt="Young ficus beside a stool" style="width:100%;height:380px;object-fit:cover;border-radius:12px">`),
+  ],
+  watering: () => [
+    head('Watering', [LI('bl', 'ht-waterdrop.svg', 'Watering', 'Every 24 days'), LI('bl', 'ht-seeding.svg', 'Dry', 'Top layer should be dry')]),
+    card(`<p class="t2">Today's watering check</p><p class="bd c-2">${moisture}</p>${viewAll}`),
+    card(`<p class="t2">Today's techniques</p><p class="bd c-2">${moisture}</p>${accList([['Watering from the bottom'], ['Watering from the soil'], ['Soaking the water'], ['Misting the leaves', '<ol><li>Mist in the morning so leaves dry before evening.</li><li>Use room-temperature water.</li></ol>']], 1)}`),
+    card(`<p class="t2">Signs of watering issues</p><p class="hd c-2">Overwatering</p><p class="bd c-2">${moisture}</p>${viewAll}<p class="hd c-2">Underwatering</p><p class="bd c-2">${moisture}</p>${viewAll}`),
+  ],
+  climatic: () => [
+    head('Climatic', [LI('pu', 'ht-hardiness.svg', 'Hardiness Zone', '4'), LI('pu', 'ht-temp.svg', 'Temperature', '18 - 20°C'), LI('pu', 'ht-cal-purple.svg', 'Humidity', '20 - 60')]),
+    card(`<div style="display:flex;justify-content:space-between" class="bd"><span class="c-2">Hardiness Zone</span><span class="s">4</span></div>${scale(hz)}
+      <div class="divider" style="margin-top:4px"></div>
+      <p class="bd c-2" style="margin-top:4px">Temperature</p>
+      <div class="axis">${[10, 18, 25, 35].map(v => `<span style="left:${pos(v, -10, 40)}">${v}</span>`).join('')}</div>
+      <div class="track"><i style="left:${pos(10, -10, 40)};right:${(100 - parseFloat(pos(35, -10, 40))).toFixed(2)}%;background:#86efac;opacity:.7"></i><i style="left:${pos(18, -10, 40)};right:${(100 - parseFloat(pos(25, -10, 40))).toFixed(2)}%;background:#15803d"></i></div>
+      <div class="axis" style="margin-top:-8px"><span class="e l" style="left:0">-10°C</span><span class="e rr" style="left:100%">40°C</span></div>
+      <div style="text-align:center;margin-top:-4px"><span class="tip" style="margin-left:${(parseFloat(pos(21.5, -10, 40)) - 50) * 2}%">18°C to 25°C</span></div>
+      <div class="legend"><span><i style="background:#15803d"></i>Ideal</span><span><i style="background:#86efac"></i>Tolerable</span><span><i style="background:var(--border)"></i>Unsuitable</span></div>
+      <div class="divider"></div>
+      <div style="display:flex;justify-content:space-between;margin-top:8px" class="bd"><span class="c-2">Humidity</span><span class="s">40-60%</span></div>
+      <div class="track"><i style="left:40%;right:40%;background:#15803d"></i></div>
+      <div class="axis"><span class="e l" style="left:0">0%</span><span style="left:40%">40</span><span style="left:60%">60</span><span class="e rr" style="left:100%">100%</span></div>
+      ${bulb('Just like people, each plant has its own preferences. Learn about your plants’ temperature needs and create a comforting environment for them to flourish.')}`),
+    card(`<p class="t2">Key tips for temperature</p><p class="bd c-2">${tips}</p>${viewAll}`),
+    card(`<p class="t2">Signs of temperature issues</p><p class="hd c-2">Cold stress</p><p class="bd c-2">${moisture}</p>${viewAll}<p class="hd c-2">Solutions</p><p class="bd c-2">${moisture}</p>${viewAll}`),
+  ],
+  fertilizing: () => [
+    card(`<p class="t2">Fertilizing</p><div style="overflow-x:auto"><table class="ft"><thead><tr><th>Month</th><th>Liquid fertilizer</th><th>Slow-release fertilizer</th></tr></thead><tbody>
+      ${[['July', 'Once a month', 'Once a year'], ['August', 'Once a month', 'Once a year'], ['September', 'Once a month', 'Once a year'], ['October', 'Once a month', 'Once a year'], ['November', 'Not required', 'Not required']].map(r => `<tr><td>${r[0]}</td><td class="mu">${r[1]}</td><td>${r[2]}</td></tr>`).join('')}</tbody></table></div>${viewAll}`),
+    card(`<p class="t2">Suitable fertilizer</p><p class="bd c-2">Use a universal fertilizer — All Purpose Plant Food, a “General Purpose Fertilizer”. It suits most plants and is convenient to use.</p><span class="tag" style="background:var(--surface2);align-self:flex-start;padding-left:6px"><img src="assets/check-plus.svg" alt="" width="20" height="20">All Purpose Plant Food</span>`),
+    card(`<p class="t2">Key tips for fertilizing</p><p class="bd c-2">${tips}</p>${bulb('Enrich your garden with nutrient-filled compost, creating a supportive environment for your plants to thrive while also benefiting the soil and its microorganisms.')}`),
+    card(`<p class="t2">Selection and Approach</p><p class="bd c-2">Proper fertilization methods can prevent plant damage and promote healthy growth.</p>${accList([['Liquid fertilizer', '<ol><li>Dilute to half the strength on the label.</li><li>Apply to moist soil, never to dry roots.</li></ol>'], ['Solid fertilizer', '<ol><li>Scatter granules evenly around the stem, not touching it.</li><li>Water in thoroughly.</li></ol>'], ['Slow-release pellets', '<ol><li>Press pellets 2 cm into the soil in spring.</li><li>One application lasts the season.</li></ol>']], -1)}${bulb('Follow the instructions on the packaging to control the amount of fertilizer, avoiding over-fertilization that can harm plants.')}`),
+    card(`<p class="t2">Signs of fertilizing issues</p><p class="hd c-2">Over-fertilizing</p><p class="bd c-2">${moisture}</p>${viewAll}<p class="hd c-2">Under-fertilizing</p><p class="bd c-2">${moisture}</p>${viewAll}`),
+  ],
+  repotting: () => [
+    head('Repotting', [LI('am', 'ht-season.svg', 'Season', 'Spring, Fall'), LI('am', 'ht-cal-amber.svg', 'Regularity', '2-3 years'), LI('am', 'ht-sprout-pot.svg', 'Soil', 'Potting soil mix')]),
+    card(`<p class="t2">Key tips for repotting</p><p class="bd c-2">When moving your plant to a new pot, choose one that’s 1–2 inches wider and has good drainage. Use a high-quality, well-draining potting mix. The best time for repotting is spring or fall. Make sure the root ball sits slightly below the rim, water thoroughly afterward, and keep the plant warm in indirect light.</p>`),
+    card(`<p class="t2">Pre-repotting check</p><p class="bd c-2">To know if your plant is ready for a new pot, check for these signs:</p>${numbered([['Roots', 'If roots are growing out of the pot’s drainage holes, it has outgrown its container.'], ['Stability', 'A top-heavy or wobbly plant often needs a bigger pot.'], ['Growth', 'If growth is slowing despite proper care, it might be time to repot.'], ['Root Mass', 'When you remove the plant and see more roots than soil, it’s clearly time for a larger pot.']])}<p class="bd c-2">All of these point to your plant needing more space to grow.</p>`),
+    card(`<p class="t2">Pre-repotting preparation</p><p class="bd c-2">Before you begin, take care of these prep steps:</p>${numbered([['Pot', 'Choose a slightly larger pot than the one you’re replacing, and make sure it drains well.'], ['Tools', 'Have clean, sharp tools ready in case root trimming is needed.']])}${bulb('Use gardening gloves to protect your hands during the process.')}`),
+    card(`<p class="t2">Signs of repotting issues</p><p class="hd c-2">Solutions</p><p class="bd c-2">Drooping or yellowing after a move is usually temporary transplant shock. Place the plant in bright, indirect light and water it according to its needs — with proper care it will bounce back.</p>`),
+  ],
+  sunlight: () => [
+    head('Sunlight', [LI('y', 'ht-sun.svg', 'Sun', 'Partial Sun'), LI('y', 'ht-sunfarm.svg', 'Sun/Shade', 'Full Sun/Full Shade')]),
+    card(`<p class="t2">Key Sunlight Tips</p><p class="bd c-2">This plant thrives in balanced lighting, ideally a mix of light and shade. It handles both steady sun and light shade — but extremes can be harmful.</p><img src="assets/plant-2.jpg" alt="Plant in a bright window" style="width:100%;height:380px;object-fit:cover;border-radius:12px"><p class="hd c-2">Artificial Lighting</p><p class="bd c-2">If your space doesn’t get enough natural light — especially in winter or darker corners — grow lights are a reliable alternative. They mimic the sun and keep indoor plants vibrant and strong.</p>`),
+  ],
+};
+$('#carePills').innerHTML = TABS.map(([id, t]) => `<button role="tab" data-tab="${id}" aria-selected="false">${t}</button>`).join('');
+$('#carePills').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; careTab = b.dataset.tab; renderCare(); });
+function renderCare() {
+  $$('#carePills button').forEach(b => { const on = b.dataset.tab === careTab; b.setAttribute('aria-selected', on); if (on) b.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); });
+  $('#careBody').innerHTML = CARE[careTab]().join('');
+  $('#careScroll').scrollTop = 0;
+}
+
+/* ---------- garden ---------- */
+function renderGarden(fresh) {
+  const ids = (state.added ? ['peanut'] : []).concat(GARDEN);
+  $('#gardenGrid').innerHTML = ids.map(id => { const p = PLANTS[id]; return `<button class="pcard" data-plant="${id}" style="position:relative"><img src="assets/${p.img}" alt="">${fresh && id === 'peanut' ? '<span class="new">New</span>' : ''}<span class="nm">${p.name}</span><span class="cm">${p.common}</span></button>`; }).join('');
+  $('#scanList').innerHTML = ids.map(id => { const p = PLANTS[id]; return `<button data-plant="${id}"><img src="assets/${p.img}" alt=""><span class="tx"><span class="hd" style="display:block;letter-spacing:-.43px">${p.name}</span><span class="fn c-3" style="display:block">${p.common}</span></span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i></button>`; }).join('');
+}
+$('#s-garden').addEventListener('click', e => { const b = e.target.closest('[data-plant]'); if (b) openPlant(b.dataset.plant, false); });
+
+/* ---------- settings / legal ---------- */
+$('#rateBtn').onclick = () => {
+  iosAlert('Enjoying Pot?', 'Tap a star to rate it on the App Store.<br><span id="stars" style="display:flex;justify-content:center;gap:6px;margin-top:10px;font-size:26px;color:#15803d;cursor:pointer">☆☆☆☆☆</span>', [{ label: 'Not Now' }, { label: 'Submit', bold: true, do: () => toast('Thanks for rating Pot!') }]);
+  const s = $('#stars'); s.onclick = e => { const r = s.getBoundingClientRect(); const n = Math.min(5, Math.ceil((e.clientX - r.left) / r.width * 5)); s.textContent = '★'.repeat(n) + '☆'.repeat(5 - n); };
+};
+$('#restart').onclick = () => { Object.assign(state, { authed: false, camAllowed: false, added: false, tipsSeen: false, plant: 'peanut', fromScan: false }); renderGarden(); reset('loading'); };
+const LEGAL = {
+  privacy: ['Privacy Policy', [['What we collect', 'The photos you scan, the plants you save, and your account email. Photos are used only to identify plants.'], ['How we use it', 'To identify plants, keep your garden in sync across devices, and send care reminders you turn on.'], ['Your choices', 'You can delete scans and your account at any time from Settings › My Account.']]],
+  terms: ['Terms of Use', [['Using Pot', 'Pot gives plant identification and care guidance for personal, non-commercial use.'], ['Accuracy', 'Identifications are suggestions. Check toxicity information with a professional before handling unknown plants.'], ['Subscriptions', 'Premium features renew automatically unless cancelled at least 24 hours before the period ends.']]],
+};
+function legal(k) {
+  const [t, secs] = LEGAL[k];
+  $('#legalTitle').textContent = t;
+  $('#legalBody').innerHTML = `<p class="fn c-3">Prototype placeholder — final copy comes from the legal team.</p>` + secs.map(([h, p]) => `<p class="hd">${h}</p><p class="bd c-2">${p}</p>`).join('');
+}
+
+/* ---------- jump list ---------- */
+const JUMP = [['loading', '1'], ['signin', '2.1'], ['email', '2.4'], ['forgot', '2.5'], ['checkmail', '2.6'], ['garden-empty', '3.7'], ['garden', '3.8'], ['tips', '5.1'], ['camera', '5.2'], ['recog', '5.5'], ['details', '8'], ['care', '8.1'], ['faq', '8.8'], ['toxicity', '8.9'], ['settings', '12.1']];
+$('#jump').innerHTML = JUMP.map(([id, n]) => `<button data-id="${id}"><b>${n}</b>${screenEl(id).dataset.title}</button>`).join('');
+$('#jump').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const id = b.dataset.id;
+  $('.alert-ios', phone)?.remove();
+  if (id === 'garden') { state.added = true; renderGarden(); }
+  if (id === 'email') emailMode('signin');
+  if (id === 'tips') state.tipsMode = 'view';
+  if (id === 'details' || id === 'care' || id === 'faq' || id === 'toxicity') { state.plant = 'peanut'; state.fromScan = !state.added; }
+  if (['camera', 'tips', 'recog'].includes(id)) { state.camAllowed = true; state.tipsSeen = true; }
+  const base = ['loading', 'signin', 'garden', 'garden-empty'].includes(id) ? [] : [id === 'forgot' || id === 'email' || id === 'checkmail' ? 'signin' : gardenId()];
+  prevId = cur(); if (enter[id]) enter[id]();
+  state.stack = [...base, id]; show(id, 'fade');
+});
+
+/* ---------- fit phone to window ---------- */
+function fit() {
+  const f = $('#frame');
+  if (innerWidth <= 560) {
+    const s = f.clientWidth / 440;
+    f.style.width = f.style.height = '';
+    phone.style.height = f.clientHeight / s + 'px';
+    phone.style.transform = `scale(${s})`;
+    return;
+  }
+  phone.style.height = '';
+  const s = Math.min(1, (innerHeight - 64) / 956, (innerWidth - 340) / 440);
+  phone.style.transform = `scale(${s})`;
+  f.style.width = 440 * s + 'px'; f.style.height = 956 * s + 'px';
+}
+addEventListener('resize', () => { fit(); layoutSegs(); });
+
+/* ---------- boot ---------- */
+renderGarden();
+applyTheme(); fit();
+enter.loading();
+show('loading');
+})();
+</script>
