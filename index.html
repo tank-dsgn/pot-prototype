@@ -503,7 +503,8 @@ table.ft td:first-child{color:var(--text2)}
 
     <!-- 5.2 Camera -->
     <section class="screen" id="s-camera" data-title="Camera" hidden>
-      <div style="position:absolute;inset:0 0 174px;overflow:hidden"><img src="assets/ficus-variegated.jpg" alt="Camera viewfinder" style="position:absolute;left:-265px;top:-24px;width:969px;height:auto;max-width:none;animation:drift 9s ease-in-out infinite alternate"></div>
+      <div style="position:absolute;inset:0 0 174px;overflow:hidden;background:#000"><img id="camDemo" src="assets/ficus-variegated.jpg" alt="Camera viewfinder" style="position:absolute;left:-265px;top:-24px;width:969px;height:auto;max-width:none;animation:drift 9s ease-in-out infinite alternate"><video id="camVideo" playsinline muted autoplay hidden style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover"></video></div>
+      <input type="file" id="pickPhoto" accept="image/*" hidden>
       <style>@keyframes drift{to{transform:translate(-14px,10px) scale(1.02)}}@media (prefers-reduced-motion:reduce){#s-camera img{animation:none!important}}</style>
       <div class="sb inv"></div>
       <div class="cam-top">
@@ -513,7 +514,7 @@ table.ft td:first-child{color:var(--text2)}
       <img src="assets/cam-frame.svg" alt="" style="position:absolute;left:23px;top:200px;width:397px;height:400px;z-index:2">
       <p style="position:absolute;left:56px;width:330px;top:659px;box-sizing:border-box;padding:16px;border-radius:8px;background:rgba(0,0,0,.5);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px);color:#fff;text-align:center;z-index:2" class="bd">Please make sure your plant is the only object in the frame 🪴</p>
       <div style="position:absolute;left:0;right:0;bottom:0;height:174px;background:#052e16;z-index:2">
-        <button class="sq" style="position:absolute;left:67px;top:56px" data-toast="Photo library isn’t part of this prototype" aria-label="Choose from library"><i class="i" style="--m:url(assets/ic-picture.svg)"></i></button>
+        <button class="sq" id="galleryBtn" style="position:absolute;left:67px;top:56px" aria-label="Choose from library"><i class="i" style="--m:url(assets/ic-picture.svg)"></i></button>
         <button class="shutter" id="shutter" style="position:absolute;left:183px;bottom:51px" aria-label="Take photo"></button>
         <button class="sq" id="flashBtn" style="position:absolute;left:309px;top:56px" aria-label="Flash" aria-pressed="false"><i class="i" style="--m:url(assets/ic-flash.svg);width:21px;height:24px"></i></button>
       </div>
@@ -525,13 +526,15 @@ table.ft td:first-child{color:var(--text2)}
       <div class="sb inv"></div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:32px;padding:64px 51px 0">
         <div style="display:flex;flex-direction:column;gap:24px;align-items:center;width:100%">
-          <div style="width:100%;height:430px;border-radius:24px;overflow:hidden"><img src="assets/ficus-recog.jpg" alt="Captured photo" style="width:127%;margin-left:-12%;margin-top:-3%;max-width:none"></div>
+          <div style="width:100%;height:430px;border-radius:24px;overflow:hidden;background:#000"><img id="recogImg" src="assets/ficus-recog.jpg" alt="Captured photo" style="width:100%;height:100%;object-fit:cover"></div>
           <p class="lt b" id="recogTitle">Recognizing</p>
         </div>
         <div style="display:flex;flex-direction:column;gap:24px">
           <div class="step on"><img src="assets/ic-tick.svg" alt="" style="width:24px;height:24px;padding:0 3px;box-sizing:border-box">Uploaded</div>
           <div class="step on" id="stepScan"><div class="spin" style="width:30px;height:30px;color:#eab308" id="scanSpin"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span id="scanLbl">Scanning</span></div>
         </div>
+        <p class="bd" id="recogNote" hidden style="text-align:center;opacity:.85;margin-top:-8px"></p>
+        <button class="btn pri r16" id="recogRetry" hidden style="width:338px">Try Again</button>
       </div>
       <div class="hi w"></div>
     </section>
@@ -756,7 +759,8 @@ $$('[data-seg]').forEach(seg => {
 const layoutSegs = () => $$('[data-seg]').forEach(seg => { const i = $$('button', seg).findIndex(b => b.getAttribute('aria-selected') === 'true'); setSeg(seg, Math.max(0, i)); });
 
 /* ---------- navigation ---------- */
-const state = { stack: ['loading'], authed: false, camAsked: false, camAllowed: false, added: false, tipsSeen: false, plant: 'peanut', fromScan: false };
+const state = { stack: ['loading'], authed: false, camAsked: false, camAllowed: false, tipsSeen: false, plant: 'peanut', fromScan: false, garden: [], scans: [] };
+const added = () => state.garden.length > 0 || state.scans.length > 0;
 const cur = () => state.stack[state.stack.length - 1];
 const modal = new Set(['tips', 'camera', 'recog']);
 const alias = { privacy: 'legal', terms: 'legal' };
@@ -765,7 +769,8 @@ let settleT, anims = [];
 function show(id, dir) {
   const next = screenEl(id);
   // leaving the scanner cancels its auto-advance
-  if (id !== 'recog') recogT.forEach(clearTimeout);
+  if (id !== 'recog') { recogT.forEach(clearTimeout); recogRun++; }
+  if (id !== 'camera') stopCamera();
   // finish any transition still running, so exactly one screen is on stage
   clearTimeout(settleT);
   anims.forEach(a => a.cancel()); anims = [];
@@ -809,7 +814,7 @@ function back() {
   if (enter[id]) enter[id](true);
   show(id, 'back');
 }
-const gardenId = () => state.added ? 'garden' : 'garden-empty';
+const gardenId = () => added() ? 'garden' : 'garden-empty';
 
 phone.addEventListener('click', e => {
   const t = e.target.closest('button');
@@ -872,8 +877,9 @@ $('#fg-email').addEventListener('input', () => { const ok = validEmail($('#fg-em
 $('#forgotForm').onsubmit = e => { e.preventDefault(); if ($('#forgotSubmit').disabled) return; $('#sentTo').textContent = $('#fg-email').value; go('checkmail'); };
 
 /* ---------- scan flow ---------- */
+const onPhone = () => innerWidth <= 560;
 function startScan() {
-  if (state.camAllowed) return openCamera();
+  if (state.camAllowed || onPhone()) { state.camAllowed = true; return openCamera(); } // on a phone the real iOS prompt replaces the mock one
   iosAlert('“Pot” Would Like to Access the Camera', 'Pot uses the camera to photograph and identify your plants.', [
     { label: 'Don’t Allow', do: () => iosAlert('Camera access is off', 'To identify plants, allow camera access in Settings › Pot.', [{ label: 'Not Now' }, { label: 'Allow', bold: true, do: allowCam }]) },
     { label: 'Allow', bold: true, do: allowCam }
@@ -886,40 +892,148 @@ function openCamera() {
 }
 $('[data-tips-continue]').onclick = () => state.tipsMode === 'first' ? go('camera', { replace: true }) : back();
 $('[data-close-tips]').onclick = () => back();
-$('#flashBtn').onclick = () => { const on = $('#flashBtn').getAttribute('aria-pressed') !== 'true'; $('#flashBtn').setAttribute('aria-pressed', on); $('#flashBtn').style.background = on ? '#eab308' : ''; toast(on ? 'Flash on' : 'Flash off'); };
-$('#shutter').onclick = () => {
+
+/* live camera: phones only, so a portfolio visitor on a laptop never sees their webcam */
+let camStream = null;
+async function startCamera() {
+  if (camStream || !onPhone() || !navigator.mediaDevices?.getUserMedia) return;
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1920 }, height: { ideal: 1920 } }, audio: false });
+    if (cur() !== 'camera') return stopCamera();
+    const v = $('#camVideo'); v.srcObject = camStream; await v.play().catch(() => {});
+    v.hidden = false; $('#camDemo').hidden = true;
+  } catch {
+    camStream = null;
+    toast('Camera unavailable — pick a photo instead');
+  }
+}
+function stopCamera() {
+  camStream?.getTracks().forEach(t => t.stop()); camStream = null;
+  const v = $('#camVideo'); v.srcObject = null; v.hidden = true; $('#camDemo').hidden = false;
+  setFlash(false);
+}
+function setFlash(on) {
+  $('#flashBtn').setAttribute('aria-pressed', on); $('#flashBtn').style.background = on ? '#eab308' : '';
+  const track = camStream?.getVideoTracks()[0];
+  if (track?.getCapabilities?.().torch) track.applyConstraints({ advanced: [{ torch: on }] }).catch(() => {});
+}
+$('#flashBtn').onclick = () => { const on = $('#flashBtn').getAttribute('aria-pressed') !== 'true'; setFlash(on); toast(on ? 'Flash on' : 'Flash off'); };
+
+/* photos → JPEG data URLs, downscaled for upload (1280px) and for storage (900px) */
+function drawJpeg(src, w, h, max, q) {
+  const k = Math.min(1, max / Math.max(w, h));
+  const c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+  c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  return c.toDataURL('image/jpeg', q);
+}
+const loadImg = url => new Promise((ok, fail) => { const i = new Image(); i.onload = () => ok(i); i.onerror = fail; i.src = url; });
+function photoFrom(src, w, h) { return { upload: drawJpeg(src, w, h, 1280, .85), keep: drawJpeg(src, w, h, 900, .78) }; }
+
+$('#shutter').onclick = async () => {
   const f = document.createElement('div'); f.className = 'flash'; $('#s-camera').append(f); setTimeout(() => f.remove(), 400);
-  setTimeout(() => go('recog', { replace: true, dir: 'fade' }), 250);
+  const v = $('#camVideo');
+  let photo;
+  if (camStream && v.videoWidth) photo = photoFrom(v, v.videoWidth, v.videoHeight);
+  else { const i = await loadImg('assets/ficus-recog.jpg'); photo = photoFrom(i, i.naturalWidth, i.naturalHeight); }
+  setTimeout(() => recognise(photo), 250);
 };
-let recogT = [];
+$('#galleryBtn').onclick = () => { $('#pickPhoto').value = ''; $('#pickPhoto').click(); };
+$('#pickPhoto').onchange = async e => {
+  const file = e.target.files?.[0]; if (!file) return;
+  const url = URL.createObjectURL(file);
+  try { const i = await loadImg(url); recognise(photoFrom(i, i.naturalWidth, i.naturalHeight)); }
+  catch { toast('This photo can’t be opened. Try a JPEG or PNG.'); }
+  finally { URL.revokeObjectURL(url); }
+};
+
+/* recognition: real call to /api/identify; the jump list still runs the scripted demo */
+let recogT = [], recogRun = 0;
+function recognise(photo) { state.pending = photo; go('recog', { replace: true, dir: 'fade' }); }
+function recogUI(stage, title, note) {
+  $('#recogTitle').textContent = title;
+  $('#scanSpin').hidden = stage !== 'scanning';
+  $('#stepScan .done')?.remove();
+  if (stage === 'done') $('#stepScan').insertAdjacentHTML('afterbegin', '<img class="done" src="assets/ic-tick.svg" alt="" style="width:24px;height:24px;padding:0 3px;box-sizing:border-box">');
+  if (stage === 'failed') $('#stepScan').insertAdjacentHTML('afterbegin', '<img class="done" src="assets/badge-x.svg" alt="" style="width:24px;height:24px">');
+  $('#scanLbl').textContent = stage === 'scanning' ? 'Scanning' : stage === 'done' ? 'Identified' : 'Not identified';
+  $('#recogNote').hidden = !note; $('#recogNote').textContent = note || '';
+  $('#recogRetry').hidden = stage !== 'failed';
+}
+$('#recogRetry').onclick = () => go('camera', { replace: true, dir: 'fade' });
+function demoRecognition() {
+  $('#recogImg').src = 'assets/ficus-recog.jpg';
+  recogT = [
+    setTimeout(() => recogUI('done', 'It’s a Peanut!'), 1900),
+    setTimeout(() => { if (cur() === 'recog') openPlant('peanut', true, { replace: true, dir: 'fade' }); }, 2900)
+  ];
+}
+async function realRecognition(photo) {
+  const run = ++recogRun;
+  $('#recogImg').src = photo.keep;
+  recogT = [setTimeout(() => { if (run === recogRun) $('#scanLbl').textContent = 'Checking the details'; }, 7000)];
+  let res, data;
+  try {
+    res = await fetch('/api/identify', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ image: photo.upload }) });
+    // no API behind this copy of the page (e.g. the claude.ai artifact) → fall back to the demo
+    data = await res.json().catch(() => ({ error: 'not_configured' }));
+  } catch { data = { error: 'network', message: 'No connection. Check the internet and try again.' }; }
+  if (run !== recogRun || cur() !== 'recog') return;
+  recogT.forEach(clearTimeout);
+  if (data?.error === 'not_configured') {
+    recogUI('done', 'It’s a Peanut!', 'Demo result — plant recognition isn’t connected yet.');
+    recogT = [setTimeout(() => cur() === 'recog' && openPlant('peanut', true, { replace: true, dir: 'fade' }), 2200)];
+    return;
+  }
+  if (!res?.ok || data?.error) return recogUI('failed', 'Couldn’t recognise', data?.message || 'Something went wrong. Try again.');
+  if (!data.is_plant) return recogUI('failed', 'No plant found', 'Make sure a plant fills the frame and try again.');
+  const id = saveScan(data, photo.keep);
+  recogUI('done', `It’s a ${PLANTS[id].name}!`, data.confidence === 'low' ? 'Best guess — the photo was hard to read.' : '');
+  recogT = [setTimeout(() => cur() === 'recog' && openPlant(id, true, { replace: true, dir: 'fade' }), data.confidence === 'low' ? 1800 : 1100)];
+}
 const enter = {
   recog() {
-    recogT.forEach(clearTimeout);
-    $('#recogTitle').textContent = 'Recognizing';
-    $('#scanSpin').hidden = false; $('#scanLbl').textContent = 'Scanning';
-    $('#stepScan .done')?.remove();
-    recogT = [
-      setTimeout(() => {
-        $('#scanSpin').hidden = true;
-        $('#stepScan').insertAdjacentHTML('afterbegin', '<img class="done" src="assets/ic-tick.svg" alt="" style="width:24px;height:24px;padding:0 3px;box-sizing:border-box">');
-        $('#scanLbl').textContent = 'Identified';
-        $('#recogTitle').textContent = 'It’s a Peanut!';
-      }, 1900),
-      setTimeout(() => { if (cur() === 'recog') { openPlant('peanut', true, { replace: true, dir: 'fade' }); } }, 2900)
-    ];
+    recogT.forEach(clearTimeout); recogRun++;
+    recogUI('scanning', 'Recognizing');
+    const photo = state.pending; state.pending = null;
+    if (photo) realRecognition(photo); else demoRecognition();
   },
+  camera() { startCamera(); },
   details() { renderPlant(); },
   care() { renderPlant(); renderCare(); },
   toxicity() { renderPlant(); },
   loading() { setTimeout(() => cur() === 'loading' && reset('signin'), 1800); },
 };
 function addPlant() {
-  state.added = true; state.plant = 'peanut'; state.fromScan = false;
-  renderGarden(true);
+  const id = state.plant;
+  if (!state.garden.includes(id)) state.garden.unshift(id);
+  state.fromScan = false; persist();
+  renderGarden(id);
   reset('garden', 'fade');
-  setTimeout(() => toast('✓ Peanut added to My Garden'), 300);
+  setTimeout(() => toast(`✓ ${PLANTS[id].name} added to My Garden`), 300);
 }
 
+/* scanned plants live in PLANTS under scan-* ids and are remembered on this device */
+function saveScan(d, img) {
+  const id = 'scan-' + Date.now();
+  PLANTS[id] = { ...d, img, scanned: true, details: (d.details || []).map(x => [x.title, x.text]) };
+  state.scans.unshift(id);
+  const drop = state.scans.splice(12).filter(x => !state.garden.includes(x));
+  drop.forEach(x => delete PLANTS[x]);
+  persist(); renderGarden();
+  return id;
+}
+function persist() {
+  const keep = [...new Set([...state.scans, ...state.garden])].filter(id => PLANTS[id]?.scanned);
+  store.set('plants', JSON.stringify(Object.fromEntries(keep.map(id => [id, PLANTS[id]]))));
+  store.set('scans', JSON.stringify(state.scans)); store.set('garden', JSON.stringify(state.garden));
+}
+function restore() {
+  try {
+    Object.assign(PLANTS, JSON.parse(store.get('plants') || '{}'));
+    state.scans = JSON.parse(store.get('scans') || '[]').filter(id => PLANTS[id]);
+    state.garden = JSON.parse(store.get('garden') || '[]').filter(id => PLANTS[id]);
+  } catch { state.scans = []; state.garden = []; }
+}
 
 /* ---------- plants ---------- */
 const TAG = { heat: ['tag-sun', 'Heat tolerant'], wild: ['tag-elephant', 'Wildlife attractor'], pet: ['tag-cat', 'Pet-friendly'], low: ['tag-sun', 'Low light tolerant'], dry: ['tag-sun', 'Drought tolerant'], bright: ['tag-sun', 'Loves bright light'] };
@@ -971,8 +1085,10 @@ const PLANTS = {
 };
 const GARDEN = ['ficus', 'monstera', 'sansevieria', 'chlorophytum', 'elastica'];
 const P = () => PLANTS[state.plant];
-const inGarden = () => state.plant !== 'peanut' || state.added;
+const inGarden = () => GARDEN.includes(state.plant) || state.garden.includes(state.plant);
+const imgSrc = p => p.img.startsWith('data:') ? p.img : 'assets/' + p.img;
 function openPlant(id, fromScan, opts) { state.plant = id; state.fromScan = fromScan; go('details', opts); }
+const TAGDEF = t => TAG[t] || ['tag-sun', t];
 const LEVEL = { Easy: ['#15803d', 'gr', 'cactus-happy.png', 'Happy cactus mascot'], Medium: ['#d97706', 'am', 'cactus-happy.png', 'Happy cactus mascot'], Hard: ['#c2410c', 'o', 'cactus.png', 'Grumpy cactus mascot'] };
 const TOXROW = (icon, label, val, bad) => `<div class="row-li"><span class="surf ${bad ? 'rd' : 'gr'}">${bad ? '<i class="i" style="--m:url(assets/ic-alert.svg);color:#b91c1c"></i>' : `<img src="assets/${icon}" alt="">`}</span><div><p class="fn c-3">${label}</p><p class="sh s c-2">${val}</p></div></div>`;
 function renderPlant() {
@@ -980,15 +1096,15 @@ function renderPlant() {
   $$('.plant-name').forEach(e => e.textContent = p.name);
   const sub = p.name === p.latin ? p.common.split(',')[0].replace(/^./, c => c.toUpperCase()) : p.latin;
   $$('.plant-latin').forEach(e => { e.textContent = sub; e.style.fontStyle = sub === p.latin && e.closest('#detScroll') ? 'italic' : 'normal'; });
-  $('#detImg').src = 'assets/' + p.img; $('#detImg').alt = p.name;
+  $('#detImg').src = imgSrc(p); $('#detImg').alt = p.name;
   $('#aboutTx').textContent = p.about; $('#aboutMore').textContent = 'Show More';
-  $('#detTags').innerHTML = p.tags.map(t => `<span class="tag"><i class="i" style="--m:url(assets/${TAG[t][0]}.svg)"></i>${TAG[t][1]}</span>`).join('');
+  $('#detTags').innerHTML = p.tags.map(t => `<span class="tag"><i class="i" style="--m:url(assets/${TAGDEF(t)[0]}.svg)"></i>${TAGDEF(t)[1]}</span>`).join('');
   $('#qfGrid').innerHTML = [['y', 'qf-sun.svg', 'Light', p.sun], ['o', 'qf-temp.svg', p.temp, 'Temperature'], ['bl', 'qf-water.svg', p.water, 'Watering'], ['am', 'qf-fert.svg', p.fert, 'Fertilizer']]
     .map(([c, i, k, v]) => `<div class="card"><span class="surf ${c}"><img src="assets/${i}" alt=""></span><div><p class="fn c-3">${k}</p><p class="co s c-2">${v}</p></div></div>`).join('');
   $('#qfTox').innerHTML = `<span class="surf ${p.toxic ? 'rd' : 'gr'}">${p.toxic ? '<i class="i" style="--m:url(assets/ic-alert.svg);color:#b91c1c"></i>' : '<img src="assets/qf-clover.svg" alt="">'}</span><span class="co" style="flex:1">${p.toxic ? 'Toxic to pets if eaten' : 'Non-toxic to pets and humans'}</span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i>`;
   $('#basicInfo').innerHTML = kvCard([['Toxicity to Pets', p.tox.pets], ['Weed Potential', 'Not considered a weed'], ['Distribution', p.dist], ['Light Requirements', p.light]]);
   $('#basicFacts').innerHTML = kvCard([['Genus', p.genus], ['Scientific Name', p.latin], ['Common Names', p.commonFull], ['Taxonomy', p.tax]]);
-  const [col, surf, img, alt] = LEVEL[p.level];
+  const [col, surf, img, alt] = LEVEL[p.level] || LEVEL.Medium;
   $('#careProfile').innerHTML = `<div style="display:flex;align-items:center;justify-content:space-between">
       <div style="display:flex;flex-direction:column;gap:16px">
         <div><p class="lt b" style="color:${col}">${p.level}</p><p class="co c-2">Difficulty</p></div>
@@ -999,6 +1115,7 @@ function renderPlant() {
     </div>
     <div class="alert gr"><i class="i" style="--m:url(assets/ic-bulb.svg);width:20px;height:24px"></i><p>${p.tip}</p></div>`;
   $$('.only-peanut').forEach(e => e.hidden = state.plant !== 'peanut');
+  renderHow();
   $('#toxBody').innerHTML = `<div class="card pad" style="display:flex;flex-direction:column;gap:12px"><p class="t2">Toxicity</p>
       ${TOXROW('tox-face.svg', 'For Human', p.tox.human, p.tox.human !== 'Non-Toxic')}
       ${TOXROW('qf-clover.svg', 'For Pets', p.tox.pets, p.toxic)}
@@ -1044,15 +1161,21 @@ function renderChar(k) {
 renderChar('flower');
 
 const LI = (surf, icon, k, v) => `<div class="row-li"><span class="surf ${surf}"><img src="assets/${icon}" alt=""></span><div><p class="fn c-3">${k}</p><p class="sh s c-2">${v}</p></div></div>`;
-const HOW = [
-  ['watering', 'Watering', [LI('bl', 'ht-waterdrop.svg', 'Watering', 'Every 24 days'), LI('bl', 'ht-seeding.svg', 'Dry', 'Top layer should be dry')]],
-  ['sunlight', 'Sunlight', [LI('y', 'ht-sun.svg', 'Sun', 'Partial Sun'), LI('y', 'ht-sunfarm.svg', 'Sun/Shade', 'Full Sun/Full Shade')]],
-  ['repotting', 'Repotting', [LI('am', 'ht-season.svg', 'Season', 'Spring, Fall'), LI('am', 'ht-cal-amber.svg', 'Regularity', '2-3 years'), LI('am', 'ht-sprout-pot.svg', 'Soil', 'Potting soil mix')]],
-  ['soil', 'Soil', [LI('o', 'ht-soil.svg', 'Soil types', 'Universal soil, indoor plant soil'), LI('o', 'ht-cal-orange.svg', 'Drainage', 'Well-drained')]],
-  ['climatic', 'Climatic', [LI('pu', 'ht-hardiness.svg', 'Hardiness Zone', '4'), LI('pu', 'ht-temp.svg', 'Temperature', '18 - 20°C'), LI('pu', 'ht-cal-purple.svg', 'Humidity', '20 - 60')]],
-];
+const HOWDEF = { watering: 'Every 24 days', dry: 'Top layer should be dry', sun: 'Partial Sun', sunShade: 'Full Sun/Full Shade', repotSeason: 'Spring, Fall', repotEvery: '2-3 years', repotSoil: 'Potting soil mix', soil: 'Universal soil, indoor plant soil', drainage: 'Well-drained', hardiness: '4', tempRange: '18 - 20°C', humidity: '20 - 60' };
+const H = () => ({ ...HOWDEF, ...(P()?.howto || {}) });
+const HOWROWS = {
+  watering: h => [LI('bl', 'ht-waterdrop.svg', 'Watering', h.watering), LI('bl', 'ht-seeding.svg', 'Dry', h.dry)],
+  sunlight: h => [LI('y', 'ht-sun.svg', 'Sun', h.sun), LI('y', 'ht-sunfarm.svg', 'Sun/Shade', h.sunShade)],
+  repotting: h => [LI('am', 'ht-season.svg', 'Season', h.repotSeason), LI('am', 'ht-cal-amber.svg', 'Regularity', h.repotEvery), LI('am', 'ht-sprout-pot.svg', 'Soil', h.repotSoil)],
+  soil: h => [LI('o', 'ht-soil.svg', 'Soil types', h.soil), LI('o', 'ht-cal-orange.svg', 'Drainage', h.drainage)],
+  climatic: h => [LI('pu', 'ht-hardiness.svg', 'Hardiness Zone', h.hardiness), LI('pu', 'ht-temp.svg', 'Temperature', h.tempRange), LI('pu', 'ht-cal-purple.svg', 'Humidity', h.humidity)],
+};
+const HOW = [['watering', 'Watering'], ['sunlight', 'Sunlight'], ['repotting', 'Repotting'], ['soil', 'Soil'], ['climatic', 'Climatic']];
 const CHEVR = '<i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i>';
-$('#howtos').innerHTML = HOW.map(([id, t, rows]) => `<button class="card pad" data-go="care" data-care="${id}" style="display:flex;flex-direction:column;gap:12px;text-align:left"><span style="display:flex;justify-content:space-between;align-items:center;width:100%"><span class="hd c-2">${t}</span>${CHEVR}</span>${rows.join('')}</button>`).join('');
+function renderHow() {
+  const h = H();
+  $('#howtos').innerHTML = HOW.map(([id, t]) => `<button class="card pad" data-go="care" data-care="${id}" style="display:flex;flex-direction:column;gap:12px;text-align:left"><span style="display:flex;justify-content:space-between;align-items:center;width:100%"><span class="hd c-2">${t}</span>${CHEVR}</span>${HOWROWS[id](h).join('')}</button>`).join('');
+}
 
 const FAQ = [
   ['What soil pH range is optimal for growing healthy Peanuts?', 'For robust Peanut growth, a slightly acidic to neutral soil pH between 6.0 and 7.0 is generally recommended. This range allows for the efficient uptake of essential nutrients. Soil that is too acidic or too alkaline can hinder nutrient availability and negatively impact plant health and pod production. Regular soil testing can help determine the pH level and the need for amendments like lime or sulfur.'],
@@ -1101,7 +1224,7 @@ const accList = (items, openIdx) => `<div>${items.map((t, i) => acc(t[0], t[1] |
 
 const CARE = {
   soil: () => [
-    head('Soil', [LI('o', 'ht-soil.svg', 'Soil types', 'Universal soil, indoor plant soil'), LI('o', 'ht-cal-orange.svg', 'Drainage', 'Well-drained')]),
+    head('Soil', HOWROWS.soil(H())),
     card(`<div style="display:flex;justify-content:space-between;height:40px;align-items:center" class="bd"><span class="c-2">pH</span><span class="s">Neutral</span></div>${scale(ph)}`),
     card(`<p class="t2">Solutions</p><p class="bd c-2">If your plant’s nutrient deficiency stems from a simple lack of nutrients in your soil, there are several easy ways to remedy the situation.</p>
       ${numbered([['Use a water-soluble fertilizer.', 'Fertilizers include most or all of the macro and micro-nutrients your plants need to thrive. Adding some to your soil makes those nutrients available and can combat deficiencies.'], ['Apply compost.', 'Though not as finely tuned as artificial fertilizer, compost can nevertheless be rich in important nutrients.'], ['Apply nutrients via foliar application.', 'You can also feed nutrient blends directly to your plant’s leaves, stems, or bark. Foliar nutrients are often taken up quicker than those put in the soil.']])}
@@ -1111,13 +1234,13 @@ const CARE = {
       <img src="assets/ficus-tree.jpg" alt="Young ficus beside a stool" style="width:100%;height:380px;object-fit:cover;border-radius:12px">`),
   ],
   watering: () => [
-    head('Watering', [LI('bl', 'ht-waterdrop.svg', 'Watering', 'Every 24 days'), LI('bl', 'ht-seeding.svg', 'Dry', 'Top layer should be dry')]),
+    head('Watering', HOWROWS.watering(H())),
     card(`<p class="t2">Today's watering check</p><p class="bd c-2">${moisture}</p>${viewAll}`),
     card(`<p class="t2">Today's techniques</p><p class="bd c-2">${moisture}</p>${accList([['Watering from the bottom'], ['Watering from the soil'], ['Soaking the water'], ['Misting the leaves', '<ol><li>Mist in the morning so leaves dry before evening.</li><li>Use room-temperature water.</li></ol>']], 1)}`),
     card(`<p class="t2">Signs of watering issues</p><p class="hd c-2">Overwatering</p><p class="bd c-2">${moisture}</p>${viewAll}<p class="hd c-2">Underwatering</p><p class="bd c-2">${moisture}</p>${viewAll}`),
   ],
   climatic: () => [
-    head('Climatic', [LI('pu', 'ht-hardiness.svg', 'Hardiness Zone', '4'), LI('pu', 'ht-temp.svg', 'Temperature', '18 - 20°C'), LI('pu', 'ht-cal-purple.svg', 'Humidity', '20 - 60')]),
+    head('Climatic', HOWROWS.climatic(H())),
     card(`<div style="display:flex;justify-content:space-between" class="bd"><span class="c-2">Hardiness Zone</span><span class="s">4</span></div>${scale(hz)}
       <div class="divider" style="margin-top:4px"></div>
       <p class="bd c-2" style="margin-top:4px">Temperature</p>
@@ -1143,14 +1266,14 @@ const CARE = {
     card(`<p class="t2">Signs of fertilizing issues</p><p class="hd c-2">Over-fertilizing</p><p class="bd c-2">${moisture}</p>${viewAll}<p class="hd c-2">Under-fertilizing</p><p class="bd c-2">${moisture}</p>${viewAll}`),
   ],
   repotting: () => [
-    head('Repotting', [LI('am', 'ht-season.svg', 'Season', 'Spring, Fall'), LI('am', 'ht-cal-amber.svg', 'Regularity', '2-3 years'), LI('am', 'ht-sprout-pot.svg', 'Soil', 'Potting soil mix')]),
+    head('Repotting', HOWROWS.repotting(H())),
     card(`<p class="t2">Key tips for repotting</p><p class="bd c-2">When moving your plant to a new pot, choose one that’s 1–2 inches wider and has good drainage. Use a high-quality, well-draining potting mix. The best time for repotting is spring or fall. Make sure the root ball sits slightly below the rim, water thoroughly afterward, and keep the plant warm in indirect light.</p>`),
     card(`<p class="t2">Pre-repotting check</p><p class="bd c-2">To know if your plant is ready for a new pot, check for these signs:</p>${numbered([['Roots', 'If roots are growing out of the pot’s drainage holes, it has outgrown its container.'], ['Stability', 'A top-heavy or wobbly plant often needs a bigger pot.'], ['Growth', 'If growth is slowing despite proper care, it might be time to repot.'], ['Root Mass', 'When you remove the plant and see more roots than soil, it’s clearly time for a larger pot.']])}<p class="bd c-2">All of these point to your plant needing more space to grow.</p>`),
     card(`<p class="t2">Pre-repotting preparation</p><p class="bd c-2">Before you begin, take care of these prep steps:</p>${numbered([['Pot', 'Choose a slightly larger pot than the one you’re replacing, and make sure it drains well.'], ['Tools', 'Have clean, sharp tools ready in case root trimming is needed.']])}${bulb('Use gardening gloves to protect your hands during the process.')}`),
     card(`<p class="t2">Signs of repotting issues</p><p class="hd c-2">Solutions</p><p class="bd c-2">Drooping or yellowing after a move is usually temporary transplant shock. Place the plant in bright, indirect light and water it according to its needs — with proper care it will bounce back.</p>`),
   ],
   sunlight: () => [
-    head('Sunlight', [LI('y', 'ht-sun.svg', 'Sun', 'Partial Sun'), LI('y', 'ht-sunfarm.svg', 'Sun/Shade', 'Full Sun/Full Shade')]),
+    head('Sunlight', HOWROWS.sunlight(H())),
     card(`<p class="t2">Key Sunlight Tips</p><p class="bd c-2">This plant thrives in balanced lighting, ideally a mix of light and shade. It handles both steady sun and light shade — but extremes can be harmful.</p><img src="assets/plant-2.jpg" alt="Plant in a bright window" style="width:100%;height:380px;object-fit:cover;border-radius:12px"><p class="hd c-2">Artificial Lighting</p><p class="bd c-2">If your space doesn’t get enough natural light — especially in winter or darker corners — grow lights are a reliable alternative. They mimic the sun and keep indoor plants vibrant and strong.</p>`),
   ],
 };
@@ -1164,9 +1287,10 @@ function renderCare() {
 
 /* ---------- garden ---------- */
 function renderGarden(fresh) {
-  const ids = (state.added ? ['peanut'] : []).concat(GARDEN);
-  $('#gardenGrid').innerHTML = ids.map(id => { const p = PLANTS[id]; return `<button class="pcard" data-plant="${id}" style="position:relative"><img src="assets/${p.img}" alt="">${fresh && id === 'peanut' ? '<span class="new">New</span>' : ''}<span class="nm">${p.name}</span><span class="cm">${p.common}</span></button>`; }).join('');
-  $('#scanList').innerHTML = ids.map(id => { const p = PLANTS[id]; return `<button data-plant="${id}"><img src="assets/${p.img}" alt=""><span class="tx"><span class="hd" style="display:block;letter-spacing:-.43px">${p.name}</span><span class="fn c-3" style="display:block">${p.common}</span></span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i></button>`; }).join('');
+  const ids = [...new Set([...state.garden, ...GARDEN])];
+  const scans = [...new Set([...state.scans, ...state.garden, ...GARDEN])];
+  $('#gardenGrid').innerHTML = ids.map(id => { const p = PLANTS[id]; return `<button class="pcard" data-plant="${id}" style="position:relative"><img src="${imgSrc(p)}" alt="">${id === fresh ? '<span class="new">New</span>' : ''}<span class="nm">${p.name}</span><span class="cm">${p.common}</span></button>`; }).join('');
+  $('#scanList').innerHTML = scans.map(id => { const p = PLANTS[id]; return `<button data-plant="${id}"><img src="${imgSrc(p)}" alt=""><span class="tx"><span class="hd" style="display:block;letter-spacing:-.43px">${p.name}</span><span class="fn c-3" style="display:block">${p.common}</span></span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i></button>`; }).join('');
 }
 $('#s-garden').addEventListener('click', e => { const b = e.target.closest('[data-plant]'); if (b) openPlant(b.dataset.plant, false); });
 
@@ -1175,7 +1299,7 @@ $('#rateBtn').onclick = () => {
   iosAlert('Enjoying Pot?', 'Tap a star to rate it on the App Store.<br><span id="stars" style="display:flex;justify-content:center;gap:6px;margin-top:10px;font-size:26px;color:#15803d;cursor:pointer">☆☆☆☆☆</span>', [{ label: 'Not Now' }, { label: 'Submit', bold: true, do: () => toast('Thanks for rating Pot!') }]);
   const s = $('#stars'); s.onclick = e => { const r = s.getBoundingClientRect(); const n = Math.min(5, Math.ceil((e.clientX - r.left) / r.width * 5)); s.textContent = '★'.repeat(n) + '☆'.repeat(5 - n); };
 };
-$('#restart').onclick = () => { Object.assign(state, { authed: false, camAllowed: false, added: false, tipsSeen: false, plant: 'peanut', fromScan: false }); renderGarden(); reset('loading'); };
+$('#restart').onclick = () => { Object.keys(PLANTS).filter(id => PLANTS[id].scanned).forEach(id => delete PLANTS[id]); Object.assign(state, { authed: false, camAllowed: false, tipsSeen: false, plant: 'peanut', fromScan: false, garden: [], scans: [] }); persist(); renderGarden(); reset('loading'); };
 const LEGAL = {
   privacy: ['Privacy Policy', [['What we collect', 'The photos you scan, the plants you save, and your account email. Photos are used only to identify plants.'], ['How we use it', 'To identify plants, keep your garden in sync across devices, and send care reminders you turn on.'], ['Your choices', 'You can delete scans and your account at any time from Settings › My Account.']]],
   terms: ['Terms of Use', [['Using Pot', 'Pot gives plant identification and care guidance for personal, non-commercial use.'], ['Accuracy', 'Identifications are suggestions. Check toxicity information with a professional before handling unknown plants.'], ['Subscriptions', 'Premium features renew automatically unless cancelled at least 24 hours before the period ends.']]],
@@ -1193,10 +1317,10 @@ $('#jump').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
   const id = b.dataset.id;
   $('.alert-ios', phone)?.remove();
-  if (id === 'garden') { state.added = true; renderGarden(); }
+  if (id === 'garden' && !added()) { state.garden = ['peanut']; persist(); renderGarden(); }
   if (id === 'email') emailMode('signin');
   if (id === 'tips') state.tipsMode = 'view';
-  if (id === 'details' || id === 'care' || id === 'faq' || id === 'toxicity') { state.plant = 'peanut'; state.fromScan = !state.added; }
+  if (id === 'details' || id === 'care' || id === 'faq' || id === 'toxicity') { state.plant = 'peanut'; state.fromScan = !state.garden.includes('peanut'); }
   if (['camera', 'tips', 'recog'].includes(id)) { state.camAllowed = true; state.tipsSeen = true; }
   const base = ['loading', 'signin', 'garden', 'garden-empty'].includes(id) ? [] : [id === 'forgot' || id === 'email' || id === 'checkmail' ? 'signin' : gardenId()];
   prevId = cur(); if (enter[id]) enter[id]();
@@ -1221,6 +1345,7 @@ function fit() {
 addEventListener('resize', () => { fit(); layoutSegs(); });
 
 /* ---------- boot ---------- */
+restore();
 renderGarden();
 applyTheme(); fit();
 enter.loading();
