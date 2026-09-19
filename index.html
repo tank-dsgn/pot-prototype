@@ -1373,16 +1373,20 @@ addEventListener('resize', () => { fit(); layoutSegs(); });
 /* ---------- install hint ---------- */
 const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
 const framed = window.self !== window.top; // e.g. the claude.ai artifact viewer: installing would add that page, not Pot
-const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const isAndroid = /Android/i.test(navigator.userAgent);
+const isIOS = !isAndroid && (/iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
 const forceHint = new URLSearchParams(location.search).get('hint'); // ?hint=ios or ?hint=android for testing
 let installEvent = null, hintTimer;
 function showInstall(kind) {
   if (!forceHint && (standalone || framed || !onPhone() || store.get('installHint') === 'dismissed')) return;
   $('#installText').innerHTML = kind === 'ios'
     ? 'Tap <i class="i" style="--m:url(assets/ic-share.svg)"></i> Share, then <b style="display:inline;font-size:15px">Add to Home Screen</b><small>Don’t see Share? Open the ··· menu first.</small>'
-    : '<b>Install Pot</b>Use it full-screen like an app.';
+    : kind === 'android'
+      ? '<b>Install Pot</b>Use it full-screen like an app.'
+      : '<b>Install Pot</b>Tap <b style="display:inline;font-size:15px">⋮</b> in Chrome, then <b style="display:inline;font-size:15px">Install app</b> or <b style="display:inline;font-size:15px">Add to Home screen</b><small>Opened from a QR scanner? Choose “Open in Chrome” first.</small>';
   if (kind === 'ios') $('#installText').insertAdjacentHTML('afterbegin', '<b>Install Pot on your iPhone</b>');
   $('#installGo').hidden = kind !== 'android';
+  if (kind === 'android' && !$('#installHint').hidden) return; // already visible: just swap in the Install button
   clearTimeout(hintTimer);
   hintTimer = setTimeout(() => { $('#installHint').hidden = false; }, forceHint ? 300 : 3200); // after the loading screen
 }
@@ -1396,7 +1400,10 @@ $('#installGo').onclick = async () => {
 };
 addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvent = e; showInstall('android'); });
 addEventListener('appinstalled', () => hideInstall(true));
-if (forceHint === 'ios' || forceHint === 'android') showInstall(forceHint);
+// Chrome only fires beforeinstallprompt after some engagement, and QR-scanner browsers never do —
+// so Android gets the manual steps right away and the Install button once Chrome allows it.
+if (['ios', 'android', 'android-manual'].includes(forceHint)) showInstall(forceHint);
+else if (isAndroid) showInstall('android-manual');
 else if (isIOS) showInstall('ios');
 
 /* ---------- boot ---------- */
