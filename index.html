@@ -53,12 +53,29 @@ p,h1,h2,h3{margin:0}
 .seg{display:flex;background:rgba(120,113,108,.18);border-radius:999px;padding:2px}
 .seg button{flex:1;padding:6px 0;border-radius:999px;text-align:center;font-weight:600;font-size:13px;color:var(--stage-muted)}
 .seg button[aria-pressed="true"]{background:var(--stage-ink);color:var(--stage)}
-.jump{display:flex;flex-direction:column;gap:1px;max-height:44vh;overflow:auto}
+.jump{display:flex;flex-direction:column;gap:1px;max-height:34vh;overflow:auto}
 .jump button{padding:5px 8px;border-radius:6px;display:flex;gap:8px}
 .jump button:hover{background:rgba(120,113,108,.15)}
 .jump button b{font-weight:500;color:var(--stage-muted);font-variant-numeric:tabular-nums;min-width:26px}
 .jump button.on{background:rgba(22,163,74,.16)}
 .hint{color:var(--stage-muted)}
+.try{display:flex;gap:14px;align-items:flex-start}
+.try .code{flex:none;width:92px;height:92px;padding:8px;box-sizing:border-box;border-radius:12px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.try .code img{width:100%;height:100%;display:block}
+.try b{display:block;font-size:14px;margin-bottom:4px}
+.try ol{margin:0;padding-left:16px;color:var(--stage-muted)}
+.try li+li{margin-top:2px}
+/* install hint inside the phone (iOS Safari / Android Chrome, not yet installed) */
+.install{position:absolute;left:16px;right:16px;bottom:112px;z-index:45;display:flex;gap:12px;align-items:center;padding:12px 12px 12px 14px;border-radius:16px;background:var(--surface);color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.22),0 0 0 .5px rgba(0,0,0,.06);animation:rise .35s cubic-bezier(.2,.9,.3,1.1)}
+.install .app{flex:none;width:44px;height:44px;border-radius:11px;background:#f1efec;display:grid;place-items:center;overflow:hidden}
+.install .app img{width:40px;height:40px}
+.install .tx{flex:1;min-width:0;font-size:15px;line-height:20px}
+.install .tx b{display:block;font-size:16px;line-height:21px}
+.install .tx .i{width:15px;height:17px;vertical-align:-3px;color:var(--link);margin:0 1px}
+.install .tx small{display:block;color:var(--text3);font-size:13px;line-height:18px;margin-top:2px}
+.install .go{flex:none;height:34px;padding:0 14px;border-radius:99px;background:var(--brand);color:#fff;font-weight:600;font-size:15px}
+.install .x{flex:none;width:28px;height:28px;border-radius:50%;background:var(--surface2);color:var(--text3);display:grid;place-items:center}
+@keyframes rise{from{transform:translateY(24px);opacity:0}}
 
 .frame{position:relative;flex:none}
 .phone{position:absolute;left:0;top:0;width:440px;height:956px;border-radius:64px;overflow:hidden;background:var(--bg);
@@ -331,11 +348,20 @@ table.ft td:first-child{color:var(--text2)}
       <div class="lab">Screens</div>
       <nav class="jump" id="jump"></nav>
     </div>
-    <p class="hint">Tap through like on a phone. On a phone, open the link and add it to the Home Screen for full-screen use.</p>
+    <div class="try">
+      <div class="code"><img src="assets/qr.svg" alt="QR code for pot-prototype.vercel.app"></div>
+      <div><b>Try it on your iPhone</b><ol><li>Scan the code</li><li>In Safari tap Share, then Add to Home Screen</li><li>Open Pot and snap a real plant</li></ol></div>
+    </div>
   </aside>
 
   <div class="frame" id="frame">
   <div class="phone" id="phone">
+    <div class="install" id="installHint" hidden role="dialog" aria-label="Install Pot">
+      <span class="app"><img src="assets/cactus-happy.png" alt=""></span>
+      <div class="tx" id="installText"></div>
+      <button class="go" id="installGo" hidden>Install</button>
+      <button class="x" id="installX" aria-label="Dismiss"><svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M2 2l10 10M12 2 2 12"/></svg></button>
+    </div>
 
     <!-- 1. Loading -->
     <section class="screen" id="s-loading" data-title="Loading">
@@ -1343,6 +1369,35 @@ function fit() {
   f.style.width = 440 * s + 'px'; f.style.height = 956 * s + 'px';
 }
 addEventListener('resize', () => { fit(); layoutSegs(); });
+
+/* ---------- install hint ---------- */
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const framed = window.self !== window.top; // e.g. the claude.ai artifact viewer: installing would add that page, not Pot
+const isIOS = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const forceHint = new URLSearchParams(location.search).get('hint'); // ?hint=ios or ?hint=android for testing
+let installEvent = null, hintTimer;
+function showInstall(kind) {
+  if (!forceHint && (standalone || framed || !onPhone() || store.get('installHint') === 'dismissed')) return;
+  $('#installText').innerHTML = kind === 'ios'
+    ? 'Tap <i class="i" style="--m:url(assets/ic-share.svg)"></i> Share, then <b style="display:inline;font-size:15px">Add to Home Screen</b><small>Don’t see Share? Open the ··· menu first.</small>'
+    : '<b>Install Pot</b>Use it full-screen like an app.';
+  if (kind === 'ios') $('#installText').insertAdjacentHTML('afterbegin', '<b>Install Pot on your iPhone</b>');
+  $('#installGo').hidden = kind !== 'android';
+  clearTimeout(hintTimer);
+  hintTimer = setTimeout(() => { $('#installHint').hidden = false; }, forceHint ? 300 : 3200); // after the loading screen
+}
+function hideInstall(remember) { $('#installHint').hidden = true; if (remember) store.set('installHint', 'dismissed'); }
+$('#installX').onclick = () => hideInstall(true);
+$('#installGo').onclick = async () => {
+  if (!installEvent) return hideInstall(true);
+  installEvent.prompt();
+  const { outcome } = await installEvent.userChoice.catch(() => ({}));
+  installEvent = null; hideInstall(outcome === 'accepted');
+};
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvent = e; showInstall('android'); });
+addEventListener('appinstalled', () => hideInstall(true));
+if (forceHint === 'ios' || forceHint === 'android') showInstall(forceHint);
+else if (isIOS) showInstall('ios');
 
 /* ---------- boot ---------- */
 restore();
