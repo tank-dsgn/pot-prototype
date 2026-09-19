@@ -37,9 +37,10 @@ const manifest = {
 await writeFile(join(out, 'manifest.webmanifest'), JSON.stringify(manifest, null, 2));
 
 const head = `<!doctype html>
-<html lang="en">
+<html lang="en" translate="no" class="notranslate">
 <head>
 <meta charset="utf-8">
+<meta name="google" content="notranslate">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${title}</title>
 <meta name="description" content="${description}">
