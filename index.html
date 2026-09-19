@@ -1388,7 +1388,7 @@ function showInstall(kind) {
   $('#installGo').hidden = kind !== 'android';
   if (kind === 'android' && !$('#installHint').hidden) return; // already visible: just swap in the Install button
   clearTimeout(hintTimer);
-  hintTimer = setTimeout(() => { $('#installHint').hidden = false; }, forceHint ? 300 : 3200); // after the loading screen
+  hintTimer = setTimeout(() => { $('#installHint').hidden = false; }, 300); // right away, over the loading screen
 }
 function hideInstall(remember) { $('#installHint').hidden = true; if (remember) store.set('installHint', 'dismissed'); }
 $('#installX').onclick = () => hideInstall(true);
