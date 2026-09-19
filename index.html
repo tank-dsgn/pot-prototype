@@ -1378,7 +1378,7 @@ const isIOS = !isAndroid && (/iPhone|iPad|iPod/.test(navigator.userAgent) || (na
 const forceHint = new URLSearchParams(location.search).get('hint'); // ?hint=ios or ?hint=android for testing
 let installEvent = null, hintTimer;
 function showInstall(kind) {
-  if (!forceHint && (standalone || framed || !onPhone() || store.get('installHint') === 'dismissed')) return;
+  if (!forceHint && hintBlocked()) return;
   $('#installText').innerHTML = kind === 'ios'
     ? 'Tap <i class="i" style="--m:url(assets/ic-share.svg)"></i> Share, then <b style="display:inline;font-size:15px">Add to Home Screen</b><small>Don’t see Share? Open the ··· menu first.</small>'
     : kind === 'android'
@@ -1390,7 +1390,16 @@ function showInstall(kind) {
   clearTimeout(hintTimer);
   hintTimer = setTimeout(() => { $('#installHint').hidden = false; }, 300); // right away, over the loading screen
 }
-function hideInstall(remember) { $('#installHint').hidden = true; if (remember) store.set('installHint', 'dismissed'); }
+// dismissing hides it for this visit only, so a later visit (e.g. from the QR code) shows it again
+const dismissed = () => { try { return sessionStorage.getItem('pot:installHint') === 'dismissed'; } catch { return false; } };
+function hideInstall(remember) { $('#installHint').hidden = true; if (remember) try { sessionStorage.setItem('pot:installHint', 'dismissed'); } catch {} }
+function hintBlocked() {
+  if (standalone) return 'already running as the installed app';
+  if (framed) return 'inside another page (iframe)';
+  if (!(isAndroid || isIOS || onPhone())) return 'desktop without an install offer';
+  if (dismissed()) return 'dismissed during this visit';
+  return '';
+}
 $('#installX').onclick = () => hideInstall(true);
 $('#installGo').onclick = async () => {
   if (!installEvent) return hideInstall(true);
@@ -1398,13 +1407,30 @@ $('#installGo').onclick = async () => {
   const { outcome } = await installEvent.userChoice.catch(() => ({}));
   installEvent = null; hideInstall(outcome === 'accepted');
 };
-addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvent = e; showInstall('android'); });
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvent = e; showInstall('android'); debugInstall(); });
 addEventListener('appinstalled', () => hideInstall(true));
 // Chrome only fires beforeinstallprompt after some engagement, and QR-scanner browsers never do —
 // so Android gets the manual steps right away and the Install button once Chrome allows it.
 if (['ios', 'android', 'android-manual'].includes(forceHint)) showInstall(forceHint);
 else if (isAndroid) showInstall('android-manual');
 else if (isIOS) showInstall('ios');
+
+// ?debug=1 → a readout of what the page sees, to find out why the hint is hidden on a given phone
+function debugInstall() {
+  if (new URLSearchParams(location.search).get('debug') !== '1') return;
+  let box = $('#installDebug');
+  if (!box) { box = document.createElement('pre'); box.id = 'installDebug'; box.style.cssText = 'position:fixed;left:8px;right:8px;top:8px;z-index:99;margin:0;padding:10px;border-radius:10px;background:rgba(0,0,0,.85);color:#bbf7d0;font:12px/1.4 ui-monospace,monospace;white-space:pre-wrap;word-break:break-all'; document.body.append(box); }
+  box.textContent = [
+    'android: ' + isAndroid + '   ios: ' + isIOS + '   width: ' + innerWidth,
+    'installed app (standalone): ' + standalone,
+    'in iframe: ' + framed,
+    'Chrome install offer: ' + (installEvent ? 'yes' : 'not yet'),
+    'service worker: ' + ('serviceWorker' in navigator ? (navigator.serviceWorker.controller ? 'active' : 'registering') : 'unsupported'),
+    'hint: ' + (hintBlocked() || 'should be visible'),
+    'ua: ' + navigator.userAgent,
+  ].join('\n');
+}
+debugInstall(); setTimeout(debugInstall, 3000);
 
 /* ---------- boot ---------- */
 restore();
