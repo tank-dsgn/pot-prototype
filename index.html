@@ -880,7 +880,8 @@ table.ft td:first-child{color:var(--text2)}
       <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button><p class="ttl hd">My Account</p><span style="width:24px"></span></div>
       <div class="scroll" style="padding:16px;display:flex;flex-direction:column;align-items:center;gap:24px">
         <div style="position:relative">
-          <div style="width:160px;height:160px;border-radius:50%;background:#f0fdf4;display:grid;place-items:center"><i class="i" style="--m:url(assets/ic-leaves.svg);width:64px;height:64px;color:#15803d"></i></div>
+          <div style="width:160px;height:160px;border-radius:50%;background:#f0fdf4;display:grid;place-items:center;overflow:hidden"><i class="i" id="avatarIcon" style="--m:url(assets/ic-leaves.svg);width:64px;height:64px;color:#15803d"></i><img id="avatarImg" alt="Your photo" hidden style="width:100%;height:100%;object-fit:cover"></div>
+          <input type="file" id="pickAvatar" accept="image/*" hidden>
           <button id="avatarEdit" style="position:absolute;left:109px;top:128px;width:32px;height:32px;border-radius:50%;background:var(--icon);display:grid;place-items:center;color:#fff" aria-label="Change photo"><i class="i" style="--m:url(assets/ic-pen.svg);width:16px;height:16px"></i></button>
         </div>
         <div style="display:flex;flex-direction:column;gap:12px;width:100%">
@@ -1281,6 +1282,7 @@ const enter = {
   camera() { startCamera(); },
   details(isBack) { renderPlant(); if (!isBack && !state.fromScan) detailSkeleton(); },
   review() { renderReview(); },
+  account() { renderAvatar(); },
   care() { renderPlant(); renderCare(); },
   toxicity() { renderPlant(); },
   loading() { setTimeout(() => cur() === 'loading' && reset(store.get('onboarded') ? 'signin' : 'onb'), 1800); },
@@ -1802,6 +1804,7 @@ $('#restart').onclick = () => iosAlert('Start from the beginning?', 'Your saved 
 function restartPrototype() {
   Object.keys(PLANTS).filter(id => PLANTS[id].scanned).forEach(id => delete PLANTS[id]);
   Object.assign(state, { authed: false, camAllowed: false, tipsSeen: false, plant: 'peanut', fromScan: false, garden: [], scans: [], removed: [] });
+  store.set('avatar', ''); renderAvatar();
   persist(); renderGarden(); reset('loading');
 }
 $('#restoreBtn').onclick = () => iosAlert('Restore Purchases', 'Sign in to the App Store account you bought Pot Premium with.', [
@@ -1809,10 +1812,39 @@ $('#restoreBtn').onclick = () => iosAlert('Restore Purchases', 'Sign in to the A
   { label: 'Restore', bold: true, do: () => toast('No purchases to restore') }
 ]);
 $('#avatarEdit').onclick = () => iosSheet([
-  { label: 'Take Photo', do: () => toast('Camera opens here') },
-  { label: 'Choose from Library', do: () => toast('Photo library opens here') },
-  { label: 'Remove Photo', del: true, do: () => toast('Photo removed') },
+  { label: 'Take Photo', do: () => pickAvatar(true) },
+  { label: 'Choose from Library', do: () => pickAvatar(false) },
+  ...(store.get('avatar') ? [{ label: 'Remove Photo', del: true, do: () => { store.set('avatar', ''); renderAvatar(); toast('Photo removed'); } }] : []),
 ]);
+// the real camera on a phone (capture=user), the photo library everywhere else
+function pickAvatar(camera) {
+  const inp = $('#pickAvatar');
+  inp.value = '';
+  if (camera) inp.setAttribute('capture', 'user'); else inp.removeAttribute('capture');
+  inp.click();
+}
+function squarePhoto(img, size = 400) {
+  const s = Math.min(img.naturalWidth, img.naturalHeight);
+  const c = document.createElement('canvas'); c.width = c.height = size;
+  c.getContext('2d').drawImage(img, (img.naturalWidth - s) / 2, (img.naturalHeight - s) / 2, s, s, 0, 0, size, size);
+  return c.toDataURL('image/jpeg', .82);
+}
+$('#pickAvatar').onchange = async e => {
+  const file = e.target.files?.[0]; if (!file) return;
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await loadImg(url);
+    store.set('avatar', squarePhoto(img));
+    renderAvatar();
+    toast('Photo updated');
+  } catch { toast('This photo can’t be opened. Try another one.'); }
+  finally { URL.revokeObjectURL(url); }
+};
+function renderAvatar() {
+  const a = store.get('avatar');
+  $('#avatarImg').hidden = !a; $('#avatarIcon').hidden = !!a;
+  if (a) $('#avatarImg').src = a;
+}
 $('#rateBtn').onclick = () => {
   const stars = '<div class="row" id="rateStars">' + [1,2,3,4,5].map(n => `<button data-n="${n}" aria-label="${n} stars">☆</button>`).join('') + '</div>';
   const box = iosAlert('Enjoying Pot?', 'Tap a star to rate it on the App Store.', [{ label: 'Not Now' }], { icon: 'assets/app-icon.png', extra: stars });
@@ -1969,6 +2001,7 @@ else if (isIOS) showInstall('ios');
 /* ---------- boot ---------- */
 restore();
 renderGarden();
+renderAvatar();
 applyTheme(); fit();
 enter.boot();
 show('boot');
