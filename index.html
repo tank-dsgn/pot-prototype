@@ -292,6 +292,7 @@ p,h1,h2,h3{margin:0}
 .alert-ios .box{width:270px;border-radius:14px;overflow:hidden;background:rgba(242,242,242,.86);-webkit-backdrop-filter:blur(25px);backdrop-filter:blur(25px);text-align:center;animation:pop .25s cubic-bezier(.2,.9,.3,1.2);color:#1c1917}
 .phone.dark .alert-ios .box{background:rgba(40,40,40,.86);color:#fff}
 .alert-ios .tx{padding:19px 16px 15px;display:flex;flex-direction:column;gap:2px}
+.alert-ios .icon+.tx{padding-top:16px}
 .alert-ios .tx p{font-size:13px;line-height:18px;color:#57534e}
 .phone.dark .alert-ios .tx p{color:#d6d3d1}
 .alert-ios .acts{display:flex;border-top:.33px solid rgba(128,128,128,.55)}
@@ -299,9 +300,9 @@ p,h1,h2,h3{margin:0}
 .phone.dark .alert-ios .acts button{color:#0a84ff}
 .alert-ios .acts button+button{border-left:.33px solid rgba(128,128,128,.55)}
 .alert-ios .acts button.del{color:#dc2626}
-.alert-ios .icon{width:64px;height:64px;border-radius:16px;margin:19px auto 0;display:block}
-.alert-ios .row{border-top:.33px solid rgba(128,128,128,.55);height:44px;display:flex;align-items:center;justify-content:center;gap:22px}
-.alert-ios .row button{color:#007aff;font-size:22px;line-height:1;padding:0 2px}
+.alert-ios .icon{width:56px;height:56px;border-radius:13px;margin:16px auto 0;display:block}
+.alert-ios .row{border-top:.33px solid rgba(128,128,128,.55);height:44px;display:flex;align-items:center;justify-content:center;gap:20px}
+.alert-ios .row button{color:#007aff;font-size:20px;line-height:1;padding:0 2px}
 /* action sheet (Figma 8.10 share) */
 .sheet{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.3);display:flex;flex-direction:column;justify-content:flex-end;animation:fade .2s}
 .sheet .card-s{margin:0 8px 8px;border-radius:14px;overflow:hidden;background:rgba(242,242,242,.92);-webkit-backdrop-filter:blur(25px);backdrop-filter:blur(25px);animation:up .3s cubic-bezier(.2,.9,.3,1)}
@@ -589,9 +590,9 @@ table.ft td:first-child{color:var(--text2)}
       <div style="padding:16px 16px 0"><div class="segc" data-seg><div class="thumb"></div><button aria-selected="true">My Plants</button><button aria-selected="false">Past Scans</button></div></div>
       <div class="scroll empty" id="emptyPlants">
         <div class="fan">
-          <div class="l"><img src="assets/ic-garden-lg-muted.svg" alt="" style="filter:grayscale(1);opacity:.5"></div>
-          <div class="r"><img src="assets/ic-garden-lg-muted.svg" alt="" style="filter:grayscale(1);opacity:.5"></div>
-          <div class="c"><img src="assets/ic-garden-lg.svg" alt=""></div>
+          <div class="l"><img src="assets/cactus-happy.png" alt="" style="filter:grayscale(1);opacity:.35"></div>
+          <div class="r"><img src="assets/cactus-happy.png" alt="" style="filter:grayscale(1);opacity:.35"></div>
+          <div class="c"><img src="assets/cactus-happy.png" alt="Pot, the cactus mascot" style="width:104px;height:104px"></div>
         </div>
         <div class="empty-tx"><p class="t2">Add your first plant</p><p class="bd c-2">Tap the camera below — every plant you keep lives here with its care plan.</p></div>
         <button class="btn pri r16" data-scan>Add a Plant</button>
@@ -886,7 +887,7 @@ table.ft td:first-child{color:var(--text2)}
       <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button><p class="ttl hd">My Account</p><span style="width:24px"></span></div>
       <div class="scroll" style="padding:16px;display:flex;flex-direction:column;align-items:center;gap:24px">
         <div style="position:relative">
-          <div style="width:160px;height:160px;border-radius:50%;background:#f0fdf4;display:grid;place-items:center;overflow:hidden"><i class="i" id="avatarIcon" style="--m:url(assets/ic-leaves.svg);width:64px;height:64px;color:#15803d"></i><img id="avatarImg" alt="Your photo" hidden style="width:100%;height:100%;object-fit:cover"></div>
+          <div style="width:160px;height:160px;border-radius:50%;background:#f0fdf4;display:grid;place-items:center;overflow:hidden"><img id="avatarIcon" src="assets/cactus-happy.png" alt="Pot, the cactus mascot" style="width:132px;height:132px"><img id="avatarImg" alt="Your photo" hidden style="width:100%;height:100%;object-fit:cover"></div>
           <input type="file" id="pickAvatar" accept="image/*" hidden>
           <button id="avatarEdit" style="position:absolute;left:109px;top:128px;width:32px;height:32px;border-radius:50%;background:var(--icon);display:grid;place-items:center;color:#fff" aria-label="Change photo"><i class="i" style="--m:url(assets/ic-pen.svg);width:16px;height:16px"></i></button>
         </div>
@@ -916,7 +917,7 @@ table.ft td:first-child{color:var(--text2)}
       <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button><p class="ttl hd">App Info</p><span style="width:24px"></span></div>
       <div class="scroll" style="padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px">
         <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
-          <img src="assets/app-icon.png" alt="Pot app icon" style="width:134px;height:134px;border-radius:16px">
+          <img src="assets/app-icon.png" alt="Pot app icon" style="width:134px;height:134px;border-radius:30px;box-shadow:0 4px 14px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.06)">
           <div style="text-align:center"><p class="lt">POT</p><p class="sh c-2">Version 1.0.0</p></div>
         </div>
         <div class="card" style="width:100%;box-sizing:border-box;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px">
