@@ -228,6 +228,57 @@ p,h1,h2,h3{margin:0}
 .field input::placeholder{color:#78716c}
 .field .eye{width:24px;height:24px;display:grid;place-items:center;color:#a8a29e}
 
+/* onboarding (Figma 114824:18887 …) */
+.onb-body{flex:1;overflow-y:auto;scrollbar-width:none;padding:0 16px 8px;display:flex;flex-direction:column;gap:16px}
+.onb-body::-webkit-scrollbar{display:none}
+.onb-q{font-size:28px;line-height:34px;font-weight:700}
+.opt{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;min-height:48px;padding:12px 16px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow-card);font-size:17px;line-height:22px;color:var(--text);text-align:left;border:1.5px solid transparent;transition:border-color .15s}
+.opt .mark{flex:none;width:24px;height:24px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;color:transparent}
+.opt .lbl{flex:1}
+.opt[aria-checked="true"]{border-color:#15803d}
+.opt[aria-checked="true"] .mark{background:#15803d;color:#fff}
+.opt .em{flex:none;width:24px;text-align:center;font-size:18px;line-height:24px}
+.quote{background:var(--surface2);border-radius:12px;padding:12px 16px;display:flex;flex-direction:column;gap:6px;color:var(--text3)}
+.quote .q{font-size:20px;line-height:1;color:var(--icon2)}
+.quote p{font-size:15px;line-height:20px;color:var(--text2)}
+.quote small{font-size:13px;line-height:18px;color:var(--text3)}
+.onb-foot{flex:none;display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 16px 34px;background:var(--bg)}
+.onb-foot .skip{color:var(--link);font-weight:600;font-size:17px;padding:6px 14px}
+.onb-note{font-size:15px;line-height:20px;color:var(--text2);text-align:center}
+
+/* skeletons (Figma 1697:45923 / 1697:45729) */
+.sk{background:var(--on-bgr);border-radius:12px;position:relative;overflow:hidden}
+.sk::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);animation:shimmer 1.4s linear infinite}
+.phone.dark .sk::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent)}
+@keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@media (prefers-reduced-motion:reduce){.sk::after{animation-duration:4s}}
+.sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;padding:10px 16px 24px}
+.sk-grid .sk{height:280px}
+#s-details.sk-on #detScroll>:not(#detSk){display:none}
+#s-details.sk-on .float-nav,#s-details.sk-on .action{visibility:hidden}
+.ph{position:relative}
+.ph img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:0;transition:opacity .25s}
+.ph.on img{opacity:1}
+
+/* image placeholder while a photo is still loading (Figma 1697:45516) */
+.ph{background:var(--surface2);display:grid;place-items:center}
+.ph i{width:56px;height:56px;background:var(--on-bgr);-webkit-mask:url(assets/ic-garden-lg-muted.svg) center/contain no-repeat;mask:url(assets/ic-garden-lg-muted.svg) center/contain no-repeat}
+.pcard .ph{height:206px;border-radius:8px 8px 0 0}
+.plist .ph{width:56px;height:56px;border-radius:8px}
+.plist .ph i{width:32px;height:32px}
+.hero .ph{width:100%;height:100%}
+
+/* swipe actions on garden rows/cards (Figma 1545:77052) */
+.sw-wrap{position:relative;overflow:hidden;border-radius:12px}
+.sw-wrap .acts-sw{position:absolute;right:0;top:0;bottom:0;display:flex;gap:0;z-index:0}
+.sw-wrap .acts-sw button{width:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-size:12px;font-weight:600}
+.sw-wrap .acts-sw .add{background:#15803d}
+.sw-wrap .acts-sw .del{background:#dc2626}
+.sw-wrap>.sw-front.pcard{background:var(--surface)}
+.sw-wrap>.sw-front{position:relative;z-index:1;width:100%;box-sizing:border-box;background:var(--bg);transition:transform .25s cubic-bezier(.2,.8,.2,1);will-change:transform}
+.sw-wrap.open>.sw-front{transform:translateX(-144px)}
+.sw-wrap.one.open>.sw-front{transform:translateX(-72px)}
+
 /* misc */
 .pot{width:250px;height:250px;margin-block:0 16px}
 .alert-ios{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.3);display:grid;place-items:center;animation:fade .2s}
@@ -399,8 +450,49 @@ table.ft td:first-child{color:var(--text2)}
       <button class="x" id="installX" aria-label="Dismiss"><svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M2 2l10 10M12 2 2 12"/></svg></button>
     </div>
 
+    <!-- 0. First load (Figma 1697:45512) -->
+    <section class="screen" id="s-boot" data-title="First Load">
+      <div class="sb"></div>
+      <div style="flex:1;display:grid;place-items:center;color:#15803d"><div class="spin"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+      <div class="hi"></div>
+    </section>
+
+    <!-- 0.1 Onboarding (Figma 114824:18887 …) -->
+    <section class="screen" id="s-onb" data-title="Onboarding" hidden>
+      <div class="sb"></div>
+      <div class="nav"><button class="ic" id="onbBack" aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button><span style="flex:1"></span></div>
+      <div class="onb-body" id="onbBody"></div>
+      <div class="onb-foot" id="onbFoot"></div>
+      <div class="hi"></div>
+    </section>
+
+    <!-- 10.1 Try for Free (Figma 1026:35616) -->
+    <section class="screen" id="s-paywall" data-title="Try for Free" hidden>
+      <div class="sb"></div>
+      <div class="scroll" style="padding:0 16px;display:flex;flex-direction:column;align-items:center">
+        <img src="assets/cactus-happy.png" alt="" style="width:230px;height:230px;margin-top:8px">
+        <p class="t1 b" style="margin:4px 0 16px">Try for Free</p>
+        <div style="display:flex;flex-direction:column;gap:12px;align-self:flex-start;padding-left:24px">
+          <p class="t3 s c-2"><span style="color:#15803d">✓</span> Identify plants</p>
+          <p class="t3 s c-2"><span style="color:#15803d">✓</span> Identify toxic plants</p>
+          <p class="t3 s c-2"><span style="color:#15803d">✓</span> Care Tips</p>
+          <p class="t3 s c-2"><span style="color:#15803d">✓</span> Fun facts!</p>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px;width:100%;margin-top:24px" id="plans">
+          <button class="opt" data-plan="annual" aria-checked="true" role="radio"><span class="mark">✓</span><span class="lbl"><b class="hd">Annual</b><br><span class="sh c-3">Full access for just <b>39.99/year</b></span></span><span class="tag" style="background:#fef08a;color:#854d0e;font-size:13px;height:24px;padding:2px 10px">33% off</span></button>
+          <button class="opt" data-plan="monthly" aria-checked="false" role="radio"><span class="mark">✓</span><span class="lbl"><b class="hd">Monthly</b><br><span class="sh c-3">Full access for just <b>4.99/month</b></span></span></button>
+        </div>
+        <p class="sh c-3" style="text-align:center;margin:16px 0">7 days trial then $6.99 / week<br>Cancel anytime on the App Store</p>
+      </div>
+      <div style="flex:none;padding:0 16px 34px;display:flex;flex-direction:column;align-items:center;gap:12px">
+        <button class="btn pri r16" id="subscribe">Continue</button>
+        <button class="link bd" data-go="terms">Terms of Use</button>
+      </div>
+      <div class="hi"></div>
+    </section>
+
     <!-- 1. Loading -->
-    <section class="screen" id="s-loading" data-title="Loading">
+    <section class="screen" id="s-loading" data-title="Loading" hidden>
       <div class="sb"></div>
       <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;margin-top:40px;padding-inline:35px">
         <p class="lt b" style="color:var(--link)">Pot</p>
@@ -520,6 +612,7 @@ table.ft td:first-child{color:var(--text2)}
       <div class="big-title"><h2>My Garden</h2></div>
       <div style="padding:16px"><div class="segc" id="gardenSeg" data-seg><div class="thumb"></div><button aria-selected="true" data-pane="plants">My Plants</button><button aria-selected="false" data-pane="scans">Past Scans</button></div></div>
       <div class="scroll">
+        <div class="sk-grid" id="gardenSk" hidden><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
         <div class="grid" id="gardenGrid"></div>
         <div class="plist" id="scanList" hidden></div>
       </div>
@@ -613,7 +706,19 @@ table.ft td:first-child{color:var(--text2)}
         </span>
       </div>
       <div class="scroll" id="detScroll">
-        <div class="hero"><img id="detImg" src="assets/peanuts.jpg" alt=""></div>
+        <div id="detSk" hidden style="padding:0 0 24px">
+          <div class="sk" style="height:380px;border-radius:0"></div>
+          <div style="display:flex;flex-direction:column;gap:12px;padding:16px">
+            <div class="sk" style="height:28px;width:45%"></div>
+            <div class="sk" style="height:16px;width:60%"></div>
+            <div class="sk" style="height:60px"></div>
+            <div class="sk" style="height:32px;width:80%"></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="sk" style="height:56px"></div><div class="sk" style="height:56px"></div><div class="sk" style="height:56px"></div><div class="sk" style="height:56px"></div></div>
+            <div class="sk" style="height:56px"></div>
+            <div class="sk" style="height:220px"></div>
+          </div>
+        </div>
+        <div class="hero"><span class="ph" id="detPh"><i></i><img id="detImg" src="assets/peanuts.jpg" alt="" onload="this.parentElement.classList.add('on')"></span></div>
         <div style="display:flex;flex-direction:column;gap:16px;padding:16px 16px 4px">
           <div style="display:flex;flex-direction:column;gap:4px">
             <p class="lt b plant-name">Peanut</p>
@@ -737,7 +842,7 @@ table.ft td:first-child{color:var(--text2)}
           <p class="t3 s">Account</p>
           <div class="set-group">
             <button class="set-row" data-go="account"><i class="i g" style="--m:url(assets/ic-diamond.svg);width:22px;height:21px;margin-inline:1px"></i><span class="lbl">My Account</span><i class="i ch" style="--m:url(assets/ic-chevron-right2.svg);width:8px;height:14px;margin-inline:8px"></i></button>
-            <button class="set-row" data-toast="No purchases to restore"><i class="i g" style="--m:url(assets/ic-user.svg);width:22px;height:22px;margin-inline:1px"></i><span class="lbl">Restore Purchase</span><i class="i ch" style="--m:url(assets/ic-chevron-right2.svg);width:8px;height:14px;margin-inline:8px"></i></button>
+            <button class="set-row" id="restoreBtn"><i class="i g" style="--m:url(assets/ic-user.svg);width:22px;height:22px;margin-inline:1px"></i><span class="lbl">Restore Purchase</span><i class="i ch" style="--m:url(assets/ic-chevron-right2.svg);width:8px;height:14px;margin-inline:8px"></i></button>
           </div>
         </div>
         <div style="display:flex;flex-direction:column;gap:8px">
@@ -903,7 +1008,7 @@ $$('[data-seg]').forEach(seg => {
 const layoutSegs = () => $$('[data-seg]').forEach(seg => { const i = $$('button', seg).findIndex(b => b.getAttribute('aria-selected') === 'true'); setSeg(seg, Math.max(0, i)); });
 
 /* ---------- navigation ---------- */
-const state = { stack: ['loading'], authed: false, camAsked: false, camAllowed: false, tipsSeen: false, plant: 'peanut', fromScan: false, garden: [], scans: [], removed: [] };
+const state = { stack: ['boot'], authed: false, camAsked: false, camAllowed: false, tipsSeen: false, plant: 'peanut', fromScan: false, garden: [], scans: [], removed: [] };
 const added = () => state.garden.length > 0 || state.scans.length > 0;
 const cur = () => state.stack[state.stack.length - 1];
 const modal = new Set(['tips', 'camera', 'recog']);
@@ -972,7 +1077,7 @@ phone.addEventListener('click', e => {
   if (t.hasAttribute('data-garden')) return reset('garden', 'fade');
   if (t.dataset.go) {
     const id = t.dataset.go;
-    if (t.dataset.auth) { state.authed = true; return reset(gardenId(), 'fwd'); }
+    if (t.dataset.auth) return signedIn();
     if (id === 'email') emailMode(t.dataset.mode || 'signin');
     if (id === 'privacy' || id === 'terms') legal(id);
     if (id === 'tips') state.tipsMode = t.dataset.tipsmode || 'first';
@@ -980,6 +1085,12 @@ phone.addEventListener('click', e => {
     return go(id, { replace: t.hasAttribute('data-replace') });
   }
 });
+
+function signedIn() {
+  state.authed = true;
+  reset(gardenId(), 'fwd');
+  if (state.scanAfterAuth) { state.scanAfterAuth = false; setTimeout(startScan, 500); }
+}
 
 /* ---------- toast & alert ---------- */
 let toastT;
@@ -1035,7 +1146,7 @@ function syncEmail() {
 }
 ['input', 'change'].forEach(ev => { $('#em-email').addEventListener(ev, syncEmail); $('#em-pass').addEventListener(ev, syncEmail); });
 $('#eye').onclick = () => { const p = $('#em-pass'); p.type = p.type === 'password' ? 'text' : 'password'; $('#eye').setAttribute('aria-label', p.type === 'password' ? 'Show password' : 'Hide password'); };
-$('#emailForm').onsubmit = e => { e.preventDefault(); if ($('#emailSubmit').disabled) return; state.authed = true; reset(gardenId(), 'fwd'); };
+$('#emailForm').onsubmit = e => { e.preventDefault(); if ($('#emailSubmit').disabled) return; signedIn(); };
 $('#fg-email').addEventListener('input', () => { const ok = validEmail($('#fg-email').value); $('#forgotSubmit').disabled = !ok; $('#forgotSubmit').classList.toggle('pri', ok); });
 $('#forgotForm').onsubmit = e => { e.preventDefault(); if ($('#forgotSubmit').disabled) return; $('#sentTo').textContent = $('#fg-email').value; go('checkmail'); };
 
@@ -1161,11 +1272,14 @@ const enter = {
     if (photo) realRecognition(photo); else demoRecognition();
   },
   camera() { startCamera(); },
-  details() { renderPlant(); },
+  details(isBack) { renderPlant(); if (!isBack && !state.fromScan) detailSkeleton(); },
   review() { renderReview(); },
   care() { renderPlant(); renderCare(); },
   toxicity() { renderPlant(); },
-  loading() { setTimeout(() => cur() === 'loading' && reset('signin'), 1800); },
+  loading() { setTimeout(() => cur() === 'loading' && reset(store.get('onboarded') ? 'signin' : 'onb'), 1800); },
+  boot() { setTimeout(() => cur() === 'boot' && reset('loading'), 900); },
+  onb() { renderOnb(); },
+  garden() { gardenSkeleton(); },
 };
 /* real sharing: the system sheet on a phone, a copied link everywhere else */
 async function shareApp() {
@@ -1227,6 +1341,23 @@ function restore() {
   } catch { state.scans = []; state.garden = []; state.removed = []; }
 }
 
+/* ---------- skeletons (Figma 1697:45923 / 1697:45729) ---------- */
+let skT = [];
+function gardenSkeleton() {
+  skT.forEach(clearTimeout);
+  const pane = $$('#gardenSeg button').findIndex(b => b.getAttribute('aria-selected') === 'true');
+  $('#gardenSk').hidden = false; $('#gardenGrid').hidden = true; $('#scanList').hidden = true;
+  skT = [setTimeout(() => {
+    $('#gardenSk').hidden = true;
+    $('#gardenGrid').hidden = pane === 1; $('#scanList').hidden = pane !== 1;
+  }, 700)];
+}
+function detailSkeleton() {
+  skT.forEach(clearTimeout);
+  $('#s-details').classList.add('sk-on'); $('#detSk').hidden = false;
+  skT = [setTimeout(() => { $('#s-details').classList.remove('sk-on'); $('#detSk').hidden = true; }, 650)];
+}
+
 /* ---------- plants ---------- */
 const TAG = { heat: ['tag-sun', 'Heat tolerant'], wild: ['tag-elephant', 'Wildlife attractor'], pet: ['tag-cat', 'Pet-friendly'], low: ['tag-sun', 'Low light tolerant'], dry: ['tag-sun', 'Drought tolerant'], bright: ['tag-sun', 'Loves bright light'] };
 const SAFE = { human: 'Non-Toxic', pets: 'Non-toxic to cats and dogs', env: 'Environmentally safe' };
@@ -1281,6 +1412,8 @@ const scanIds = () => state.scans.filter(id => PLANTS[id]);
 const P = () => PLANTS[state.plant];
 const inGarden = () => gardenIds().includes(state.plant);
 const imgSrc = p => p.img.startsWith('data:') ? p.img : 'assets/' + p.img;
+// a photo shows the pot placeholder until it has loaded (Figma 1697:45516)
+const photo = (p, size) => `<span class="ph"${size === 'sm' ? '' : ''}><i></i><img src="${imgSrc(p)}" alt="" onload="this.parentElement.classList.add('on')"></span>`;
 function openPlant(id, fromScan, opts) { state.plant = id; state.fromScan = fromScan; go('details', opts); }
 const TAGDEF = t => TAG[t] || ['tag-sun', t];
 const LEVEL = { Easy: ['#15803d', 'gr', 'cactus-happy.png', 'Happy cactus mascot'], Medium: ['#d97706', 'am', 'cactus-happy.png', 'Happy cactus mascot'], Hard: ['#c2410c', 'o', 'cactus.png', 'Grumpy cactus mascot'] };
@@ -1290,7 +1423,8 @@ function renderPlant() {
   $$('.plant-name').forEach(e => e.textContent = p.name);
   const sub = p.name === p.latin ? p.common.split(',')[0].replace(/^./, c => c.toUpperCase()) : p.latin;
   $$('.plant-latin').forEach(e => { e.textContent = sub; e.style.fontStyle = sub === p.latin && e.closest('#detScroll') ? 'italic' : 'normal'; });
-  $('#detImg').src = imgSrc(p); $('#detImg').alt = p.name;
+  $('#detPh').classList.remove('on'); $('#detImg').src = imgSrc(p); $('#detImg').alt = p.name;
+  if ($('#detImg').complete) $('#detPh').classList.add('on');
   $('#aboutTx').textContent = p.about; $('#aboutMore').textContent = 'Show More';
   $('#detTags').innerHTML = p.tags.map(t => `<span class="tag"><i class="i" style="--m:url(assets/${TAGDEF(t)[0]}.svg)"></i>${TAGDEF(t)[1]}</span>`).join('');
   $('#qfGrid').innerHTML = [['y', 'qf-sun.svg', 'Light', p.sun], ['o', 'qf-temp.svg', p.temp, 'Temperature'], ['bl', 'qf-water.svg', p.water, 'Watering'], ['am', 'qf-fert.svg', p.fert, 'Fertilizer']]
@@ -1480,14 +1614,178 @@ function renderCare() {
   $('#careScroll').scrollTop = 0;
 }
 
+/* ---------- onboarding (Figma 114824:18887 …) ---------- */
+const ONB = [
+  { id: 'welcome' },
+  { id: 'name', q: 'First things first, whats your name?', sub: 'Let’s be friends', input: 'Your name', mascot: true },
+  { id: 'count', q: n => `${n ? n + ', how' : 'How'} many houseplants do you currently have?`, sub: 'You can choose only one option',
+    opts: ['1 to 2', '3 to 5', '6 to 10', 'More than 10', 'No plants'], note: 'Nice start! Let’s keep your green buddies happy.' },
+  { id: 'sun', q: 'How much natural sunlight does your home get?', sub: 'You can choose only one option',
+    opts: ['A lot', 'Moderate', 'Little', 'Almost none', 'Not sure'],
+    quote: ['Every plant deserves a beautiful home, no matter the lighting conditions. Good design adapts to every space!', '— Nick, Designer at Pot'] },
+  { id: 'care', q: 'How well do you know about plant care?',
+    groups: [['Watering', 'Do you know how often plants really need water?'], ['Soil', 'Do you know ideal soil type for plants?'], ['Disease', 'Do you know signs of pests/diseases?'], ['Repotting', 'Do you know when to repot plants?']],
+    opts: ['Yes', 'No', 'Not sure'] },
+  { id: 'goal', q: 'What’s your main goal with Pot?', sub: 'You can choose several answer options', multi: true,
+    opts: [['📷', 'Identify by photo'], ['🪴', 'Keep my plants alive'], ['🌱', 'Learn gardening basics'], ['🩺', 'Diagnose & treat'], ['🏡', 'Grow indoor jungle']],
+    quote: ['Plants teach us patience and kindness — it’s incredible to watch them grow.', '— Dima, Product Manager at Pot'] },
+  { id: 'nearby' },
+];
+const answers = {};
+let onbStep = 0;
+const OPTROW = (label, on, em, g) => `<button class="opt" role="${em === undefined ? 'radio' : 'checkbox'}" aria-checked="${on}" data-opt="${label}"${g ? ` data-g="${g}"` : ''}>${em ? `<span class="em">${em}</span>` : ''}<span class="lbl">${label}</span><span class="mark"><svg width="14" height="11" viewBox="0 0 14 11" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M1.5 5.5 5 9l7.5-7.5"/></svg></span></button>`;
+function renderOnb() {
+  const st = ONB[onbStep], body = $('#onbBody'), foot = $('#onbFoot');
+  $('#onbBack').style.visibility = onbStep ? '' : 'hidden';
+  if (st.id === 'welcome') {
+    body.innerHTML = `<div style="text-align:center;display:flex;flex-direction:column;gap:8px;padding-top:8px">
+        <p class="t3 b" style="color:var(--link)">Pot</p>
+        <p class="t2">Your Personal Plant Assistant!</p>
+        <p class="bd c-3">Identify, collect, and keep your plants thriving.</p>
+      </div>
+      <img src="assets/cactus-happy.png" alt="Pot, the cactus mascot" style="width:300px;height:300px;margin:8px auto auto">`;
+    foot.innerHTML = `<button class="btn pri r16" data-onb="start">Start My Journey</button>
+      <p class="sh c-3">Already have an account?</p><button class="skip" data-onb="signin">Sign in</button>`;
+    return;
+  }
+  if (st.id === 'nearby') {
+    body.innerHTML = `<img src="assets/cactus-happy.png" alt="" style="width:280px;height:280px;margin:24px auto 0">
+      <div style="text-align:center;display:flex;flex-direction:column;gap:8px"><p class="t1 b">Got your plants nearby?</p><p class="bd c-3">Snap a photo and Pot will identify them!</p></div>`;
+    foot.innerHTML = `<button class="btn pri r16" data-onb="photo"><i class="i" style="--m:url(assets/ic-camera.svg);width:22px;height:20px"></i>Take Photo</button>
+      <button class="btn ter" data-onb="photo">Upload Photo</button>
+      <button class="skip" data-onb="next">Skip</button>`;
+    return;
+  }
+  const name = answers.name || '';
+  const q = typeof st.q === 'function' ? st.q(name) : st.q;
+  let inner = `<p class="onb-q">${q}</p>${st.sub ? `<p class="sh c-3" style="margin-top:-8px">${st.sub}</p>` : ''}`;
+  if (st.mascot) inner = `<img src="assets/cactus-happy.png" alt="" style="width:180px;height:180px;margin:0 auto">` + inner;
+  if (st.input) inner += `<label class="field"><input id="onbInput" type="text" placeholder="${st.input}" value="${name}" aria-label="${st.input}"></label>`;
+  if (st.groups) inner += st.groups.map(([g, sub]) => `<div style="display:flex;flex-direction:column;gap:8px"><div><p class="hd">${g}</p><p class="sh c-3">${sub}</p></div>${st.opts.map(o => OPTROW(o, answers[st.id + ':' + g] === o, undefined, g)).join('')}</div>`).join('');
+  else if (st.opts) inner += `<div style="display:flex;flex-direction:column;gap:12px">${st.opts.map(o => Array.isArray(o) ? OPTROW(o[1], (answers[st.id] || []).includes(o[1]), o[0]) : OPTROW(o, answers[st.id] === o)).join('')}</div>`;
+  if (st.quote) inner += `<div class="quote"><span class="q">“</span><p>${st.quote[0]}</p><small>${st.quote[1]}</small></div>`;
+  body.innerHTML = inner;
+  const picked = st.groups ? st.groups.some(([g]) => answers[st.id + ':' + g]) : st.multi ? (answers[st.id] || []).length : st.input ? !!answers.name : !!answers[st.id];
+  foot.innerHTML = `${st.note && picked ? `<p class="onb-note">${st.note}</p>` : ''}
+    <button class="btn pri r16" data-onb="next" ${picked ? '' : 'disabled'}>Next</button>
+    <button class="skip" data-onb="next">Skip</button>`;
+  if (st.input) $('#onbInput').addEventListener('input', e => { answers.name = e.target.value.trim(); renderFoot(); });
+}
+function renderFoot() {
+  const st = ONB[onbStep];
+  const picked = st.groups ? st.groups.some(([g]) => answers[st.id + ':' + g]) : st.multi ? (answers[st.id] || []).length : st.input ? !!answers.name : !!answers[st.id];
+  const btn = $('#onbFoot .btn');
+  btn.disabled = !picked; btn.classList.toggle('pri', true);
+  const noteEl = $('#onbFoot .onb-note');
+  if (st.note && picked && !noteEl) $('#onbFoot').insertAdjacentHTML('afterbegin', `<p class="onb-note">${st.note}</p>`);
+}
+$('#onbBody').addEventListener('click', e => {
+  const b = e.target.closest('[data-opt]'); if (!b) return;
+  const st = ONB[onbStep], val = b.dataset.opt;
+  if (st.groups) {
+    answers[st.id + ':' + b.dataset.g] = val;
+    $$(`#onbBody .opt[data-g="${b.dataset.g}"]`).forEach(o => o.setAttribute('aria-checked', o === b));
+  } else if (st.multi) {
+    const list = answers[st.id] = answers[st.id] || [];
+    const i = list.indexOf(val);
+    if (i < 0) list.push(val); else list.splice(i, 1);
+    b.setAttribute('aria-checked', i < 0);
+  } else {
+    answers[st.id] = val;
+    $$('#onbBody .opt').forEach(o => o.setAttribute('aria-checked', o === b));
+  }
+  renderFoot();
+});
+$('#onbFoot').addEventListener('click', e => {
+  const b = e.target.closest('[data-onb]'); if (!b || b.disabled) return;
+  const act = b.dataset.onb;
+  if (act === 'signin') return finishOnb('signin');
+  if (act === 'photo') { state.scanAfterAuth = true; return nextOnb(); }
+  if (act === 'start') return nextOnb();
+  nextOnb();
+});
+$('#onbBack').onclick = () => { if (onbStep) { onbStep--; renderOnb(); $('#onbBody').scrollTop = 0; } };
+function nextOnb() {
+  if (onbStep < ONB.length - 1) { onbStep++; renderOnb(); $('#onbBody').scrollTop = 0; return; }
+  finishOnb('paywall');
+}
+function finishOnb(to) {
+  store.set('onboarded', '1');
+  store.set('name', answers.name || '');
+  reset(to === 'signin' ? 'signin' : 'paywall', 'fwd');
+}
+
+/* ---------- paywall (Figma 1026:35616 / 1291:48317) ---------- */
+let plan = 'annual';
+$('#plans').addEventListener('click', e => {
+  const b = e.target.closest('[data-plan]'); if (!b) return;
+  plan = b.dataset.plan;
+  $$('#plans .opt').forEach(o => o.setAttribute('aria-checked', o === b));
+});
+$('#subscribe').onclick = () => {
+  const price = plan === 'annual' ? '$29.99 per year' : '$4.99 per month';
+  const wrap = document.createElement('div');
+  wrap.className = 'sheet';
+  wrap.innerHTML = `<div class="card-s" style="background:rgba(28,25,23,.96);color:#fff;padding:16px;margin-bottom:34px">
+      <p class="t3 s" style="margin-bottom:12px">App Store</p>
+      <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:12px;align-items:center"><img src="assets/app-icon.png" alt="" style="width:48px;height:48px;border-radius:10px"><div><p class="co s">${plan === 'annual' ? 'Yearly' : 'Monthly'} premium subscription</p><p class="fn" style="opacity:.6">Plant Care &amp; Identification</p></div></div>
+        <div class="divider" style="background:rgba(255,255,255,.12)"></div>
+        <div><p class="co s">1-week free trial</p><p class="fn" style="opacity:.6">Starting today</p></div>
+        <div><p class="co s">${price}</p><p class="fn" style="opacity:.6">After the trial</p></div>
+        <div class="divider" style="background:rgba(255,255,255,.12)"></div>
+        <p class="fn" style="opacity:.6">No commitment. Cancel anytime in Settings at least a day before each renewal date.</p>
+      </div>
+      <p class="co s" style="text-align:center;margin-top:20px;opacity:.9">Confirm with Side Button</p>
+      <div style="display:flex;justify-content:center;margin-top:12px"><span style="width:34px;height:34px;border-radius:50%;border:2px solid #0a84ff;color:#0a84ff;display:grid;place-items:center;font-weight:700">1</span></div>
+    </div>`;
+  wrap.onclick = e2 => { if (e2.target === wrap) wrap.remove(); };
+  phone.append(wrap);
+  setTimeout(() => { if (!wrap.isConnected) return; wrap.remove(); reset('signin', 'fwd'); toast('Free trial started'); }, 2600);
+};
+
 /* ---------- garden ---------- */
 function renderGarden(fresh) {
   const ids = gardenIds();
   const scans = scanIds();
-  $('#gardenGrid').innerHTML = ids.map(id => { const p = PLANTS[id]; return `<button class="pcard" data-plant="${id}" style="position:relative"><img src="${imgSrc(p)}" alt="">${id === fresh ? '<span class="new">New</span>' : ''}<span class="nm">${p.name}</span><span class="cm">${p.common}</span></button>`; }).join('');
-  $('#scanList').innerHTML = scans.map(id => { const p = PLANTS[id]; return `<button data-plant="${id}"><img src="${imgSrc(p)}" alt=""><span class="tx"><span class="hd" style="display:block;letter-spacing:-.43px">${p.name}</span><span class="fn c-3" style="display:block">${p.common}</span></span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i></button>`; }).join('');
+  $('#gardenGrid').innerHTML = ids.map(id => { const p = PLANTS[id]; return `<div class="sw-wrap one" data-id="${id}"><div class="acts-sw"><button class="del" data-act="del" aria-label="Remove ${p.name}"><i class="i" style="--m:url(assets/ic-trash.svg);width:22px;height:22px"></i>Delete</button></div><button class="sw-front pcard" data-plant="${id}" style="position:relative">${photo(p)}${id === fresh ? '<span class="new">New</span>' : ''}<span class="nm">${p.name}</span><span class="cm">${p.common}</span></button></div>`; }).join('');
+  $('#scanList').innerHTML = scans.map(id => { const p = PLANTS[id]; const has = gardenIds().includes(id); return `<div class="sw-wrap" data-id="${id}"><div class="acts-sw">${has ? '' : `<button class="add" data-act="add" aria-label="Add ${p.name} to My Plants"><span style="font-size:22px;line-height:22px">+</span>Add</button>`}<button class="del" data-act="del-scan" aria-label="Delete ${p.name} from history"><i class="i" style="--m:url(assets/ic-trash.svg);width:22px;height:22px"></i>Delete</button></div><button class="sw-front" data-plant="${id}">${photo(p, 'sm')}<span class="tx"><span class="hd" style="display:block;letter-spacing:-.43px">${p.name}</span><span class="fn c-3" style="display:block">${p.common}</span></span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i></button></div>`; }).join('');
+  $$('#s-garden .sw-wrap').forEach(w => { if (!$('.acts-sw button', w)) return; if ($$('.acts-sw button', w).length === 1) w.classList.add('one'); else w.classList.remove('one'); });
 }
-$('#s-garden').addEventListener('click', e => { const b = e.target.closest('[data-plant]'); if (b) openPlant(b.dataset.plant, false); });
+$('#s-garden').addEventListener('click', e => {
+  const act = e.target.closest('[data-act]');
+  if (act) {
+    const wrap = act.closest('.sw-wrap'), id = wrap.dataset.id;
+    closeSwipes();
+    if (act.dataset.act === 'add') { state.removed = state.removed.filter(x => x !== id); if (!state.garden.includes(id)) state.garden.unshift(id); persist(); renderGarden(id); return toast(`✓ ${PLANTS[id].name} added to My Plants`); }
+    if (act.dataset.act === 'del') return removePlant(id, () => {});
+    return iosAlert(`Delete ${PLANTS[id].name}?`, 'The scan disappears from your history.', [
+      { label: 'Cancel' },
+      { label: 'Delete', del: true, do: () => { state.scans = state.scans.filter(x => x !== id); persist(); renderGarden(); toast('Scan deleted'); } }]);
+  }
+  const b = e.target.closest('[data-plant]');
+  if (!b) return;
+  if ($('.sw-wrap.open')) return closeSwipes();
+  openPlant(b.dataset.plant, false);
+});
+const closeSwipes = () => $$('.sw-wrap.open').forEach(w => w.classList.remove('open'));
+/* swipe left on a card or a scan row to reveal Add / Delete */
+(() => {
+  let wrap = null, x0 = 0, y0 = 0, dir = '';
+  const garden = $('#s-garden');
+  garden.addEventListener('pointerdown', e => {
+    wrap = e.target.closest('.sw-wrap'); x0 = e.clientX; y0 = e.clientY; dir = '';
+    if (wrap && !wrap.contains($('.sw-wrap.open'))) closeSwipes();
+  }, { passive: true });
+  garden.addEventListener('pointermove', e => {
+    if (!wrap) return;
+    const dx = e.clientX - x0, dy = e.clientY - y0;
+    if (!dir) dir = Math.abs(dx) > Math.abs(dy) + 4 ? 'x' : Math.abs(dy) > 6 ? 'y' : '';
+    if (dir === 'x') wrap.classList.toggle('open', dx < -30);
+  }, { passive: true });
+  garden.addEventListener('pointerup', () => { wrap = null; });
+  garden.addEventListener('pointercancel', () => { wrap = null; });
+})();
 
 /* ---------- settings / legal ---------- */
 $('#restart').onclick = () => iosAlert('Start from the beginning?', 'Your saved plants and scans on this device are cleared, and the prototype opens at the very first screen.', [
@@ -1499,6 +1797,15 @@ function restartPrototype() {
   Object.assign(state, { authed: false, camAllowed: false, tipsSeen: false, plant: 'peanut', fromScan: false, garden: [], scans: [], removed: [] });
   persist(); renderGarden(); reset('loading');
 }
+$('#restoreBtn').onclick = () => iosAlert('Restore Purchases', 'Sign in to the App Store account you bought Pot Premium with.', [
+  { label: 'Not Now' },
+  { label: 'Restore', bold: true, do: () => toast('No purchases to restore') }
+]);
+$('#avatarEdit').onclick = () => iosSheet([
+  { label: 'Take Photo', do: () => toast('Camera opens here') },
+  { label: 'Choose from Library', do: () => toast('Photo library opens here') },
+  { label: 'Remove Photo', del: true, do: () => toast('Photo removed') },
+]);
 $('#rateBtn').onclick = () => {
   const stars = '<div class="row" id="rateStars">' + [1,2,3,4,5].map(n => `<button data-n="${n}" aria-label="${n} stars">☆</button>`).join('') + '</div>';
   const box = iosAlert('Enjoying Pot?', 'Tap a star to rate it on the App Store.', [{ label: 'Not Now' }], { icon: 'assets/app-icon.png', extra: stars });
@@ -1560,8 +1867,9 @@ $('#deleteAccount').onclick = () => iosAlert('Delete Account?', 'Your plants, sc
 ]);
 
 /* ---------- jump list ---------- */
-const JUMP = [['loading', '1'], ['signin', '2.1'], ['email', '2.4'], ['forgot', '2.5'], ['checkmail', '2.6'], ['garden-empty', '3.7'], ['garden', '3.8'], ['tips', '5.1'], ['camera', '5.2'], ['recog', '5.5'], ['details', '8'], ['care', '8.1'], ['faq', '8.8'], ['toxicity', '8.9'], ['settings', '12.1'], ['account', '12.2'], ['appinfo', '12.3'], ['privacy', '13.1'], ['terms', '13.2']];
+const JUMP = [['boot', '0'], ['onb', '0.1'], ['loading', '1'], ['paywall', '10.1'], ['review', '11.2'], ['signin', '2.1'], ['email', '2.4'], ['forgot', '2.5'], ['checkmail', '2.6'], ['garden-empty', '3.7'], ['garden', '3.8'], ['tips', '5.1'], ['camera', '5.2'], ['recog', '5.5'], ['details', '8'], ['care', '8.1'], ['faq', '8.8'], ['toxicity', '8.9'], ['settings', '12.1'], ['account', '12.2'], ['appinfo', '12.3'], ['privacy', '13.1'], ['terms', '13.2']];
 const JUMPLBL = { privacy: 'Privacy Policy', terms: 'Terms of Use' };
+JUMP.sort((a, b) => parseFloat(a[1]) - parseFloat(b[1]) || a[1].localeCompare(b[1]));
 $('#jump').innerHTML = JUMP.map(([id, n]) => `<button data-id="${id}"><b>${n}</b>${JUMPLBL[id] || screenEl(id).dataset.title}</button>`).join('');
 $('#jump').addEventListener('click', e => {
   const b = e.target.closest('button'); if (!b) return;
@@ -1573,7 +1881,9 @@ $('#jump').addEventListener('click', e => {
   if (id === 'tips') state.tipsMode = 'view';
   if (id === 'details' || id === 'care' || id === 'faq' || id === 'toxicity') { state.plant = 'peanut'; state.fromScan = !state.garden.includes('peanut'); }
   if (['camera', 'tips', 'recog'].includes(id)) { state.camAllowed = true; state.tipsSeen = true; }
-  const base = ['loading', 'signin', 'garden', 'garden-empty'].includes(id) ? [] : [id === 'forgot' || id === 'email' || id === 'checkmail' ? 'signin' : gardenId(), ...(['account', 'appinfo', 'privacy', 'terms'].includes(id) ? ['settings'] : [])];
+  if (id === 'review') review = 0;
+  if (id === 'onb') { onbStep = 0; }
+  const base = ['boot', 'onb', 'loading', 'paywall', 'signin', 'garden', 'garden-empty'].includes(id) ? [] : [id === 'forgot' || id === 'email' || id === 'checkmail' ? 'signin' : gardenId(), ...(['account', 'appinfo', 'privacy', 'terms'].includes(id) ? ['settings'] : [])];
   prevId = cur(); if (enter[id]) enter[id]();
   state.stack = [...base, id]; show(id, 'fade');
 });
@@ -1645,7 +1955,7 @@ else if (isIOS) showInstall('ios');
 restore();
 renderGarden();
 applyTheme(); fit();
-enter.loading();
-show('loading');
+enter.boot();
+show('boot');
 })();
 </script>
