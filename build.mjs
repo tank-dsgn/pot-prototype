@@ -49,10 +49,16 @@ const head = `<!doctype html>
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Pot">
-<meta name="theme-color" content="#f1efec" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0c0a09" media="(prefers-color-scheme: dark)">
+<script>
+// the phone's status bar follows the app's own theme, before the first paint
+(() => {
+  let dark = false;
+  try { dark = (localStorage.getItem('pot:mode') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark'; } catch {}
+  document.write('<meta name="theme-color" content="' + (dark ? '#0c0a09' : '#f1efec') + '">'
+    + '<meta name="apple-mobile-web-app-status-bar-style" content="' + (dark ? 'black' : 'default') + '">');
+})();
+</script>
 <style>*{-webkit-tap-highlight-color:transparent}img{max-width:100%}</style>
 </head>
 <body>
