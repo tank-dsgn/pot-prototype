@@ -13,6 +13,7 @@
   --grad:linear-gradient(90deg,#07813c,#029c45);
   --stage:#e4e1dc; --stage-ink:#44403c; --stage-muted:#8a847d;
   --shadow-card:0 2px 6px rgba(0,0,0,.05);
+  --dim:#a9a7a4;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -32,6 +33,7 @@
   --soft-stone:#166534; --darkgrey:#cbd5e1; --chev-bg:#292524; --chev:#e7e5e4;
   --disabled:#292524; --disabled-text:#57534e;
   --shadow-card:0 2px 6px rgba(0,0,0,.4);
+  --dim:#080706;
 }
 
 [hidden]{display:none!important}
@@ -84,7 +86,8 @@ p,h1,h2,h3{margin:0}
 .phone{position:absolute;left:0;top:0;width:440px;height:956px;border-radius:64px;overflow:hidden;background:var(--bg);
   transform-origin:0 0;box-shadow:0 0 0 12px #1c1917,0 0 0 13px #3f3a36,0 30px 80px rgba(0,0,0,.35);isolation:isolate}
 @media (max-width:560px){
-  body{background:var(--bg)}
+  body{background:var(--bg);transition:background .2s}
+  body.dimmed{background:var(--dim)}
   .stage{padding:0;display:block}
   .panel{display:none}
   .frame{width:100%!important;height:100%!important;overflow:hidden}
@@ -1939,6 +1942,14 @@ function hintBlocked() {
   if (dismissed()) return 'dismissed during this visit';
   return '';
 }
+// a modal dims the whole screen, including the area iOS paints from the page background
+new MutationObserver(() => {
+  const on = !!phone.querySelector('.alert-ios, .sheet');
+  document.body.classList.toggle('dimmed', on);
+  const m = $('meta[name="theme-color"]');
+  if (m) m.content = on ? (mode === 'dark' ? '#080706' : '#a9a7a4') : (mode === 'dark' ? '#0c0a09' : '#f1efec');
+}).observe(phone, { childList: true });
+
 $('#installX').onclick = () => hideInstall(true);
 $('#installGo').onclick = async () => {
   if (!installEvent) return hideInstall(true);
