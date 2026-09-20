@@ -76,6 +76,9 @@ p,h1,h2,h3{margin:0}
 .install .go{flex:none;height:34px;padding:0 14px;border-radius:99px;background:var(--brand);color:#fff;font-weight:600;font-size:15px}
 .install .x{flex:none;width:28px;height:28px;border-radius:50%;background:var(--surface2);color:var(--text3);display:grid;place-items:center}
 @keyframes rise{from{transform:translateY(24px);opacity:0}}
+.phone.hint-open .onb-foot{padding-bottom:264px}
+.phone.hint-open #s-signin .scroll{padding-bottom:150px}
+.phone.hint-open #s-paywall>div:last-of-type{padding-bottom:170px}
 
 .frame{position:relative;flex:none}
 .phone{position:absolute;left:0;top:0;width:440px;height:956px;border-radius:64px;overflow:hidden;background:var(--bg);
@@ -270,12 +273,13 @@ p,h1,h2,h3{margin:0}
 
 /* swipe actions on garden rows/cards (Figma 1545:77052) */
 .sw-wrap{position:relative;overflow:hidden;border-radius:12px}
-.sw-wrap .acts-sw{position:absolute;right:0;top:0;bottom:0;display:flex;gap:0;z-index:0}
+.sw-wrap .acts-sw{position:absolute;right:0;top:0;bottom:0;display:flex;gap:0;z-index:0;opacity:0;transition:opacity .12s}
+.sw-wrap.open .acts-sw{opacity:1}
 .sw-wrap .acts-sw button{width:72px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:#fff;font-size:12px;font-weight:600}
 .sw-wrap .acts-sw .add{background:#15803d}
 .sw-wrap .acts-sw .del{background:#dc2626}
 .sw-wrap>.sw-front.pcard{background:var(--surface)}
-.sw-wrap>.sw-front{position:relative;z-index:1;width:100%;box-sizing:border-box;background:var(--bg);transition:transform .25s cubic-bezier(.2,.8,.2,1);will-change:transform}
+.sw-wrap>.sw-front{position:relative;z-index:1;width:calc(100% + 1px);box-sizing:border-box;background:var(--bg);transition:transform .25s cubic-bezier(.2,.8,.2,1);will-change:transform}
 .sw-wrap.open>.sw-front{transform:translateX(-144px)}
 .sw-wrap.one.open>.sw-front{transform:translateX(-72px)}
 
@@ -1923,11 +1927,11 @@ function showInstall(kind) {
   $('#installGo').hidden = kind !== 'android';
   if (kind === 'android' && !$('#installHint').hidden) return; // already visible: just swap in the Install button
   clearTimeout(hintTimer);
-  hintTimer = setTimeout(() => { $('#installHint').hidden = false; }, 300); // right away, over the loading screen
+  hintTimer = setTimeout(() => { $('#installHint').hidden = false; phone.classList.add('hint-open'); }, 300); // right away, over the loading screen
 }
 // dismissing hides it for this visit only, so a later visit (e.g. from the QR code) shows it again
 const dismissed = () => { try { return sessionStorage.getItem('pot:installHint') === 'dismissed'; } catch { return false; } };
-function hideInstall(remember) { $('#installHint').hidden = true; if (remember) try { sessionStorage.setItem('pot:installHint', 'dismissed'); } catch {} }
+function hideInstall(remember) { $('#installHint').hidden = true; phone.classList.remove('hint-open'); if (remember) try { sessionStorage.setItem('pot:installHint', 'dismissed'); } catch {} }
 function hintBlocked() {
   if (standalone) return 'already running as the installed app';
   if (framed) return 'inside another page (iframe)';
