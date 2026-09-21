@@ -5,6 +5,8 @@ import Anthropic from '@anthropic-ai/sdk';
 const TAGS = ['heat', 'wild', 'pet', 'low', 'dry', 'bright'];
 const LEVEL = ['Easy', 'Medium', 'Hard'];
 const str = { type: 'string' };
+const int = { type: 'integer' };
+const num = { type: 'number' };
 const obj = (props) => ({ type: 'object', properties: props, required: Object.keys(props), additionalProperties: false });
 
 const SCHEMA = obj({
@@ -22,13 +24,11 @@ const SCHEMA = obj({
   tox: obj({ human: str, pets: str, env: str }),
   details: { type: 'array', items: obj({ title: str, text: str }) },
   care: obj({
-    ph: { type: 'integer', minimum: 1, maximum: 14 },
-    hardinessMin: { type: 'integer', minimum: 1, maximum: 13 },
-    hardinessMax: { type: 'integer', minimum: 1, maximum: 13 },
-    tempMin: { type: 'number' }, tempMax: { type: 'number' },
-    tempIdealMin: { type: 'number' }, tempIdealMax: { type: 'number' },
-    humidityMin: { type: 'integer', minimum: 0, maximum: 100 },
-    humidityMax: { type: 'integer', minimum: 0, maximum: 100 },
+    ph: int,
+    hardinessMin: int, hardinessMax: int,
+    tempMin: num, tempMax: num,
+    tempIdealMin: num, tempIdealMax: num,
+    humidityMin: int, humidityMax: int,
     fertilizing: { type: 'array', items: obj({ month: str, liquid: str, slow: str }) },
     fertilizer: str,
     fertilizerTips: str,
@@ -63,7 +63,7 @@ const SYSTEM = `You identify plants from a single photo for Pot, a plant care ap
 - toxic: true if harmful to cats or dogs when eaten. tox: very short values (e.g. "Mildly toxic", "Toxic to cats and dogs", "Environmentally safe"). details: 2-3 items explaining toxicity (why, symptoms, what to do) or safety.
 - howto: each value 2-5 words — watering frequency ("Every 7-10 days"), when the soil should be dry, sun level, sun/shade tolerance, repotting season, repotting interval, repotting soil mix, soil type, drainage, USDA hardiness zone (just the number or range), ideal temperature range, humidity range in percent.
 - care: the numbers and copy behind the care guide, all for THIS species — no generic filler.
-  - ph: the ideal soil pH as a whole number. hardinessMin/Max: USDA zones. tempMin/tempMax: the range it survives; tempIdealMin/tempIdealMax: the comfortable range, all °C and inside tempMin…tempMax. humidityMin/Max: percent.
+  - ph: the ideal soil pH as a whole number from 1 to 14. hardinessMin/Max: USDA zones, whole numbers from 1 to 13. tempMin/tempMax: the range it survives; tempIdealMin/tempIdealMax: the comfortable range, all °C and inside tempMin…tempMax. humidityMin/Max: whole percentages from 0 to 100.
   - fertilizing: exactly 5 consecutive months covering its feeding season, each with the liquid and slow-release frequency ("Once a month", "Every 2 weeks", "Not required").
   - fertilizer: the fertilizer type that suits it, 2-5 words. fertilizerTips: one or two sentences on feeding it.
   - wateringCheck: two or three sentences on how to tell it needs water. wateringOver / wateringUnder: one or two sentences each on what over- and under-watering look like on this plant.
