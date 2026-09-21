@@ -188,6 +188,7 @@ p,h1,h2,h3{margin:0}
 .tag .i{width:20px;height:20px;color:var(--icon)}
 .alert{display:flex;gap:12px;align-items:center;padding:12px;border-radius:12px;background:#fffbeb;color:#d97706;font-size:15px;line-height:20px}
 .alert.gr{background:var(--soft-stone);color:var(--darkgrey)}
+.phone.dark .alert,.phone.dark .alert.gr{background:var(--surface2);color:var(--text2)}
 .alert ul{margin:6px 0 0;padding-left:16px}
 .alert li{margin-top:6px}
 
@@ -1467,7 +1468,7 @@ function renderPlant() {
       ${TOXROW('qf-clover.svg', 'For the Environment', p.tox.env, false)}</div>
     <div class="card pad" style="display:flex;flex-direction:column;gap:4px"><p class="t2" style="margin-bottom:8px">Details</p>
       ${p.details.map(([k, v]) => `<div class="kv" style="padding:8px 0"><p class="sh c-3">${k}</p><p class="co">${v}</p></div>`).join('')}
-      ${p.alert ? `<div class="alert" style="margin-top:12px"><img src="assets/ic-bulb-amber.svg" alt="" width="24" height="24"><div>${p.alert}</div></div>` : ''}</div>`;
+      ${p.alert ? `<div class="alert" style="margin-top:12px"><i class="i" style="--m:url(assets/ic-bulb.svg);width:20px;height:24px;flex:none"></i><div>${p.alert}</div></div>` : ''}</div>`;
   $('#detDelete').hidden = !inGarden();
   const has = inGarden();
   $$('#detAction, .care-act').forEach(a => {
@@ -1570,7 +1571,7 @@ const HZCOL = ['#cbd5e1', '#94a3b8', '#e879f9', '#c084fc', '#818cf8', '#6ee7b7',
 const scale = (cols, from, to) => `<div class="scale">${cols.map((c, i) => `<span class="${i + 1 >= from && i + 1 <= to ? 'on' : ''}" style="background:${c}">${i + 1}</span>`).join('')}</div>`;
 const pos = (v, a, b) => (Math.min(100, Math.max(0, (v - a) / (b - a) * 100))).toFixed(2) + '%';
 const numbered = items => `<ol class="steps">${items.map(([t, d]) => `<li><span>${t ? `<b>${t}</b>` : ''}${d}</span></li>`).join('')}</ol>`;
-const bulb = t => `<div class="alert"><img src="assets/ic-bulb-amber.svg" alt="" width="24" height="24"><p>${t}</p></div>`;
+const bulb = t => `<div class="alert"><i class="i" style="--m:url(assets/ic-bulb.svg);width:20px;height:24px;flex:none"></i><p>${t}</p></div>`;
 const accList = (items, openIdx) => `<div>${items.map((t, i) => acc(t[0], t[1] || '<ol><li>Slowly pour water directly onto the soil from above.</li><li>Stop watering when you see water begin to drain from the bottom of the pot.</li></ol>', i === openIdx)).join('')}</div>`;
 const phLabel = v => v <= 5 ? 'Acidic' : v === 6 ? 'Slightly acidic' : v === 7 ? 'Neutral' : v === 8 ? 'Slightly alkaline' : 'Alkaline';
 // a scanned plant carries its own care numbers and copy; the demo peanut keeps the written sample
