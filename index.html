@@ -482,8 +482,9 @@ table.ft td:first-child{color:var(--text2)}
     <!-- 10.1 Try for Free (Figma 1026:35616) -->
     <section class="screen" id="s-paywall" data-title="Try for Free" hidden>
       <div class="sb"></div>
+      <div class="nav"><button class="ic" id="paywallBack" aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button><span style="flex:1"></span><button class="link" id="paywallSkip">Skip</button></div>
       <div class="scroll" style="padding:0 16px;display:flex;flex-direction:column;align-items:center">
-        <img src="assets/cactus-happy.png" alt="" style="width:230px;height:230px;margin-top:8px">
+        <img src="assets/cactus-happy.png" alt="" style="width:200px;height:200px">
         <p class="t1 b" style="margin:4px 0 16px">Try for Free</p>
         <div style="display:flex;flex-direction:column;gap:12px;align-self:flex-start;padding-left:24px">
           <p class="t3 s c-2"><span style="color:#15803d">✓</span> Identify plants</p>
@@ -1765,6 +1766,8 @@ function finishOnb(to) {
 }
 
 /* ---------- paywall (Figma 1026:35616 / 1291:48317) ---------- */
+$('#paywallBack').onclick = () => { onbStep = ONB.length - 1; reset('onb', 'back'); };
+$('#paywallSkip').onclick = () => reset('signin', 'fwd');
 let plan = 'annual';
 $('#plans').addEventListener('click', e => {
   const b = e.target.closest('[data-plan]'); if (!b) return;
