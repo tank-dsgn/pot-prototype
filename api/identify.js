@@ -21,6 +21,30 @@ const SCHEMA = obj({
   toxic: { type: 'boolean' },
   tox: obj({ human: str, pets: str, env: str }),
   details: { type: 'array', items: obj({ title: str, text: str }) },
+  care: obj({
+    ph: { type: 'integer', minimum: 1, maximum: 14 },
+    hardinessMin: { type: 'integer', minimum: 1, maximum: 13 },
+    hardinessMax: { type: 'integer', minimum: 1, maximum: 13 },
+    tempMin: { type: 'number' }, tempMax: { type: 'number' },
+    tempIdealMin: { type: 'number' }, tempIdealMax: { type: 'number' },
+    humidityMin: { type: 'integer', minimum: 0, maximum: 100 },
+    humidityMax: { type: 'integer', minimum: 0, maximum: 100 },
+    fertilizing: { type: 'array', items: obj({ month: str, liquid: str, slow: str }) },
+    fertilizer: str,
+    fertilizerTips: str,
+    wateringCheck: str,
+    wateringOver: str,
+    wateringUnder: str,
+    sunlightTips: str,
+    artificialLight: str,
+    soilSolutions: { type: 'array', items: obj({ title: str, text: str }) },
+    soilPrevention: { type: 'array', items: obj({ title: str, text: str }) },
+    repotTips: str,
+    repotChecks: { type: 'array', items: obj({ title: str, text: str }) },
+    climateTips: str,
+    diseases: { type: 'array', items: str },
+    pests: { type: 'array', items: str },
+  }),
   howto: obj({
     watering: str, dry: str, sun: str, sunShade: str,
     repotSeason: str, repotEvery: str, repotSoil: str,
@@ -38,6 +62,16 @@ const SYSTEM = `You identify plants from a single photo for Pot, a plant care ap
 - level: overall care difficulty; tip: one practical sentence for this plant.
 - toxic: true if harmful to cats or dogs when eaten. tox: very short values (e.g. "Mildly toxic", "Toxic to cats and dogs", "Environmentally safe"). details: 2-3 items explaining toxicity (why, symptoms, what to do) or safety.
 - howto: each value 2-5 words — watering frequency ("Every 7-10 days"), when the soil should be dry, sun level, sun/shade tolerance, repotting season, repotting interval, repotting soil mix, soil type, drainage, USDA hardiness zone (just the number or range), ideal temperature range, humidity range in percent.
+- care: the numbers and copy behind the care guide, all for THIS species — no generic filler.
+  - ph: the ideal soil pH as a whole number. hardinessMin/Max: USDA zones. tempMin/tempMax: the range it survives; tempIdealMin/tempIdealMax: the comfortable range, all °C and inside tempMin…tempMax. humidityMin/Max: percent.
+  - fertilizing: exactly 5 consecutive months covering its feeding season, each with the liquid and slow-release frequency ("Once a month", "Every 2 weeks", "Not required").
+  - fertilizer: the fertilizer type that suits it, 2-5 words. fertilizerTips: one or two sentences on feeding it.
+  - wateringCheck: two or three sentences on how to tell it needs water. wateringOver / wateringUnder: one or two sentences each on what over- and under-watering look like on this plant.
+  - sunlightTips: two or three sentences on its light. artificialLight: one or two sentences on grow lights for it.
+  - soilSolutions and soilPrevention: 3 items each, title 2-4 words, text one or two sentences, specific to this plant's soil and feeding.
+  - repotTips: two or three sentences. repotChecks: 4 signs it needs repotting, title one word, text one sentence.
+  - climateTips: two or three sentences on temperature and humidity for it.
+  - diseases and pests: 5-8 short names each (one or two words) that actually affect this species.
 - Be honest in confidence: use low when the photo is blurry or the species is ambiguous, and still give your best guess.`;
 
 const client = new Anthropic();
@@ -130,6 +164,45 @@ function mock() {
       watering: 'Every 7-10 days', dry: 'Top half of soil dry', sun: 'Bright indirect', sunShade: 'Partial shade tolerant',
       repotSeason: 'Spring', repotEvery: '2-3 years', repotSoil: 'Chunky aroid mix',
       soil: 'Well-draining potting mix', drainage: 'Well-drained', hardiness: '10-12', tempRange: '15 - 30°C', humidity: '40 - 60%',
+    },
+    care: {
+      ph: 6, hardinessMin: 10, hardinessMax: 12,
+      tempMin: 10, tempMax: 35, tempIdealMin: 18, tempIdealMax: 27,
+      humidityMin: 40, humidityMax: 60,
+      fertilizing: [
+        { month: 'April', liquid: 'Every 2 weeks', slow: 'Once a year' },
+        { month: 'May', liquid: 'Every 2 weeks', slow: 'Not required' },
+        { month: 'June', liquid: 'Once a month', slow: 'Not required' },
+        { month: 'July', liquid: 'Once a month', slow: 'Not required' },
+        { month: 'August', liquid: 'Once a month', slow: 'Not required' },
+      ],
+      fertilizer: 'Balanced liquid houseplant food',
+      fertilizerTips: 'Feed only while it is pushing out new leaves, and never on dry roots.',
+      wateringCheck: 'Water when the top half of the pot feels dry. The thick leaves store water, so a rubber plant forgives a late watering far better than a soggy one.',
+      wateringOver: 'Lower leaves turn yellow and drop while the soil stays wet — a sign the roots are suffocating.',
+      wateringUnder: 'Leaf edges curl inwards and the newest leaves stay small.',
+      sunlightTips: 'Bright, indirect light keeps the leaves glossy and the stem straight. A few hours of morning sun are fine; harsh afternoon sun scorches the leaves.',
+      artificialLight: 'A full-spectrum lamp 40 cm above the plant covers the darker months.',
+      soilSolutions: [
+        { title: 'Feed lightly', text: 'A balanced liquid fertilizer at half strength restores nitrogen without burning the roots.' },
+        { title: 'Refresh the top layer', text: 'Replace the top 3 cm of soil with fresh mix once a year.' },
+        { title: 'Check drainage', text: 'Add perlite or bark if water pools on the surface.' },
+      ],
+      soilPrevention: [
+        { title: 'Chunky mix', text: 'Keep the mix loose so the thick roots get air.' },
+        { title: 'Water by weight', text: 'Lift the pot — a light pot means it is time to water.' },
+        { title: 'Repot on time', text: 'A root-bound rubber plant dries out within a day.' },
+      ],
+      repotTips: 'Move it up one pot size in spring, keep the root ball slightly below the rim and water it in well.',
+      repotChecks: [
+        { title: 'Roots', text: 'Roots circle the bottom or grow out of the drainage holes.' },
+        { title: 'Water', text: 'Water runs straight through within seconds.' },
+        { title: 'Growth', text: 'New leaves come out noticeably smaller.' },
+        { title: 'Stability', text: 'The plant tips over under its own weight.' },
+      ],
+      climateTips: 'It is happiest between 18 and 27°C and dislikes cold drafts. Average room humidity is enough; wipe the leaves to keep them breathing.',
+      diseases: ['Leaf spot', 'Root rot', 'Anthracnose', 'Botrytis', 'Sooty mould'],
+      pests: ['Mealybugs', 'Scale', 'Spider mites', 'Thrips', 'Aphids'],
     },
   };
 }
