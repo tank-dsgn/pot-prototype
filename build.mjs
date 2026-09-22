@@ -55,8 +55,10 @@ const head = `<!doctype html>
 (() => {
   let dark = false;
   try { dark = (localStorage.getItem('pot:mode') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark'; } catch {}
+  if (dark) document.documentElement.className += ' dark-app';
   document.write('<meta name="theme-color" content="' + (dark ? '#0c0a09' : '#f1efec') + '">'
-    + '<meta name="apple-mobile-web-app-status-bar-style" content="' + (dark ? 'black' : 'default') + '">');
+    + '<meta name="apple-mobile-web-app-status-bar-style" content="' + (dark ? 'black' : 'default') + '">'
+    + '<style>html,body{background:' + (dark ? '#0c0a09' : '#f1efec') + '}</style>');
 })();
 </script>
 <style>*{-webkit-tap-highlight-color:transparent}img{max-width:100%}</style>
