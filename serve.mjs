@@ -11,8 +11,8 @@ const types = { '.html': 'text/html; charset=utf-8', '.svg': 'image/svg+xml', '.
 const shell = body => `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>${body}</body></html>`;
 
 http.createServer(async (req, res) => {
-  if (req.method === 'POST' && req.url === '/api/identify') {
-    const { POST } = await import('./api/identify.js');
+  if (req.method === 'POST' && (req.url === '/api/identify' || req.url === '/api/feedback')) {
+    const { POST } = await import(req.url === '/api/feedback' ? './api/feedback.js' : './api/identify.js');
     const chunks = []; for await (const c of req) chunks.push(c);
     const r = await POST(new Request('http://localhost' + req.url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: Buffer.concat(chunks) }));
     res.writeHead(r.status, { 'content-type': 'application/json' });

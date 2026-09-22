@@ -1,6 +1,7 @@
 // Builds the installable (PWA) version of the prototype into build/pot-prototype/.
 // Usage: node build.mjs. Vercel runs it on every push (see vercel.json).
 import { readFile, writeFile, mkdir, cp, readdir, rm } from 'node:fs/promises';
+import { execSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -65,8 +66,13 @@ const head = `<!doctype html>
 </head>
 <body>
 `;
+const built = new Date().toISOString();
+let note = '';
+try { note = execSync('git log -1 --pretty=%s', { cwd: root }).toString().trim(); } catch {}
+
 const tail = `
 <script>
+window.POT_BUILD = ${JSON.stringify({ time: built, note })};
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
 </script>
 </body>
@@ -88,6 +94,7 @@ const files = (await list(out)).map(f => f === '/index.html' ? '/' : f);
 const hash = createHash('sha1');
 for (const f of files) hash.update(await readFile(join(out, f === '/' ? 'index.html' : f)));
 const version = hash.digest('hex').slice(0, 10);
+await writeFile(join(out, 'version.json'), JSON.stringify({ build: version, time: built, note }));
 
 await writeFile(join(out, 'sw.js'), `const CACHE = 'pot-${version}';
 const FILES = ${JSON.stringify(files)};
@@ -95,6 +102,7 @@ self.addEventListener('install', e => { e.waitUntil(caches.open(CACHE).then(c =>
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())); });
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET' || new URL(e.request.url).origin !== location.origin) return;
+  if (new URL(e.request.url).pathname === '/version.json') { e.respondWith(fetch(e.request)); return; }
   // Pages: network first, so a new deploy shows up on the next launch; fall back to cache offline.
   if (e.request.mode === 'navigate') {
     e.respondWith(fetch(e.request).then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put('/', copy)); return r; }).catch(() => caches.match('/')));
