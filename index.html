@@ -211,6 +211,12 @@ p,h1,h2,h3{margin:0}
 .faq .acc>button{color:var(--text2)}
 .faq .acc .body p{padding-bottom:12px;color:var(--text2);font-size:17px;line-height:22px}
 
+/* account avatar (Figma 1364:59059 / 1643:17413) */
+.ava{background:#f0fdf4}
+.phone.dark .ava{background:#44403c}
+#avatarEdit{background:#57534e;color:#fff;box-shadow:0 0 0 2px var(--bg)}
+.phone.dark #avatarEdit{background:#292524;color:#fafaf9}
+
 /* iOS toggle */
 .sw{flex:none;width:51px;height:31px;border-radius:100px;background:rgba(120,120,128,.16);position:relative;transition:background .25s}
 .phone.dark .sw{background:rgba(120,120,128,.32)}
@@ -230,9 +236,9 @@ p,h1,h2,h3{margin:0}
 .legal ol ol li::before{content:"•";font-size:16px}
 
 /* inputs */
-.field{height:50px;box-sizing:border-box;border-radius:12px;background:var(--btn2);display:flex;align-items:center;padding:0 16px;gap:4px}
-.field input{-webkit-user-select:text;user-select:text;flex:1;border:0;background:none;font:inherit;font-size:17px;letter-spacing:-.43px;color:#1c1917;outline:none;min-width:0}
-.field input::placeholder{color:#78716c}
+.field{height:50px;box-sizing:border-box;border-radius:12px;background:var(--surface);display:flex;align-items:center;padding:0 16px;gap:4px}
+.field input{-webkit-user-select:text;user-select:text;flex:1;border:0;background:none;font:inherit;font-size:17px;letter-spacing:-.43px;color:var(--text);outline:none;min-width:0}
+.field input::placeholder{color:var(--text3)}
 .field .eye{width:24px;height:24px;display:grid;place-items:center;color:#a8a29e}
 
 /* onboarding (Figma 114824:18887 …) */
@@ -893,9 +899,9 @@ table.ft td:first-child{color:var(--text2)}
       <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button><p class="ttl hd">My Account</p><span style="width:24px"></span></div>
       <div class="scroll" style="padding:16px;display:flex;flex-direction:column;align-items:center;gap:24px">
         <div style="position:relative">
-          <div style="width:160px;height:160px;border-radius:50%;background:#f0fdf4;display:grid;place-items:center;overflow:hidden"><img id="avatarIcon" src="assets/cactus-happy.png" alt="Pot, the cactus mascot" style="width:132px;height:132px"><img id="avatarImg" alt="Your photo" hidden style="width:100%;height:100%;object-fit:cover"></div>
+          <div class="ava" style="width:160px;height:160px;border-radius:50%;display:grid;place-items:center;overflow:hidden"><img id="avatarIcon" src="assets/cactus-happy.png" alt="Pot, the cactus mascot" style="width:132px;height:132px"><img id="avatarImg" alt="Your photo" hidden style="width:100%;height:100%;object-fit:cover"></div>
           <input type="file" id="pickAvatar" accept="image/*" hidden>
-          <button id="avatarEdit" style="position:absolute;left:109px;top:128px;width:32px;height:32px;border-radius:50%;background:var(--icon);display:grid;place-items:center;color:#fff" aria-label="Change photo"><i class="i" style="--m:url(assets/ic-pen.svg);width:16px;height:16px"></i></button>
+          <button id="avatarEdit" style="position:absolute;left:109px;top:128px;width:32px;height:32px;border-radius:50%;display:grid;place-items:center" aria-label="Change photo"><i class="i" style="--m:url(assets/ic-pen.svg);width:16px;height:16px"></i></button>
         </div>
         <div style="display:flex;flex-direction:column;gap:12px;width:100%">
           <button class="card" id="copyId" style="border-radius:12px;padding:8px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px;text-align:left">
@@ -994,10 +1000,15 @@ function applyTheme() {
   phone.classList.toggle('dark', dark);
   $$('#themeSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === mode));
   $$('.darkSw').forEach(b => b.setAttribute('aria-checked', dark));
-  // the phone's own status bar follows the app theme (PWA + Chrome)
-  $$('meta[name="theme-color"]').forEach(m => m.remove());
-  const m = document.createElement('meta'); m.name = 'theme-color'; m.content = dark ? '#0c0a09' : '#f1efec';
-  document.head.append(m);
+  // the phone's own status bar follows the app theme (PWA + Chrome).
+  // The tag is updated in place — removing it makes iOS drop the tint.
+  themeMeta(dark ? '#0c0a09' : '#f1efec');
+}
+function themeMeta(color) {
+  let m = $('meta[name="theme-color"]:not([media])');
+  if (!m) { m = document.createElement('meta'); m.name = 'theme-color'; document.head.append(m); }
+  $$('meta[name="theme-color"][media]').forEach(x => x.remove()); // one tag wins, whatever the system theme is
+  m.content = color;
 }
 function setMode(m){ mode = m; store.set('mode', m); applyTheme(); }
 $$('#themeSeg button').forEach(b => b.onclick = () => setMode(b.dataset.mode));
@@ -2039,8 +2050,7 @@ function hintBlocked() {
 new MutationObserver(() => {
   const on = !!phone.querySelector('.alert-ios, .sheet');
   document.body.classList.toggle('dimmed', on);
-  const m = $('meta[name="theme-color"]');
-  if (m) m.content = on ? (mode === 'dark' ? '#080706' : '#a9a7a4') : (mode === 'dark' ? '#0c0a09' : '#f1efec');
+  themeMeta(on ? (mode === 'dark' ? '#080706' : '#a9a7a4') : (mode === 'dark' ? '#0c0a09' : '#f1efec'));
 }).observe(phone, { childList: true });
 
 $('#installX').onclick = () => hideInstall(true);
