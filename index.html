@@ -297,6 +297,44 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .sw-wrap.open>.sw-front{transform:translateX(-144px)}
 .sw-wrap.one.open>.sw-front{transform:translateX(-72px)}
 
+/* PotAI chat */
+#s-ai{background:var(--bg)}
+.ai-scroll{flex:1;overflow-y:auto;scrollbar-width:none;padding:8px 16px 16px;display:flex;flex-direction:column;gap:12px}
+.ai-scroll::-webkit-scrollbar{display:none}
+.ai-intro{display:flex;flex-direction:column;align-items:center;gap:8px;padding:24px 8px 8px;text-align:center}
+.ai-intro .ava{width:104px;height:104px;border-radius:50%;background:#f0fdf4;display:grid;place-items:center;overflow:hidden}
+.phone.dark .ai-intro .ava{background:#44403c}
+.ai-intro .ava img{width:96px;height:96px}
+.ai-prompt{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;padding:14px 16px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow-card);font-size:17px;line-height:22px;color:var(--text);text-align:left}
+.ai-prompt .i{color:#15803d}
+.phone.dark .ai-prompt .i{color:#22c55e}
+.ai-refresh{display:flex;align-items:center;gap:8px;color:var(--text3);font-size:15px;line-height:20px;padding:4px 2px}
+.msg{display:flex;gap:8px;align-items:flex-end;max-width:100%}
+.msg .av{flex:none;width:32px;height:32px;border-radius:50%;background:#f0fdf4;overflow:hidden;display:grid;place-items:center}
+.phone.dark .msg .av{background:#44403c}
+.msg .av img{width:30px;height:30px}
+.msg .bub{max-width:78%;padding:10px 14px;border-radius:16px;font-size:16px;line-height:21px;white-space:pre-wrap;word-break:break-word}
+.msg.bot .bub{background:#f0fdf4;color:#1c1917;border-bottom-left-radius:6px}
+.phone.dark .msg.bot .bub{background:#14532d;color:#fafaf9}
+.msg.me{justify-content:flex-end}
+.msg.me .bub{background:var(--surface2);color:var(--text);border-bottom-right-radius:6px}
+.msg .bub img{display:block;width:100%;max-width:200px;border-radius:10px;margin-bottom:6px}
+.msg .bub b{font-weight:600}
+.dots{display:inline-flex;gap:4px;align-items:center;height:21px}
+.dots i{width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.35;animation:blink 1.2s infinite}
+.dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
+@keyframes blink{50%{opacity:1}}
+.ai-bar{flex:none;padding:8px 16px 34px;background:var(--bg);display:flex;gap:8px;align-items:flex-end}
+.ai-bar .box{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:20px;padding:8px 8px 8px 16px;box-shadow:var(--shadow-card)}
+.ai-bar textarea{-webkit-user-select:text;user-select:text;flex:1;min-width:0;border:0;background:none;font:inherit;font-size:17px;line-height:22px;color:var(--text);outline:none;resize:none;max-height:96px;padding:4px 0}
+.ai-bar textarea::placeholder{color:var(--text3)}
+.ai-bar .rnd{flex:none;width:36px;height:36px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;color:var(--icon)}
+.ai-bar .rnd.send{background:var(--brand);color:#fff}
+.ai-bar .rnd[disabled]{opacity:.4}
+.ai-photo{position:relative;margin-bottom:8px;align-self:flex-start}
+.ai-photo img{width:56px;height:56px;border-radius:10px;object-fit:cover;display:block}
+.ai-photo button{position:absolute;top:-6px;right:-6px;width:22px;height:22px;border-radius:50%;background:var(--text);color:var(--bg);display:grid;place-items:center;font-size:13px;line-height:1}
+
 /* misc */
 .pot{width:250px;height:250px;margin-block:0 16px}
 .alert-ios{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.3);display:grid;place-items:center;animation:fade .2s}
@@ -984,6 +1022,23 @@ table.ft td:first-child{color:var(--text2)}
       <div class="hi"></div>
     </section>
 
+    <!-- 14. PotAI -->
+    <section class="screen" id="s-ai" data-title="PotAI" hidden>
+      <div class="sb"></div>
+      <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button><p class="ttl hd">PotAI</p><button class="ic" id="aiClear" aria-label="New chat"><i class="i" style="--m:url(assets/ic-close.svg);width:20px;height:20px"></i></button></div>
+      <div class="ai-scroll" id="aiScroll"></div>
+      <div class="ai-bar">
+        <div class="box">
+          <span id="aiPhotoWrap"></span>
+          <textarea id="aiInput" rows="1" placeholder="How can PotAI help you today?" aria-label="Message"></textarea>
+          <button class="rnd" id="aiCam" aria-label="Add a photo"><i class="i" style="--m:url(assets/ic-camera.svg);width:20px;height:18px"></i></button>
+          <button class="rnd send" id="aiSend" aria-label="Send" disabled><i class="i" style="--m:url(assets/ic-arrow-left.svg);width:20px;height:20px;transform:rotate(90deg)"></i></button>
+        </div>
+      </div>
+      <input type="file" id="aiFile" accept="image/*" hidden>
+      <div class="hi"></div>
+    </section>
+
     <!-- 13.x Legal -->
     <section class="screen" id="s-legal" data-title="Legal" hidden>
       <div class="sb"></div>
@@ -1317,6 +1372,7 @@ const enter = {
   camera() { startCamera(); },
   details(isBack) { renderPlant(); if (!isBack && !state.fromScan) detailSkeleton(); },
   review() { renderReview(); },
+  ai() { renderChat(); setTimeout(() => $('#aiScroll').scrollTop = $('#aiScroll').scrollHeight, 30); },
   account() { renderAvatar(); },
   care() { renderPlant(); renderCare(); },
   toxicity() { renderPlant(); },
@@ -1896,7 +1952,7 @@ function restartPrototype() {
   store.set('avatar', ''); renderAvatar();
   persist(); renderGarden(); reset('loading');
 }
-$('#askAi').onclick = () => iosAlert('PotAI', `The assistant will start from ${P().name}: its care profile, your photo and the symptoms you describe. The chat itself is the next step.`, [{ label: 'OK', bold: true }], { icon: 'assets/app-icon.png' });
+$('#askAi').onclick = () => go('ai');
 $('#restoreBtn').onclick = () => iosAlert('Restore Purchases', 'Sign in to the App Store account you bought Pot Premium with.', [
   { label: 'Not Now' },
   { label: 'Restore', bold: true, do: () => toast('No purchases to restore') }
@@ -1996,7 +2052,7 @@ $('#deleteAccount').onclick = () => iosAlert('Delete Account?', 'Your plants, sc
 ]);
 
 /* ---------- jump list ---------- */
-const JUMP = [['boot', '0'], ['onb', '0.1'], ['loading', '1'], ['paywall', '10.1'], ['review', '11.2'], ['signin', '2.1'], ['email', '2.4'], ['forgot', '2.5'], ['checkmail', '2.6'], ['garden-empty', '3.7'], ['garden', '3.8'], ['tips', '5.1'], ['camera', '5.2'], ['recog', '5.5'], ['details', '8'], ['care', '8.1'], ['faq', '8.8'], ['toxicity', '8.9'], ['settings', '12.1'], ['account', '12.2'], ['appinfo', '12.3'], ['privacy', '13.1'], ['terms', '13.2']];
+const JUMP = [['boot', '0'], ['onb', '0.1'], ['loading', '1'], ['paywall', '10.1'], ['review', '11.2'], ['signin', '2.1'], ['email', '2.4'], ['forgot', '2.5'], ['checkmail', '2.6'], ['garden-empty', '3.7'], ['garden', '3.8'], ['tips', '5.1'], ['camera', '5.2'], ['recog', '5.5'], ['details', '8'], ['care', '8.1'], ['faq', '8.8'], ['toxicity', '8.9'], ['ai', '14'], ['settings', '12.1'], ['account', '12.2'], ['appinfo', '12.3'], ['privacy', '13.1'], ['terms', '13.2']];
 const JUMPLBL = { privacy: 'Privacy Policy', terms: 'Terms of Use' };
 JUMP.sort((a, b) => parseFloat(a[1]) - parseFloat(b[1]) || a[1].localeCompare(b[1]));
 $('#jump').innerHTML = JUMP.map(([id, n]) => `<button data-id="${id}"><b>${n}</b>${JUMPLBL[id] || screenEl(id).dataset.title}</button>`).join('');
@@ -2086,6 +2142,108 @@ if (['ios', 'android', 'android-manual'].includes(forceHint)) showInstall(forceH
 else if (isAndroid) showInstall('android-manual');
 else if (isIOS) showInstall('ios');
 
+
+/* ---------- PotAI ---------- */
+const PROMPTS = [
+  ['ic-bulb', 'Leaf color'], ['ic-sprouts', 'Falling leaves'], ['ic-alert', 'Deformed or damaged leaves'], ['ic-eye', 'Coating on leaves'],
+  ['qf-water', 'Am I watering it right?'], ['qf-sun', 'Is this spot bright enough?'], ['ht-soil', 'Soil looks wrong'], ['cp-pests', 'I think it has pests'],
+  ['ht-temp', 'Is it too cold here?'], ['ht-waterdrop', 'When should I repot it?'], ['qf-fert', 'How do I feed it?'], ['tag-cat', 'Is it safe for my cat?'],
+];
+let promptSet = 0;
+const chats = {};
+let aiPhoto = null, aiBusy = false;
+const chatKey = () => state.plant || 'general';
+const chat = () => (chats[chatKey()] = chats[chatKey()] || []);
+function careSummary() {
+  const p = P(); if (!p) return '';
+  const h = H(), c = p.care;
+  const base = `light ${p.sun}, watering ${p.water}, temperature ${p.temp}, difficulty ${p.level}. Watering ${h.watering}, dry ${h.dry}, soil ${h.soil}, repot ${h.repotSeason} every ${h.repotEvery}, humidity ${h.humidity}.`;
+  return c ? base + ` Ideal ${c.tempIdealMin}-${c.tempIdealMax}°C, humidity ${c.humidityMin}-${c.humidityMax}%, pH ${c.ph}. Common problems: ${[...(c.diseases || []), ...(c.pests || [])].join(', ')}.` : base;
+}
+function renderChat(streamText) {
+  const box = $('#aiScroll');
+  const msgs = chat();
+  if (!msgs.length && !streamText) {
+    const four = PROMPTS.slice(promptSet * 4 % PROMPTS.length, promptSet * 4 % PROMPTS.length + 4);
+    box.innerHTML = `<div class="ai-intro">
+        <span class="ava"><img src="assets/cactus-happy.png" alt=""></span>
+        <p class="t1 b">Can I help you?</p>
+        <p class="bd c-3">Choose a prompt below or write your own to start chatting with PotAI${P() ? ` about your ${P().name}` : ''}</p>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        ${four.map(([ic, t]) => `<button class="ai-prompt" data-prompt="${t}"><i class="i" style="--m:url(assets/${ic}.svg);width:24px;height:24px"></i>${t}</button>`).join('')}
+      </div>
+      <button class="ai-refresh" id="aiRefresh"><span style="font-size:17px;line-height:1">↻</span>Refresh prompts</button>`;
+    return;
+  }
+  box.innerHTML = msgs.map(m => m.role === 'user'
+    ? `<div class="msg me"><span class="bub">${m.img ? `<img src="${m.img}" alt="">` : ''}${esc(m.text)}</span></div>`
+    : `<div class="msg bot"><span class="av"><img src="assets/cactus-happy.png" alt=""></span><span class="bub">${esc(m.text)}</span></div>`).join('')
+    + (streamText !== undefined ? `<div class="msg bot"><span class="av"><img src="assets/cactus-happy.png" alt=""></span><span class="bub">${streamText ? esc(streamText) : '<span class="dots"><i></i><i></i><i></i></span>'}</span></div>` : '');
+  box.scrollTop = box.scrollHeight;
+}
+const esc = t => String(t).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c])).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>');
+$('#aiScroll').addEventListener('click', e => {
+  const p = e.target.closest('[data-prompt]');
+  if (p) return askAi(p.dataset.prompt);
+  if (e.target.closest('#aiRefresh')) { promptSet++; renderChat(); }
+});
+$('#aiInput').addEventListener('input', e => {
+  e.target.style.height = 'auto'; e.target.style.height = Math.min(96, e.target.scrollHeight) + 'px';
+  $('#aiSend').disabled = !e.target.value.trim() && !aiPhoto;
+});
+$('#aiInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#aiSend').click(); } });
+$('#aiSend').onclick = () => { const v = $('#aiInput').value.trim(); if (v || aiPhoto) askAi(v); };
+$('#aiCam').onclick = () => { $('#aiFile').value = ''; $('#aiFile').setAttribute('capture', 'environment'); $('#aiFile').click(); };
+$('#aiFile').onchange = async e => {
+  const file = e.target.files?.[0]; if (!file) return;
+  const url = URL.createObjectURL(file);
+  try {
+    const img = await loadImg(url);
+    aiPhoto = photoFrom(img, img.naturalWidth, img.naturalHeight);
+    $('#aiPhotoWrap').innerHTML = `<span class="ai-photo"><img src="${aiPhoto.keep}" alt=""><button id="aiPhotoX" aria-label="Remove photo">×</button></span>`;
+    $('#aiSend').disabled = false;
+  } catch { toast('This photo can’t be opened.'); }
+  finally { URL.revokeObjectURL(url); }
+};
+$('#aiPhotoWrap').addEventListener('click', e => { if (e.target.closest('#aiPhotoX')) { aiPhoto = null; $('#aiPhotoWrap').innerHTML = ''; $('#aiSend').disabled = !$('#aiInput').value.trim(); } });
+$('#aiClear').onclick = () => { chats[chatKey()] = []; aiPhoto = null; $('#aiPhotoWrap').innerHTML = ''; $('#aiInput').value = ''; $('#aiSend').disabled = true; renderChat(); };
+
+async function askAi(text) {
+  if (aiBusy) return;
+  const photo = aiPhoto;
+  chat().push({ role: 'user', text, img: photo?.keep });
+  aiPhoto = null; $('#aiPhotoWrap').innerHTML = '';
+  $('#aiInput').value = ''; $('#aiInput').style.height = 'auto'; $('#aiSend').disabled = true;
+  aiBusy = true; renderChat('');
+  const p = P();
+  let answer = '';
+  try {
+    const res = await fetch('/api/chat', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        messages: chat().map(m => ({ role: m.role, text: m.text })),
+        plant: p ? { name: p.name, latin: p.latin, care: careSummary() } : null,
+        image: photo?.upload,
+      }),
+    });
+    if (!res.ok || !res.body) {
+      const err = await res.json().catch(() => ({}));
+      answer = err.message || 'The assistant is unavailable right now. Try again in a moment.';
+    } else {
+      const reader = res.body.getReader(), dec = new TextDecoder();
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        answer += dec.decode(value, { stream: true });
+        if (cur() === 'ai') renderChat(answer);
+      }
+    }
+  } catch { answer = 'No connection — check the internet and try again.'; }
+  aiBusy = false;
+  chat().push({ role: 'assistant', text: answer.trim() || '…' });
+  renderChat();
+}
 
 /* ---------- staying on the newest build ---------- */
 const BUILD = (window.POT_BUILD || { time: 'dev', note: 'local' });
