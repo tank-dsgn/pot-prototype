@@ -808,6 +808,11 @@ table.ft td:first-child{color:var(--text2)}
             <div class="row-li" style="gap:8px"><span class="surf o prob-p"><img src="assets/cp-pests.svg" alt=""></span><div><p class="fn c-3">Pests</p><p class="co s c-2">Caused by insects or parasites</p></div></div>
             <div style="display:flex;flex-wrap:wrap;gap:12px" id="pests"></div>
           </div>
+          <button class="card" id="askAi" style="padding:12px 16px;display:flex;align-items:center;gap:12px;text-align:left">
+            <span style="flex:none;width:44px;height:44px;border-radius:50%;background:#f0fdf4;display:grid;place-items:center;overflow:hidden"><img src="assets/cactus-happy.png" alt="" style="width:40px;height:40px"></span>
+            <span style="flex:1;min-width:0"><span class="co s" style="display:block">Ask PotAI about this plant</span><span class="fn c-3" style="display:block">Describe what you see — get a diagnosis</span></span>
+            <i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i>
+          </button>
         </div>
 
         <div class="sec only-peanut" style="padding-bottom:24px">
@@ -1891,6 +1896,7 @@ function restartPrototype() {
   store.set('avatar', ''); renderAvatar();
   persist(); renderGarden(); reset('loading');
 }
+$('#askAi').onclick = () => iosAlert('PotAI', `The assistant will start from ${P().name}: its care profile, your photo and the symptoms you describe. The chat itself is the next step.`, [{ label: 'OK', bold: true }], { icon: 'assets/app-icon.png' });
 $('#restoreBtn').onclick = () => iosAlert('Restore Purchases', 'Sign in to the App Store account you bought Pot Premium with.', [
   { label: 'Not Now' },
   { label: 'Restore', bold: true, do: () => toast('No purchases to restore') }
