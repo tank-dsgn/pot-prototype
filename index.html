@@ -315,6 +315,8 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .alert-ios .icon{width:56px;height:56px;border-radius:13px;margin:16px auto 0;display:block}
 .alert-ios .row{height:52px;display:flex;align-items:center;justify-content:center;gap:18px;margin-top:-6px}
 .alert-ios .row button{color:#007aff;font-size:30px;line-height:1;padding:0 2px}
+.alert-ios textarea{-webkit-user-select:text;user-select:text;width:calc(100% - 32px);height:76px;margin:0 16px 14px;box-sizing:border-box;border:0;border-radius:8px;padding:8px 10px;background:rgba(120,120,128,.12);color:inherit;font:inherit;font-size:15px;line-height:20px;resize:none;outline:none}
+.phone.dark .alert-ios textarea{background:rgba(120,120,128,.28)}
 /* action sheet (Figma 8.10 share) */
 .sheet{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.3);display:flex;flex-direction:column;justify-content:flex-end;animation:fade .2s}
 .sheet .card-s{margin:0 8px 8px;border-radius:14px;overflow:hidden;background:rgba(246,246,246,.94);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);animation:up .3s cubic-bezier(.2,.9,.3,1)}
@@ -889,7 +891,10 @@ table.ft td:first-child{color:var(--text2)}
         </div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <p class="t3 s">Prototype</p>
-          <button class="set-group set-row" style="justify-content:center;color:var(--link);font-weight:600" id="restart">Start from the beginning</button>
+          <div class="set-group">
+            <button class="set-row" id="reportBtn"><i class="i g" style="--m:url(assets/ic-alert.svg);width:22px;height:22px;margin-inline:1px"></i><span class="lbl">Report a problem</span><i class="i ch" style="--m:url(assets/ic-chevron-right2.svg);width:8px;height:14px;margin-inline:8px"></i></button>
+            <button class="set-row" id="restart" style="justify-content:center;color:var(--link);font-weight:600">Start from the beginning</button>
+          </div>
         </div>
       </div>
       <div class="hi"></div>
@@ -932,7 +937,7 @@ table.ft td:first-child{color:var(--text2)}
       <div class="scroll" style="padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px">
         <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
           <img src="assets/app-icon.png" alt="Pot app icon" style="width:134px;height:134px;border-radius:30px;box-shadow:0 4px 14px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.06)">
-          <div style="text-align:center"><p class="lt">POT</p><p class="sh c-2">Version 1.0.0</p></div>
+          <div style="text-align:center"><p class="lt">POT</p><p class="sh c-2">Version 1.0.0</p><p class="c1 c-3" id="buildLine"></p></div>
         </div>
         <div class="card" style="width:100%;box-sizing:border-box;padding:16px;display:flex;flex-direction:column;gap:24px">
           <div class="bd c-2" style="display:flex;flex-direction:column;gap:0">
@@ -2071,6 +2076,56 @@ if (['ios', 'android', 'android-manual'].includes(forceHint)) showInstall(forceH
 else if (isAndroid) showInstall('android-manual');
 else if (isIOS) showInstall('ios');
 
+
+/* ---------- staying on the newest build ---------- */
+const BUILD = (window.POT_BUILD || { time: 'dev', note: 'local' });
+const buildLabel = () => {
+  if (BUILD.time === 'dev') return 'Local build';
+  const d = new Date(BUILD.time);
+  return 'Build ' + d.toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + (BUILD.note ? ' · ' + BUILD.note : '');
+};
+$('#buildLine').textContent = buildLabel();
+let checking = false;
+async function checkBuild() {
+  if (checking || BUILD.time === 'dev' || !navigator.onLine) return;
+  checking = true;
+  try {
+    const res = await fetch('/version.json', { cache: 'no-store' });
+    const v = await res.json();
+    if (v.time && v.time !== BUILD.time) {
+      try { sessionStorage.setItem('pot:updated', v.note || ''); } catch {}
+      const reg = await navigator.serviceWorker?.getRegistration();
+      await reg?.update().catch(() => {});
+      location.reload();
+    }
+  } catch {} finally { checking = false; }
+}
+addEventListener('visibilitychange', () => { if (!document.hidden) checkBuild(); });
+addEventListener('focus', checkBuild);
+setInterval(() => { if (!document.hidden) checkBuild(); }, 60000);
+try {
+  const note = sessionStorage.getItem('pot:updated');
+  if (note !== null) { sessionStorage.removeItem('pot:updated'); setTimeout(() => toast('Updated' + (note ? ' · ' + note.slice(0, 40) : '')), 600); }
+} catch {}
+
+/* ---------- report a problem ---------- */
+$('#reportBtn').onclick = () => {
+  const box = iosAlert('Report a problem', 'What went wrong? The screen you were on, the theme and the build are attached.', [
+    { label: 'Cancel' },
+    { label: 'Send', bold: true, do: () => sendReport($('#reportText', box)?.value || '') },
+  ], { extra: '<textarea id="reportText" placeholder="It happened when…" rows="3"></textarea>' });
+  setTimeout(() => $('#reportText', box)?.focus(), 50);
+};
+async function sendReport(text) {
+  if (!text.trim()) return toast('Nothing to send');
+  try {
+    const res = await fetch('/api/feedback', {
+      method: 'POST', headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ text, screen: cur(), theme: mode, build: BUILD.time, standalone, viewport: innerWidth + '×' + innerHeight }),
+    });
+    toast(res.ok ? 'Sent — thanks' : 'Couldn’t send it');
+  } catch { toast('No connection — try again') }
+}
 
 /* ---------- boot ---------- */
 restore();
