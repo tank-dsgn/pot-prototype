@@ -85,9 +85,11 @@ p,h1,h2,h3{margin:0}
 .frame{position:relative;flex:none}
 .phone{position:absolute;left:0;top:0;width:440px;height:956px;border-radius:64px;overflow:hidden;background:var(--bg);
   transform-origin:0 0;box-shadow:0 0 0 12px #1c1917,0 0 0 13px #3f3a36,0 30px 80px rgba(0,0,0,.35);isolation:isolate}
+html.dark-app{background:#0c0a09;--dim:#080706}
 @media (max-width:560px){
+  html.dark-app,html.dark-app body{background:#0c0a09}
   body{background:var(--bg);transition:background .2s}
-  body.dimmed{background:var(--dim)}
+  body.dimmed,html.dark-app body.dimmed{background:var(--dim)}
   .stage{padding:0;display:block}
   .panel{display:none}
   .frame{width:100%!important;height:100%!important;overflow:hidden}
@@ -154,7 +156,7 @@ p,h1,h2,h3{margin:0}
   box-shadow:0 3px 8px rgba(0,0,0,.12),0 3px 1px rgba(0,0,0,.04);transition:transform .28s cubic-bezier(.3,.7,.2,1)}
 .segc.dim{background:var(--bg)}
 .phone.dark .segc{background:#292524}
-.phone.dark .segc .thumb{background:#44403c;border-color:transparent;box-shadow:0 3px 8px rgba(0,0,0,.3)}
+.phone.dark .segc .thumb{background:#44403c;border-color:rgba(255,255,255,.14);box-shadow:0 3px 8px rgba(0,0,0,.45)}
 .phone.dark .segc button{color:#e7e5e4}
 .phone.dark .segc button[aria-selected="true"]{color:#fff}
 .phone.dark .segc.dim{background:var(--surface2)}
@@ -998,6 +1000,7 @@ let mode = store.get('mode') || (matchMedia('(prefers-color-scheme: dark)').matc
 function applyTheme() {
   const dark = mode === 'dark';
   phone.classList.toggle('dark', dark);
+  document.documentElement.classList.toggle('dark-app', dark);
   $$('#themeSeg button').forEach(b => b.setAttribute('aria-pressed', b.dataset.mode === mode));
   $$('.darkSw').forEach(b => b.setAttribute('aria-checked', dark));
   // the phone's own status bar follows the app theme (PWA + Chrome).
