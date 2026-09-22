@@ -245,6 +245,8 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 
 /* onboarding (Figma 114824:18887 …) */
 .onb-body{flex:1;overflow-y:auto;scrollbar-width:none;padding:0 16px 8px;display:flex;flex-direction:column;gap:16px}
+.onb-band{display:none;width:calc(100% + 32px);height:132px;margin:auto -16px -8px;object-fit:cover;object-position:center bottom;pointer-events:none;flex:none}
+#s-onb.welcome .onb-band{display:block}
 .onb-body::-webkit-scrollbar{display:none}
 .onb-q{font-size:28px;line-height:34px;font-weight:700}
 .opt{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;min-height:48px;padding:12px 16px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow-card);font-size:17px;line-height:22px;color:var(--text);text-align:left;border:1.5px solid transparent;transition:border-color .15s}
@@ -1724,13 +1726,15 @@ const OPTROW = (label, on, em, g) => `<button class="opt" role="${em === undefin
 function renderOnb() {
   const st = ONB[onbStep], body = $('#onbBody'), foot = $('#onbFoot');
   $('#onbBack').style.visibility = onbStep ? '' : 'hidden';
+  $('#s-onb').classList.toggle('welcome', st.id === 'welcome');
   if (st.id === 'welcome') {
     body.innerHTML = `<div style="text-align:center;display:flex;flex-direction:column;gap:8px;padding-top:8px">
         <p class="t3 b" style="color:var(--link)">Pot</p>
         <p class="t2">Your Personal Plant Assistant!</p>
         <p class="bd c-3">Identify, collect, and keep your plants thriving.</p>
       </div>
-      <img src="assets/cactus-happy.png" alt="Pot, the cactus mascot" style="width:300px;height:300px;margin:8px auto auto">`;
+      <img src="assets/cactus-happy.png" alt="Pot, the cactus mascot" style="width:250px;height:250px;margin:8px auto 0">
+      <img class="onb-band" src="assets/onb-flowers.png" alt="">`;
     foot.innerHTML = `<button class="btn pri r16" data-onb="start">Start My Journey</button>
       <p class="sh c-3">Already have an account?</p><button class="skip" data-onb="signin">Sign in</button>`;
     return;
