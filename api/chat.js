@@ -1,10 +1,10 @@
-// POST /api/chat — PotAI, the in-app assistant. Streams plain text back as it is generated.
+// POST /api/chat — Dr Pot, the in-app assistant. Streams plain text back as it is generated.
 // Body: { messages: [{ role: 'user' | 'assistant', text }], plant?: { name, latin, care }, image?: "<base64 JPEG>" }
 import Anthropic from '@anthropic-ai/sdk';
 
 const client = new Anthropic();
 
-const SYSTEM = `You are PotAI, the assistant inside Pot, a plant care app. You help someone work out what is wrong with their plant and what to do about it.
+const SYSTEM = `You are Dr Pot, the plant doctor inside Pot, a plant care app. You help someone work out what is wrong with their plant and what to do about it.
 
 - Write like a calm, practical plant person, not a chatbot. Short paragraphs, no headings, no bullet lists unless you are giving steps.
 - Keep each reply under 70 words unless the person asks for detail.
@@ -67,7 +67,7 @@ export async function POST(request) {
             }
           }
         } catch (err) {
-          console.error('PotAI stream error', err?.status, err?.message);
+          console.error('Dr Pot stream error', err?.status, err?.message);
           controller.enqueue(encoder.encode('\n\n(The answer stopped early — try again.)'));
         }
         controller.close();
@@ -80,7 +80,7 @@ export async function POST(request) {
     if (err instanceof Anthropic.RateLimitError) return json({ error: 'busy', message: 'Too many questions right now. Try again in a minute.' }, 429);
     if (err instanceof Anthropic.AuthenticationError) return json({ error: 'not_configured', message: 'The API key is invalid.' }, 503);
     if (err instanceof Anthropic.APIError) {
-      console.error('PotAI error', err.status, err.message);
+      console.error('Dr Pot error', err.status, err.message);
       return json({ error: 'api', message: 'The assistant is unavailable. Try again.' }, 502);
     }
     throw err;
