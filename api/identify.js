@@ -73,13 +73,13 @@ const SYSTEM = `You identify plants from a single photo for Pot, a plant care ap
 const client = new Anthropic();
 
 export async function POST(request) {
-  let image, care;
+  let image, care, lang;
   try {
-    ({ image, care } = await request.json());
+    ({ image, care, lang } = await request.json());
   } catch {
     return json({ error: 'bad_request', message: 'Send JSON with an "image" field.' }, 400);
   }
-  if (care) return careGuide(care);
+  if (care) return careGuide(care, lang);
   if (typeof image !== 'string' || image.length < 1000 || image.length > 4_000_000) {
     return json({ error: 'bad_request', message: 'The image is missing or too large.' }, 400);
   }
@@ -98,7 +98,7 @@ export async function POST(request) {
       fallbacks: 'default',
       thinking: { type: 'adaptive' },
       output_config: { effort: 'medium', format: { type: 'json_schema', schema: SCHEMA } },
-      system: SYSTEM,
+      system: SYSTEM + inLanguage(lang),
       messages: [{
         role: 'user',
         content: [
@@ -166,7 +166,7 @@ function mock() {
 }
 
 // The care guide is a second, smaller call: no photo, so it is quick and its schema stays simple.
-async function careGuide({ name, latin }) {
+async function careGuide({ name, latin }, lang) {
   if (typeof name !== 'string' || name.length > 120) {
     return json({ error: 'bad_request', message: 'Send the plant name.' }, 400);
   }
@@ -180,7 +180,7 @@ async function careGuide({ name, latin }) {
       fallbacks: 'default',
       thinking: { type: 'adaptive' },
       output_config: { effort: 'low', format: { type: 'json_schema', schema: CARE_SCHEMA } },
-      system: CARE_SYSTEM,
+      system: CARE_SYSTEM + inLanguage(lang, true),
       messages: [{ role: 'user', content: `Write the care guide for ${name}${latin ? ` (${latin})` : ''}.` }],
     });
     if (response.stop_reason === 'refusal') return json({ error: 'refused', message: 'No care guide for this plant.' }, 422);
@@ -224,4 +224,12 @@ function mockCare() {
     diseases: ['Leaf spot', 'Root rot', 'Anthracnose', 'Botrytis', 'Sooty mould'],
     pests: ['Mealybugs', 'Scale', 'Spider mites', 'Thrips', 'Aphids'],
   };
+}
+
+// Pot shows its interface in English or Russian; the generated text follows it.
+function inLanguage(lang, care) {
+  if (lang !== 'ru') return '';
+  return care
+    ? '\n\nLANGUAGE: write every text value in Russian, including month names in fertilizing (e.g. "Апрель | Раз в 2 недели | Раз в год") and the titles before the colon.'
+    : '\n\nLANGUAGE: write every free-text field in Russian — name is the most common Russian name of the plant, common and commonFull are Russian names too. Keep latin in Latin, and keep the enum fields (confidence, tags, water, fert, level) exactly as the schema lists them.';
 }

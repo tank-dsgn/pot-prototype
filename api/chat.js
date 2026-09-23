@@ -44,7 +44,8 @@ export async function POST(request) {
   }
 
   const history = Array.isArray(body.messages) ? body.messages.slice(-16) : [];
-  if (body.plan) return treatmentPlan(history, body.plant || {});
+  const ru = body.lang === 'ru';
+  if (body.plan) return treatmentPlan(history, body.plant || {}, ru);
   if (!history.length) return json({ error: 'bad_request', message: 'Nothing to answer.' }, 400);
   const image = typeof body.image === 'string' && body.image.length > 1000 && body.image.length < 4_000_000
     ? body.image.replace(/^data:image\/\w+;base64,/, '') : null;
@@ -75,7 +76,7 @@ export async function POST(request) {
       fallbacks: 'default',
       thinking: { type: 'adaptive' },
       output_config: { effort: 'low' },
-      system: SYSTEM + context,
+      system: SYSTEM + context + (ru ? '\n\nThe app is in Russian: reply in Russian unless the person writes in another language.' : ''),
       messages,
     });
 
@@ -114,7 +115,7 @@ function json(body, status = 200) {
 }
 
 // A plan is a one-off structured answer, not a stream: the app stores it next to the plant.
-async function treatmentPlan(history, plant) {
+async function treatmentPlan(history, plant, ru) {
   if (!history.length) return json({ error: 'bad_request', message: 'Nothing to plan.' }, 400);
   if (!process.env.ANTHROPIC_API_KEY) return json({ error: 'not_configured', message: 'The assistant is not connected yet.' }, 503);
   const transcript = history.map((m) => `${m.role === 'assistant' ? 'Dr Pot' : 'Owner'}: ${String(m.text ?? '').slice(0, 1500)}`).join('\n');
@@ -126,7 +127,7 @@ async function treatmentPlan(history, plant) {
       fallbacks: 'default',
       thinking: { type: 'adaptive' },
       output_config: { effort: 'low', format: { type: 'json_schema', schema: PLAN_SCHEMA } },
-      system: PLAN_SYSTEM,
+      system: PLAN_SYSTEM + (ru ? '\n- Write cause, summary and steps in Russian.' : ''),
       messages: [{ role: 'user', content: `Plant: ${plant.name || 'houseplant'}${plant.latin ? ` (${plant.latin})` : ''}.${plant.care ? ` Care profile: ${String(plant.care).slice(0, 900)}` : ''}\n\nConversation:\n${transcript}` }],
     });
     if (response.stop_reason === 'refusal') return json({ error: 'refused', message: 'No plan for this one.' }, 422);
