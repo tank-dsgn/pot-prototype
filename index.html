@@ -848,7 +848,7 @@ table.ft td:first-child{color:var(--text2)}
           </div>
           <button class="card" id="askAi" style="padding:12px 16px;display:flex;align-items:center;gap:12px;text-align:left">
             <span style="flex:none;width:44px;height:44px;border-radius:50%;background:#f0fdf4;display:grid;place-items:center;overflow:hidden"><img src="assets/cactus-happy.png" alt="" style="width:40px;height:40px"></span>
-            <span style="flex:1;min-width:0"><span class="co s" style="display:block">Ask PotAI about this plant</span><span class="fn c-3" style="display:block">Describe what you see — get a diagnosis</span></span>
+            <span style="flex:1;min-width:0"><span class="co s" style="display:block">Ask Dr Pot about this plant</span><span class="fn c-3" style="display:block">Describe what you see — get a diagnosis</span></span>
             <i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i>
           </button>
         </div>
@@ -1022,15 +1022,15 @@ table.ft td:first-child{color:var(--text2)}
       <div class="hi"></div>
     </section>
 
-    <!-- 14. PotAI -->
-    <section class="screen" id="s-ai" data-title="PotAI" hidden>
+    <!-- 14. Dr Pot -->
+    <section class="screen" id="s-ai" data-title="Dr Pot" hidden>
       <div class="sb"></div>
-      <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button><p class="ttl hd">PotAI</p><button class="ic" id="aiClear" aria-label="New chat"><i class="i" style="--m:url(assets/ic-close.svg);width:20px;height:20px"></i></button></div>
+      <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button><p class="ttl hd">Dr Pot</p><button class="ic" id="aiClear" aria-label="New chat"><i class="i" style="--m:url(assets/ic-close.svg);width:20px;height:20px"></i></button></div>
       <div class="ai-scroll" id="aiScroll"></div>
       <div class="ai-bar">
         <div class="box">
           <span id="aiPhotoWrap"></span>
-          <textarea id="aiInput" rows="1" placeholder="How can PotAI help you today?" aria-label="Message"></textarea>
+          <textarea id="aiInput" rows="1" placeholder="How can Dr Pot help you today?" aria-label="Message"></textarea>
           <button class="rnd" id="aiCam" aria-label="Add a photo"><i class="i" style="--m:url(assets/ic-camera.svg);width:20px;height:18px"></i></button>
           <button class="rnd send" id="aiSend" aria-label="Send" disabled><i class="i" style="--m:url(assets/ic-arrow-left.svg);width:20px;height:20px;transform:rotate(90deg)"></i></button>
         </div>
@@ -2143,7 +2143,7 @@ else if (isAndroid) showInstall('android-manual');
 else if (isIOS) showInstall('ios');
 
 
-/* ---------- PotAI ---------- */
+/* ---------- Dr Pot ---------- */
 const PROMPTS = [
   ['ic-bulb', 'Leaf color'], ['ic-sprouts', 'Falling leaves'], ['ic-alert', 'Deformed or damaged leaves'], ['ic-eye', 'Coating on leaves'],
   ['qf-water', 'Am I watering it right?'], ['qf-sun', 'Is this spot bright enough?'], ['ht-soil', 'Soil looks wrong'], ['cp-pests', 'I think it has pests'],
@@ -2168,7 +2168,7 @@ function renderChat(streamText) {
     box.innerHTML = `<div class="ai-intro">
         <span class="ava"><img src="assets/cactus-happy.png" alt=""></span>
         <p class="t1 b">Can I help you?</p>
-        <p class="bd c-3">Choose a prompt below or write your own to start chatting with PotAI${P() ? ` about your ${P().name}` : ''}</p>
+        <p class="bd c-3">Choose a prompt below or write your own to start chatting with Dr Pot${P() ? ` about your ${P().name}` : ''}</p>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px">
         ${four.map(([ic, t]) => `<button class="ai-prompt" data-prompt="${t}"><i class="i" style="--m:url(assets/${ic}.svg);width:24px;height:24px"></i>${t}</button>`).join('')}
