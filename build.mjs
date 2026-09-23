@@ -37,6 +37,10 @@ const manifest = {
 };
 await writeFile(join(out, 'manifest.webmanifest'), JSON.stringify(manifest, null, 2));
 
+const built = new Date().toISOString();
+let note = '';
+try { note = execSync('git log -1 --pretty=%s', { cwd: root }).toString().trim(); } catch {}
+
 const head = `<!doctype html>
 <html lang="en" translate="no" class="notranslate">
 <head>
@@ -51,6 +55,7 @@ const head = `<!doctype html>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Pot">
+<script>window.POT_BUILD = ${JSON.stringify({ time: built, note })};</script>
 <script>
 // the phone's status bar follows the app's own theme, before the first paint
 (() => {
@@ -66,13 +71,8 @@ const head = `<!doctype html>
 </head>
 <body>
 `;
-const built = new Date().toISOString();
-let note = '';
-try { note = execSync('git log -1 --pretty=%s', { cwd: root }).toString().trim(); } catch {}
-
 const tail = `
 <script>
-window.POT_BUILD = ${JSON.stringify({ time: built, note })};
 if ('serviceWorker' in navigator) addEventListener('load', () => navigator.serviceWorker.register('/sw.js'));
 </script>
 </body>
