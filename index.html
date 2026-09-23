@@ -297,9 +297,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .sw-wrap.open>.sw-front{transform:translateX(-144px)}
 .sw-wrap.one.open>.sw-front{transform:translateX(-72px)}
 
-/* treatment: the "Needs attention" section and the plant strip */
-.attn{display:flex;flex-direction:column;gap:12px;padding:0 16px 8px}
-.attn .hd{padding:4px 0 0}
+/* treatment: Dr Pot inside the plant card, health tags in the garden */
 .tcard{display:flex;flex-direction:column;gap:12px;padding:12px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow-card);text-align:left;width:100%;box-sizing:border-box}
 .tcard .top{display:flex;gap:12px;align-items:center}
 .tcard .top img{width:48px;height:48px;border-radius:10px;object-fit:cover;flex:none}
@@ -698,7 +696,6 @@ table.ft td:first-child{color:var(--text2)}
       <div style="padding:16px"><div class="segc" id="gardenSeg" data-seg><div class="thumb"></div><button aria-selected="true" data-pane="plants">My Plants</button><button aria-selected="false" data-pane="scans">Past Scans</button></div></div>
       <div class="scroll">
         <div class="sk-grid" id="gardenSk" hidden><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
-        <div class="attn" id="attn" hidden></div>
         <div class="grid" id="gardenGrid"></div>
         <div class="plist" id="scanList" hidden></div>
       </div>
@@ -787,6 +784,7 @@ table.ft td:first-child{color:var(--text2)}
         <button class="circ" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-arrow-left-white.svg);width:20px;height:20px"></i></button>
         <p class="hd plant-name" id="detNavTitle" style="opacity:0;transition:opacity .2s">Peanut</p>
         <span style="display:flex;gap:12px;align-items:center">
+          <button class="circ" id="detDr" hidden aria-label="Dr Pot history" style="overflow:hidden;padding:0"><img src="assets/cactus-happy.png" alt="" style="width:28px;height:28px"></button>
           <button class="circ" id="detDelete" hidden aria-label="Remove plant"><i class="i" style="--m:url(assets/ic-trash.svg);width:20px;height:20px"></i></button>
           <button class="sharebtn" data-share><i class="i" style="--m:url(assets/ic-share.svg);width:14px;height:16px"></i>Share</button>
         </span>
@@ -814,7 +812,7 @@ table.ft td:first-child{color:var(--text2)}
         </div>
         <div class="pills" id="detTags" style="padding:12px 16px 0;gap:12px"></div>
 
-        <div id="treatStrip" style="padding:16px 16px 0" hidden></div>
+        <div id="drPot" style="padding:16px 16px 0"></div>
         <div class="sec">
           <p class="t2">Quick facts</p>
           <div class="qf" id="qfGrid"></div>
@@ -869,11 +867,6 @@ table.ft td:first-child{color:var(--text2)}
             <div class="row-li" style="gap:8px"><span class="surf o prob-p"><img src="assets/cp-pests.svg" alt=""></span><div><p class="fn c-3">Pests</p><p class="co s c-2">Caused by insects or parasites</p></div></div>
             <div style="display:flex;flex-wrap:wrap;gap:12px" id="pests"></div>
           </div>
-          <button class="card" id="askAi" style="padding:12px 16px;display:flex;align-items:center;gap:12px;text-align:left">
-            <span style="flex:none;width:44px;height:44px;border-radius:50%;background:#f0fdf4;display:grid;place-items:center;overflow:hidden"><img src="assets/cactus-happy.png" alt="" style="width:40px;height:40px"></span>
-            <span style="flex:1;min-width:0"><span class="co s" style="display:block">Ask Dr Pot about this plant</span><span class="fn c-3" style="display:block">Describe what you see — get a diagnosis</span></span>
-            <i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i>
-          </button>
         </div>
 
         <div class="sec only-peanut" style="padding-bottom:24px">
@@ -1122,7 +1115,7 @@ $$('[data-seg]').forEach(seg => {
     if (b.dataset.toast) return toast(b.dataset.toast);
     setSeg(seg, i);
     if (seg.closest('#s-garden-empty')) { $('#emptyPlants').hidden = i !== 0; $('#emptyScans').hidden = i !== 1; }
-    if (seg.id === 'gardenSeg') { $('#gardenGrid').hidden = i !== 0; $('#scanList').hidden = i !== 1; $('#s-garden .scroll').scrollTop = 0; renderAttn(); }
+    if (seg.id === 'gardenSeg') { $('#gardenGrid').hidden = i !== 0; $('#scanList').hidden = i !== 1; $('#s-garden .scroll').scrollTop = 0; }
     if (seg.id === 'charSeg') renderChar(b.dataset.c);
   }));
 });
@@ -1194,6 +1187,7 @@ phone.addEventListener('click', e => {
   if (t.hasAttribute('data-scan')) return startScan();
   if (t.hasAttribute('data-share')) return shareApp();
   if (t.id === 'detDelete') return removePlant();
+  if (t.id === 'detDr' || t.hasAttribute('data-drpot')) return go('ai');
   if (t.hasAttribute('data-add')) return addPlant();
   if (t.hasAttribute('data-garden')) return reset('garden', 'fade');
   if (t.dataset.go) {
@@ -1487,10 +1481,10 @@ let skT = [];
 function gardenSkeleton() {
   skT.forEach(clearTimeout);
   const pane = $$('#gardenSeg button').findIndex(b => b.getAttribute('aria-selected') === 'true');
-  $('#gardenSk').hidden = false; $('#gardenGrid').hidden = true; $('#scanList').hidden = true; $('#attn').hidden = true;
+  $('#gardenSk').hidden = false; $('#gardenGrid').hidden = true; $('#scanList').hidden = true;
   skT = [setTimeout(() => {
     $('#gardenSk').hidden = true;
-    $('#gardenGrid').hidden = pane === 1; $('#scanList').hidden = pane !== 1; renderAttn();
+    $('#gardenGrid').hidden = pane === 1; $('#scanList').hidden = pane !== 1;
   }, 700)];
 }
 function detailSkeleton() {
@@ -1586,7 +1580,7 @@ function renderPlant() {
   $$('.only-peanut').forEach(e => e.hidden = state.plant !== 'peanut');
   renderHow();
   renderProblems();
-  renderTreatStrip();
+  renderDrPot();
   $('#toxBody').innerHTML = `<div class="card pad" style="display:flex;flex-direction:column;gap:12px"><p class="t2">Toxicity</p>
       ${TOXROW('tox-face.svg', 'For Human', p.tox.human, p.tox.human !== 'Non-Toxic')}
       ${TOXROW('qf-clover.svg', 'For Pets', p.tox.pets, p.toxic)}
@@ -1928,9 +1922,8 @@ $('#subscribe').onclick = () => {
 function renderGarden(fresh) {
   const ids = gardenIds();
   const scans = scanIds();
-  $('#gardenGrid').innerHTML = ids.map(id => { const p = PLANTS[id]; return `<div class="sw-wrap one" data-id="${id}"><div class="acts-sw"><button class="del" data-act="del" aria-label="Remove ${p.name}"><i class="i" style="--m:url(assets/ic-trash.svg);width:22px;height:22px"></i>Delete</button></div><button class="sw-front pcard" data-plant="${id}" style="position:relative">${photo(p)}${id === fresh ? '<span class="new">New</span>' : ''}<span class="nm">${p.name}</span><span class="cm">${p.common}</span></button></div>`; }).join('');
+  $('#gardenGrid').innerHTML = ids.map(id => { const p = PLANTS[id]; return `<div class="sw-wrap one" data-id="${id}"><div class="acts-sw"><button class="del" data-act="del" aria-label="Remove ${p.name}"><i class="i" style="--m:url(assets/ic-trash.svg);width:22px;height:22px"></i>Delete</button></div><button class="sw-front pcard" data-plant="${id}" style="position:relative">${photo(p)}${id === fresh ? '<span class="new">New</span>' : ''}<span class="nm">${p.name}</span><span class="cm">${p.common}</span>${healthTag(id)}</button></div>`; }).join('');
   $('#scanList').innerHTML = scans.map(id => { const p = PLANTS[id]; const has = gardenIds().includes(id); return `<div class="sw-wrap" data-id="${id}"><div class="acts-sw">${has ? '' : `<button class="add" data-act="add" aria-label="Add ${p.name} to My Plants"><span style="font-size:22px;line-height:22px">+</span>Add</button>`}<button class="del" data-act="del-scan" aria-label="Delete ${p.name} from history"><i class="i" style="--m:url(assets/ic-trash.svg);width:22px;height:22px"></i>Delete</button></div><button class="sw-front" data-plant="${id}">${photo(p, 'sm')}<span class="tx"><span class="hd" style="display:block;letter-spacing:-.43px">${p.name}</span><span class="fn c-3" style="display:block">${p.common}</span></span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i></button></div>`; }).join('');
-  renderAttn();
   $$('#s-garden .sw-wrap').forEach(w => { if (!$('.acts-sw button', w)) return; if ($$('.acts-sw button', w).length === 1) w.classList.add('one'); else w.classList.remove('one'); });
 }
 $('#s-garden').addEventListener('click', e => {
@@ -1977,9 +1970,9 @@ function restartPrototype() {
   Object.keys(PLANTS).filter(id => PLANTS[id].scanned).forEach(id => delete PLANTS[id]);
   Object.assign(state, { authed: false, camAllowed: false, tipsSeen: false, plant: 'peanut', fromScan: false, garden: [], scans: [], removed: [], treat: {} });
   store.set('avatar', ''); renderAvatar();
+  Object.keys(chats).forEach(k => delete chats[k]); saveChats();
   persist(); renderGarden(); reset('loading');
 }
-$('#askAi').onclick = () => go('ai');
 $('#restoreBtn').onclick = () => iosAlert('Restore Purchases', 'Sign in to the App Store account you bought Pot Premium with.', [
   { label: 'Not Now' },
   { label: 'Restore', bold: true, do: () => toast('No purchases to restore') }
@@ -2181,7 +2174,8 @@ const PROMPTS = [
   ['ht-temp', 'Is it too cold here?'], ['ht-waterdrop', 'When should I repot it?'], ['qf-fert', 'How do I feed it?'], ['tag-cat', 'Is it safe for my cat?'],
 ];
 let promptSet = 0;
-const chats = {};
+const chats = (() => { try { return JSON.parse(store.get('chats') || '{}'); } catch { return {}; } })();
+const saveChats = () => store.set('chats', JSON.stringify(Object.fromEntries(Object.entries(chats).map(([k, v]) => [k, v.slice(-30).map(({ role, text }) => ({ role, text }))]))));
 let aiPhoto = null, aiBusy = false;
 const chatKey = () => state.plant || 'general';
 const chat = () => (chats[chatKey()] = chats[chatKey()] || []);
@@ -2213,7 +2207,7 @@ function renderChat(streamText) {
     + (streamText !== undefined ? `<div class="msg bot"><span class="av"><img src="assets/cactus-happy.png" alt=""></span><span class="bub">${streamText ? esc(streamText) : '<span class="dots"><i></i><i></i><i></i></span>'}</span></div>` : '')
     + (streamText === undefined && P() && msgs.length >= 2 && msgs[msgs.length - 1].role === 'assistant'
         ? (activeT(state.plant)
-            ? `<p class="fn c-3" style="text-align:center;padding:4px 0">${P().name} is already in treatment — it’s in My Garden.</p>`
+            ? `<p class="fn c-3" style="text-align:center;padding:4px 0">${P().name} is already in treatment — the plan is on its card.</p>`
             : `<button class="btn pri r16" id="aiPlan" style="margin-top:4px;flex:none">Start a treatment plan</button>`)
         : '');
   box.scrollTop = box.scrollHeight;
@@ -2244,7 +2238,7 @@ $('#aiFile').onchange = async e => {
   finally { URL.revokeObjectURL(url); }
 };
 $('#aiPhotoWrap').addEventListener('click', e => { if (e.target.closest('#aiPhotoX')) { aiPhoto = null; $('#aiPhotoWrap').innerHTML = ''; $('#aiSend').disabled = !$('#aiInput').value.trim(); } });
-$('#aiClear').onclick = () => { chats[chatKey()] = []; aiPhoto = null; $('#aiPhotoWrap').innerHTML = ''; $('#aiInput').value = ''; $('#aiSend').disabled = true; renderChat(); };
+$('#aiClear').onclick = () => { chats[chatKey()] = []; saveChats(); aiPhoto = null; $('#aiPhotoWrap').innerHTML = ''; $('#aiInput').value = ''; $('#aiSend').disabled = true; renderChat(); };
 
 async function askAi(text) {
   if (aiBusy) return;
@@ -2279,6 +2273,7 @@ async function askAi(text) {
   } catch { answer = 'No connection — check the internet and try again.'; }
   aiBusy = false;
   chat().push({ role: 'assistant', text: answer.trim() || '…' });
+  saveChats();
   renderChat();
 }
 
@@ -2298,19 +2293,26 @@ function treatCard(id, compact) {
     <div class="row2"><button class="btn pri" data-checkin="${id}">Check in</button><button class="btn alt" data-askdr="${id}">Ask Dr Pot</button></div>
   </div>`;
 }
-function renderAttn() {
-  const ids = gardenIds().filter(activeT);
-  $('#attn').innerHTML = ids.length ? `<p class="hd">Needs attention</p>${ids.map(id => treatCard(id)).join('')}` : '';
-  $('#attn').hidden = !ids.length || $$('#gardenSeg button').findIndex(b => b.getAttribute('aria-selected') === 'true') === 1;
+// health tag on a garden card: only when there is something to say
+function healthTag(id) {
+  const t = state.treat[id];
+  if (!t) return '';
+  return t.done
+    ? `<span class="tpill ok" style="margin:0 12px;align-self:flex-start">Recovered</span>`
+    : `<span class="tpill" style="margin:0 12px;align-self:flex-start">${esc(t.cause)}</span>`;
 }
-function renderTreatStrip() {
-  const id = state.plant, t = state.treat[id];
-  const box = $('#treatStrip');
-  if (!t) { box.hidden = true; box.innerHTML = ''; return; }
-  box.hidden = false;
-  box.innerHTML = t.done
-    ? `<div class="tcard"><div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><span class="tpill ok">Healed ${fmtDate(t.done.at)}</span><span class="fn c-3">${esc(t.cause)}</span></div></div>`
-    : treatCard(id, true);
+// Dr Pot inside the plant card: an invitation, a running treatment, or a recovered note
+function renderDrPot() {
+  const id = state.plant, p = P(), t = state.treat[id], box = $('#drPot');
+  if (!p) return;
+  const had = (chats[id] || []).length > 0;
+  $('#detDr').hidden = !had;
+  if (t && !t.done) { box.innerHTML = treatCard(id, true); return; }
+  box.innerHTML = `<button class="card" data-drpot style="width:100%;box-sizing:border-box;padding:12px 16px;display:flex;align-items:center;gap:12px;text-align:left">
+      <span style="flex:none;width:44px;height:44px;border-radius:50%;background:#f0fdf4;display:grid;place-items:center;overflow:hidden"><img src="assets/cactus-happy.png" alt="" style="width:40px;height:40px"></span>
+      <span style="flex:1;min-width:0"><span class="co s" style="display:block">${t ? `Recovered ${fmtDate(t.done.at)} · ${esc(t.cause)}` : 'Something wrong? Ask Dr Pot'}</span><span class="fn c-3" style="display:block">${had ? 'Continue your chat about this plant' : 'Describe what you see — get a diagnosis and a plan'}</span></span>
+      <i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i>
+    </button>`;
 }
 function checkIn(id) {
   const t = activeT(id), p = PLANTS[id]; if (!t) return;
@@ -2338,7 +2340,7 @@ function answerCheck(id, outcome) {
   }
   persist(); refreshTreat();
 }
-function refreshTreat() { renderAttn(); if (cur() === 'details') renderTreatStrip(); }
+function refreshTreat() { renderGarden(); if (cur() === 'details') renderDrPot(); }
 async function startTreatment() {
   const id = state.plant, p = P(); if (!p || aiBusy) return;
   const btn = $('#aiPlan'); if (btn) { btn.disabled = true; btn.textContent = 'Dr Pot is writing the plan…'; }
@@ -2352,7 +2354,7 @@ async function startTreatment() {
     state.removed = state.removed.filter(x => x !== id);
     persist(); renderGarden();
     back();
-    setTimeout(() => toast('Treatment started — it’s in My Garden'), 350);
+    setTimeout(() => toast('Treatment started'), 350);
   } catch (e) {
     toast(e.message && e.message !== 'plan' ? e.message : 'Couldn’t build the plan. Try again.');
     if (btn) { btn.disabled = false; btn.textContent = 'Start a treatment plan'; }
