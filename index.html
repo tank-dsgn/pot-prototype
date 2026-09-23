@@ -97,6 +97,9 @@ html.dark-app{background:#0c0a09;--dim:#080706}
   .phone .sb{height:6px}.phone .sb>*{display:none!important}
   .phone .hi{display:none}
   .phone .float-nav{padding-top:12px}
+  /* native size: 270pt alerts, 17pt type, 57pt sheet rows — whatever the screen width */
+  .phone .alert-ios,.phone .sheet{inset:auto;left:0;top:0;width:var(--vw);height:var(--vh);transform:scale(var(--inv));transform-origin:0 0}
+  .phone .sheet .card-s+.card-s{margin-bottom:max(8px,env(safe-area-inset-bottom))}
 }
 
 /* ---------- screen scaffolding ---------- */
@@ -298,12 +301,20 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .sw-wrap.one.open>.sw-front{transform:translateX(-72px)}
 
 /* treatment: Dr Pot inside the plant card, health tags in the garden */
+.drcta{width:100%;box-sizing:border-box;padding:12px 16px;display:flex;align-items:center;gap:12px;text-align:left;border-radius:16px;background:var(--grad);color:#fff;box-shadow:0 4px 14px rgba(21,128,61,.28)}
+.drcta .av{flex:none;width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;overflow:hidden}
+.drcta .av img{width:40px;height:40px}
+.drcta .sub{color:rgba(255,255,255,.85)}
+.drcta:active{transform:scale(.99)}
 .tcard{display:flex;flex-direction:column;gap:12px;padding:12px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow-card);text-align:left;width:100%;box-sizing:border-box}
 .tcard .top{display:flex;gap:12px;align-items:center}
 .tcard .top img{width:48px;height:48px;border-radius:10px;object-fit:cover;flex:none}
 .tpill{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:99px;background:#fef3c7;color:#92400e;font-size:13px;font-weight:600;white-space:nowrap}
 .phone.dark .tpill{background:rgba(217,119,6,.22);color:#fcd34d}
 .tpill.ok{background:#dcfce7;color:#166534}
+.tpill.photo{position:absolute;top:10px;left:10px;margin:0;box-shadow:0 1px 4px rgba(0,0,0,.18)}
+.phone.dark .tpill.photo{background:#fef3c7;color:#92400e}
+.phone.dark .tpill.photo.ok{background:#dcfce7;color:#166534}
 .phone.dark .tpill.ok{background:rgba(34,197,94,.18);color:#86efac}
 .tbar{height:6px;border-radius:99px;background:var(--border);overflow:hidden}
 .tbar i{display:block;height:100%;border-radius:99px;background:#d97706}
@@ -412,7 +423,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .pcard img{width:100%;height:206px;object-fit:cover;border-radius:8px 8px 0 0}
 .pcard .nm{font-family:"Arial Rounded MT Bold","SF Pro Rounded",-apple-system,sans-serif;font-size:16px;line-height:22px;padding-inline:12px}
 .pcard .cm{font-size:14px;line-height:22px;font-weight:500;color:var(--text3);padding-inline:12px}
-.pcard .new{position:absolute;margin:10px;background:#15803d;color:#fff;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px}
+.pcard .new{position:absolute;top:0;right:0;margin:10px;background:#15803d;color:#fff;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px}
 .plist{display:flex;flex-direction:column;gap:18px;padding:10px 16px 24px}
 .plist button{display:flex;align-items:center;gap:15px}
 .plist img{width:56px;height:56px;border-radius:8px;object-fit:cover}
@@ -452,10 +463,11 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 
 .hero{position:relative;height:380px;flex:none;overflow:hidden;background:#fff}
 .hero img{width:100%;height:100%;object-fit:cover}
-.float-nav{position:absolute;left:0;right:0;top:0;padding:50px 16px 12px;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(0,0,0,.24),transparent);z-index:5;transition:background .2s}
-.float-nav.solid{background:var(--bg)}
-.circ{width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.5);display:grid;place-items:center;color:#fff}
-.sharebtn{height:32px;border-radius:99px;background:rgba(0,0,0,.5);color:#fff;display:flex;gap:10px;align-items:center;padding:0 8px;font-weight:600;font-size:16px}
+.float-nav{position:absolute;left:0;right:0;top:0;padding:50px 16px 10px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.22);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);z-index:5;transition:background .2s}
+.float-nav.solid{background:color-mix(in srgb,var(--bg) 78%,transparent);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);box-shadow:0 .5px 0 rgba(0,0,0,.12)}
+.phone.dark .float-nav.solid{box-shadow:0 .5px 0 rgba(255,255,255,.1)}
+.circ{width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.45);display:grid;place-items:center;color:#fff;box-shadow:0 0 0 .5px rgba(255,255,255,.18)}
+.sharebtn{height:32px;border-radius:99px;background:rgba(0,0,0,.45);box-shadow:0 0 0 .5px rgba(255,255,255,.18);color:#fff;display:flex;gap:10px;align-items:center;padding:0 8px;font-weight:600;font-size:16px}
 .qf{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .qf .card{padding:8px 12px;display:flex;gap:12px;align-items:center;white-space:nowrap;min-width:0}
 .kv{display:flex;flex-direction:column;gap:4px;padding:12px 0}
@@ -683,7 +695,7 @@ table.ft td:first-child{color:var(--text2)}
         <button class="btn pri r16" data-scan>Add a Plant</button>
       </div>
       <nav class="tabbar">
-        <button class="tab on" aria-current="page"><i class="i" style="--m:url(assets/ic-garden.svg);width:18px;height:22px;margin-top:1px"></i>My Garden</button>
+        <button class="tab on" aria-current="page"><i class="i" style="--m:url(assets/ic-garden-filled.svg);width:24px;height:24px"></i>My Garden</button>
         <button class="tab" data-go="settings"><i class="i" style="--m:url(assets/ic-settings.svg)"></i>Settings</button>
         <button class="cam" data-scan aria-label="Scan a plant"><i class="i" style="--m:url(assets/ic-camera.svg)"></i></button>
       </nav>
@@ -701,7 +713,7 @@ table.ft td:first-child{color:var(--text2)}
         <div class="plist" id="scanList" hidden></div>
       </div>
       <nav class="tabbar lift">
-        <button class="tab on" aria-current="page"><i class="i" style="--m:url(assets/ic-garden.svg);width:18px;height:22px;margin-top:1px"></i>My Garden</button>
+        <button class="tab on" aria-current="page"><i class="i" style="--m:url(assets/ic-garden-filled.svg);width:24px;height:24px"></i>My Garden</button>
         <button class="tab" data-go="settings"><i class="i" style="--m:url(assets/ic-settings.svg)"></i>Settings</button>
         <button class="cam" data-scan aria-label="Scan a plant"><i class="i" style="--m:url(assets/ic-camera.svg)"></i></button>
       </nav>
@@ -785,7 +797,7 @@ table.ft td:first-child{color:var(--text2)}
         <button class="circ" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-arrow-left-white.svg);width:20px;height:20px"></i></button>
         <p class="hd plant-name" id="detNavTitle" style="opacity:0;transition:opacity .2s">Peanut</p>
         <span style="display:flex;gap:12px;align-items:center">
-          <button class="circ" id="detDr" hidden aria-label="Dr Pot history" style="overflow:hidden;padding:0"><img src="assets/cactus-happy.png" alt="" style="width:28px;height:28px"></button>
+          <button class="circ" id="detDr" hidden aria-label="Chat with Dr Pot"><i class="i" style="--m:url(assets/ic-chat.svg);width:18px;height:18px"></i></button>
           <button class="circ" id="detDelete" hidden aria-label="Remove plant"><i class="i" style="--m:url(assets/ic-trash.svg);width:20px;height:20px"></i></button>
           <button class="sharebtn" data-share><i class="i" style="--m:url(assets/ic-share.svg);width:14px;height:16px"></i>Share</button>
         </span>
@@ -953,10 +965,7 @@ table.ft td:first-child{color:var(--text2)}
         </div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <p class="t3 s">Prototype</p>
-          <div class="set-group">
-            <button class="set-row" id="reportBtn"><i class="i g" style="--m:url(assets/ic-alert.svg);width:22px;height:22px;margin-inline:1px"></i><span class="lbl">Report a problem</span><i class="i ch" style="--m:url(assets/ic-chevron-right2.svg);width:8px;height:14px;margin-inline:8px"></i></button>
-            <button class="set-row" id="restart" style="justify-content:center;color:var(--link);font-weight:600">Start from the beginning</button>
-          </div>
+          <button class="set-group set-row" style="justify-content:center;color:var(--link);font-weight:600" id="restart">Start from the beginning</button>
         </div>
       </div>
       <div class="hi"></div>
@@ -1605,9 +1614,14 @@ function onDetScroll() {
   $('#detNav').classList.toggle('solid', solid);
   $('#detNavTitle').style.opacity = solid ? 1 : 0;
   $('#detSb').style.color = solid ? 'var(--ink)' : '#fff';
-  $('#detNav .circ').style.background = solid ? 'transparent' : '';
-  $('#detNav .circ').style.color = solid ? 'var(--icon)' : '#fff';
+  // over the photo: dark glass buttons; on the page material: plain theme icons
+  $$('#detNav .circ').forEach(c => {
+    c.style.background = solid ? 'transparent' : '';
+    c.style.boxShadow = solid ? 'none' : '';
+    c.style.color = solid ? 'var(--icon)' : '#fff';
+  });
   $('#detNav .sharebtn').style.background = solid ? 'var(--surface)' : '';
+  $('#detNav .sharebtn').style.boxShadow = solid ? 'none' : '';
   $('#detNav .sharebtn').style.color = solid ? 'var(--text2)' : '#fff';
 }
 detScroll.addEventListener('scroll', onDetScroll, { passive: true });
@@ -2106,6 +2120,10 @@ function fit() {
     f.style.width = f.style.height = '';
     phone.style.height = f.clientHeight / s + 'px';
     phone.style.transform = `scale(${s})`;
+    // system dialogs are not part of the design canvas: they keep iOS sizes on every iPhone
+    phone.style.setProperty('--inv', 1 / s);
+    phone.style.setProperty('--vw', f.clientWidth + 'px');
+    phone.style.setProperty('--vh', f.clientHeight + 'px');
     return;
   }
   phone.style.height = '';
@@ -2282,7 +2300,7 @@ async function askAi(text) {
 const activeT = id => { const t = state.treat[id]; return t && !t.done ? t : null; };
 const tDay = t => Math.max(1, Math.min(t.days, Math.floor((Date.now() - t.started) / 864e5) + 1));
 const tStepIdx = t => Math.min(t.checks.length, t.steps.length - 1);
-const fmtDate = ts => new Date(ts).toLocaleDateString(undefined, { day: 'numeric', month: 'short' });
+const fmtDate = ts => new Date(ts).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
 function treatCard(id, compact) {
   const t = activeT(id), p = PLANTS[id]; if (!t || !p) return '';
   const pct = Math.round(Math.min(1, t.checks.length / t.steps.length) * 100);
@@ -2299,8 +2317,8 @@ function healthTag(id) {
   const t = state.treat[id];
   if (!t) return '';
   return t.done
-    ? `<span class="tpill ok" style="margin:0 12px;align-self:flex-start">Recovered</span>`
-    : `<span class="tpill" style="margin:0 12px;align-self:flex-start">${esc(t.cause)}</span>`;
+    ? `<span class="tpill photo ok">Recovered</span>`
+    : `<span class="tpill photo">${esc(t.cause)}</span>`;
 }
 // Dr Pot inside the plant card: an invitation, a running treatment, or a recovered note
 function renderDrPot() {
@@ -2309,10 +2327,10 @@ function renderDrPot() {
   const had = (chats[id] || []).length > 0;
   $('#detDr').hidden = !had;
   if (t && !t.done) { box.innerHTML = treatCard(id, true); return; }
-  box.innerHTML = `<button class="card" data-drpot style="width:100%;box-sizing:border-box;padding:12px 16px;display:flex;align-items:center;gap:12px;text-align:left">
-      <span style="flex:none;width:44px;height:44px;border-radius:50%;background:#f0fdf4;display:grid;place-items:center;overflow:hidden"><img src="assets/cactus-happy.png" alt="" style="width:40px;height:40px"></span>
-      <span style="flex:1;min-width:0"><span class="co s" style="display:block">${t ? `Recovered ${fmtDate(t.done.at)} · ${esc(t.cause)}` : 'Something wrong? Ask Dr Pot'}</span><span class="fn c-3" style="display:block">${had ? 'Continue your chat about this plant' : 'Describe what you see — get a diagnosis and a plan'}</span></span>
-      <i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i>
+  box.innerHTML = `<button class="drcta" data-drpot>
+      <span class="av"><img src="assets/cactus-happy.png" alt=""></span>
+      <span style="flex:1;min-width:0"><span class="co s" style="display:block">${t ? `Recovered ${fmtDate(t.done.at)} · ${esc(t.cause)}` : 'Something wrong? Ask Dr Pot'}</span><span class="fn sub" style="display:block">${had ? 'Continue your chat about this plant' : 'Describe what you see — get a diagnosis and a plan'}</span></span>
+      <i class="i" style="--m:url(assets/ic-chevron-right.svg);color:#fff"></i>
     </button>`;
 }
 function checkIn(id) {
@@ -2371,7 +2389,7 @@ const BUILD = (window.POT_BUILD || { time: 'dev', note: 'local' });
 const buildLabel = () => {
   if (BUILD.time === 'dev') return 'Local build';
   const d = new Date(BUILD.time);
-  return 'Build ' + d.toLocaleString(undefined, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + (BUILD.note ? ' · ' + BUILD.note : '');
+  return 'Build ' + d.toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) + (BUILD.note ? ' · ' + BUILD.note : '');
 };
 $('#buildLine').textContent = buildLabel();
 let checking = false;
@@ -2396,25 +2414,6 @@ try {
   const note = sessionStorage.getItem('pot:updated');
   if (note !== null) { sessionStorage.removeItem('pot:updated'); setTimeout(() => toast('Updated' + (note ? ' · ' + note.slice(0, 40) : '')), 600); }
 } catch {}
-
-/* ---------- report a problem ---------- */
-$('#reportBtn').onclick = () => {
-  const box = iosAlert('Report a problem', 'What went wrong? The screen you were on, the theme and the build are attached.', [
-    { label: 'Cancel' },
-    { label: 'Send', bold: true, do: () => sendReport($('#reportText', box)?.value || '') },
-  ], { extra: '<textarea id="reportText" placeholder="It happened when…" rows="3"></textarea>' });
-  setTimeout(() => $('#reportText', box)?.focus(), 50);
-};
-async function sendReport(text) {
-  if (!text.trim()) return toast('Nothing to send');
-  try {
-    const res = await fetch('/api/feedback', {
-      method: 'POST', headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ text, screen: cur(), theme: mode, build: BUILD.time, standalone, viewport: innerWidth + '×' + innerHeight }),
-    });
-    toast(res.ok ? 'Sent — thanks' : 'Couldn’t send it');
-  } catch { toast('No connection — try again') }
-}
 
 /* ---------- boot ---------- */
 restore();
