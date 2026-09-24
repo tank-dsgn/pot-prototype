@@ -19,7 +19,7 @@ const PLAN_SCHEMA = {
 };
 
 const PLAN_SYSTEM = `You are Dr Pot. Turn the conversation into a short treatment plan for this one plant.
-- cause: the likely cause in 2-4 words, e.g. "Overwatering", "Too little light", "Spider mites".
+- cause: the likely cause as a short label for a tag — 1 or 2 words, at most 16 characters, e.g. "Overwatering", "Low light", "Spider mites", "Cold & wet" (in Russian: "Перелив", "Мало света", "Паутинный клещ", "Холод и сырость").
 - summary: one sentence the owner reads first — what is happening and what the plan does about it.
 - steps: 3 to 5 actions in the order they should be done, each one sentence in the imperative, each something the owner can do today or this week.
 - days: how many days the plan runs. checkInDays: how often the owner should report back, in days.
