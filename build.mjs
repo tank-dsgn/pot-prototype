@@ -110,6 +110,20 @@ self.addEventListener('fetch', e => {
   }
   e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request)));
 });
+// reminders: show the push, and open the plant it is about
+self.addEventListener('push', e => {
+  let d = {}; try { d = e.data.json(); } catch {}
+  e.waitUntil(self.registration.showNotification(d.title || 'Pot', { body: d.body || '', icon: '/icon-192.png', badge: '/icon-192.png', data: { url: d.url || '/' } }));
+});
+self.addEventListener('notificationclick', e => {
+  e.notification.close();
+  const url = (e.notification.data && e.notification.data.url) || '/';
+  e.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+    const open = list[0];
+    if (open) { open.postMessage({ openUrl: url }); return open.focus(); }
+    return clients.openWindow(url);
+  }));
+});
 `);
 
 console.log(`Built ${files.length} files → ${out} (cache ${version})`);
