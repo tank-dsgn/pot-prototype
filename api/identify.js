@@ -73,12 +73,13 @@ const SYSTEM = `You identify plants from a single photo for Pot, a plant care ap
 const client = new Anthropic();
 
 export async function POST(request) {
-  let image, care, lang;
+  let image, care, lang, translate;
   try {
-    ({ image, care, lang } = await request.json());
+    ({ image, care, lang, translate } = await request.json());
   } catch {
     return json({ error: 'bad_request', message: 'Send JSON with an "image" field.' }, 400);
   }
+  if (translate) return translateContent(translate, lang);
   if (care) return careGuide(care, lang);
   if (typeof image !== 'string' || image.length < 1000 || image.length > 4_000_000) {
     return json({ error: 'bad_request', message: 'The image is missing or too large.' }, 400);
@@ -232,4 +233,50 @@ function inLanguage(lang, care) {
   return care
     ? '\n\nLANGUAGE: write every text value in Russian, including month names in fertilizing (e.g. "Апрель | Раз в 2 недели | Раз в год") and the titles before the colon.'
     : '\n\nLANGUAGE: write every free-text field in Russian — name is the most common Russian name of the plant, common and commonFull are Russian names too. Keep latin in Latin, and keep the enum fields (confidence, tags, water, fert, level) exactly as the schema lists them.';
+}
+
+// Text that was generated in one language, re-told in the other when the person switches.
+const TR_SCHEMAS = {
+  plant: obj({
+    name: str, common: str, commonFull: str, genus: str, tax: str,
+    about: str, more: str, dist: str, light: str, sun: str, temp: str, tip: str,
+    tox: obj({ human: str, pets: str, env: str }),
+    details: { type: 'array', items: obj({ title: str, text: str }) },
+    howto: obj({
+      watering: str, dry: str, sun: str, sunShade: str,
+      repotSeason: str, repotEvery: str, repotSoil: str,
+      soil: str, drainage: str, hardiness: str, tempRange: str, humidity: str,
+    }),
+  }),
+  care: CARE_SCHEMA,
+  plan: obj({ cause: str, summary: str, steps: { type: 'array', items: str } }),
+};
+
+async function translateContent({ kind, data }, lang) {
+  const schema = TR_SCHEMAS[kind];
+  if (!schema || !data || typeof data !== 'object') return json({ error: 'bad_request', message: 'Nothing to translate.' }, 400);
+  if (process.env.POT_MOCK === '1') return json(data);
+  if (!process.env.ANTHROPIC_API_KEY) return json({ error: 'not_configured', message: 'Translation is not set up yet.' }, 503);
+  const target = lang === 'ru' ? 'Russian' : 'English';
+  try {
+    const response = await client.beta.messages.create({
+      model: 'claude-opus-5',
+      max_tokens: 8000,
+      betas: ['server-side-fallback-2026-07-01'],
+      fallbacks: 'default',
+      output_config: { effort: 'low', format: { type: 'json_schema', schema } },
+      system: `You translate text inside Pot, a plant care app, into natural, concise ${target}. Return the same fields with every text value translated. Keep Latin botanical names in Latin; keep numbers, ranges and units as they are; keep the "Month | liquid | slow" format of fertilizing lines and the "Title: text" format of list items. A plant name becomes the name people actually use for that plant in ${target}. Short labels stay short.`,
+      messages: [{ role: 'user', content: JSON.stringify(data).slice(0, 20000) }],
+    });
+    const text = response.content.find((b) => b.type === 'text')?.text;
+    if (!text) return json({ error: 'empty', message: 'No translation came back.' }, 502);
+    return json(JSON.parse(text));
+  } catch (err) {
+    if (err instanceof Anthropic.APIError) {
+      console.error('Pot translate error', err.status, err.message);
+      return json({ error: 'api', message: 'Translation failed.' }, 502);
+    }
+    if (err instanceof SyntaxError) return json({ error: 'parse', message: 'Translation was malformed.' }, 502);
+    throw err;
+  }
 }
