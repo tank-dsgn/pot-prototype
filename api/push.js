@@ -3,11 +3,14 @@
 // Needs VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY in the project's environment variables.
 import webpush from 'web-push';
 import { waitUntil } from '@vercel/functions';
+import { guard } from './_guard.js';
 
 // only the browsers' own push services — never an arbitrary URL
 const PUSH_HOSTS = ['push.apple.com', 'fcm.googleapis.com', 'push.services.mozilla.com', 'notify.windows.com'];
 
 export async function POST(request) {
+  const blocked = guard(request);
+  if (blocked) return blocked;
   let body;
   try { body = await request.json(); } catch { return json({ error: 'bad_request' }, 400); }
   const sub = body.subscription;

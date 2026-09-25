@@ -14,7 +14,7 @@ http.createServer(async (req, res) => {
   if (req.method === 'POST' && ['/api/identify', '/api/chat', '/api/push'].includes(req.url)) {
     const { POST } = await import('.' + req.url + '.js');
     const chunks = []; for await (const c of req) chunks.push(c);
-    const r = await POST(new Request('http://localhost' + req.url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: Buffer.concat(chunks) }));
+    const r = await POST(new Request('http://localhost' + req.url, { method: 'POST', headers: { 'content-type': 'application/json', origin: req.headers.origin || '', referer: req.headers.referer || '' }, body: Buffer.concat(chunks) }));
     res.writeHead(r.status, { 'content-type': r.headers.get('content-type') || 'application/json' });
     if (!r.body) return res.end(await r.text());
     for await (const chunk of r.body) res.write(Buffer.from(chunk)); // streamed answers arrive piece by piece

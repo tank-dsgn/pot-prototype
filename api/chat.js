@@ -1,6 +1,7 @@
 // POST /api/chat — Dr Pot, the in-app assistant. Streams plain text back as it is generated.
 // Body: { messages: [{ role: 'user' | 'assistant', text }], plant?: { name, latin, care }, image?: "<base64 JPEG>" }
 import Anthropic from '@anthropic-ai/sdk';
+import { guard } from './_guard.js';
 
 const client = new Anthropic();
 
@@ -36,6 +37,8 @@ const SYSTEM = `You are Dr Pot, the plant doctor inside Pot, a plant care app. Y
 - Answer in the app's language (given below), even if the person writes in another one.`;
 
 export async function POST(request) {
+  const blocked = guard(request);
+  if (blocked) return blocked;
   let body;
   try {
     body = await request.json();

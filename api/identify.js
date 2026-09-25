@@ -1,6 +1,7 @@
 // POST /api/identify — { image: "<base64 JPEG>" } → plant card data for the prototype.
 // Runs as a Vercel function; needs ANTHROPIC_API_KEY in the project's environment variables.
 import Anthropic from '@anthropic-ai/sdk';
+import { guard } from './_guard.js';
 
 const TAGS = ['heat', 'wild', 'pet', 'low', 'dry', 'bright'];
 const LEVEL = ['Easy', 'Medium', 'Hard'];
@@ -73,6 +74,8 @@ const SYSTEM = `You identify plants from a single photo for Pot, a plant care ap
 const client = new Anthropic();
 
 export async function POST(request) {
+  const blocked = guard(request);
+  if (blocked) return blocked;
   let image, care, lang, translate;
   try {
     ({ image, care, lang, translate } = await request.json());
