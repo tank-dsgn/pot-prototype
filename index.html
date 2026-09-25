@@ -90,6 +90,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
   html.dark-app,html.dark-app body{background:#0c0a09}
   body{background:var(--bg);transition:background .2s}
   body.dimmed,html.dark-app body.dimmed{background:var(--dim)}
+  html.top-tint,html.top-tint body{background:var(--top)}
   .stage{padding:0;display:block}
   .panel{display:none}
   .frame{width:100%!important;height:100%!important;overflow:hidden}
@@ -794,7 +795,7 @@ table.ft td:first-child{color:var(--text2)}
           <p class="lt b" id="recogTitle">Recognizing</p>
         </div>
         <div style="display:flex;flex-direction:column;gap:24px;align-items:center;text-align:center">
-          <div class="step on"><img src="assets/ic-tick.svg" alt="" style="width:24px;height:24px;padding:0 3px;box-sizing:border-box">Uploaded</div>
+          <div class="step on"><img src="assets/ic-tick.svg" alt="" style="width:24px;height:24px">Uploaded</div>
           <div class="step on" id="stepScan"><div class="spin" style="width:30px;height:30px;color:#eab308" id="scanSpin"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div><span id="scanLbl">Scanning</span></div>
         </div>
         <p class="bd" id="recogNote" hidden style="text-align:center;opacity:.85;margin-top:-8px"></p>
@@ -1282,6 +1283,7 @@ function show(id, dir) {
   // leaving the scanner cancels its auto-advance
   if (id !== 'recog') { recogT.forEach(clearTimeout); recogRun++; }
   if (id !== 'camera') stopCamera();
+  paintTop(id);
   // finish any transition still running, so exactly one screen is on stage
   clearTimeout(settleT);
   anims.forEach(a => a.cancel()); anims = [];
@@ -1502,7 +1504,7 @@ function recogUI(stage, title, note) {
   $('#recogTitle').textContent = title;
   $('#scanSpin').hidden = stage !== 'scanning';
   $('#stepScan .done')?.remove();
-  if (stage === 'done') $('#stepScan').insertAdjacentHTML('afterbegin', '<img class="done" src="assets/ic-tick.svg" alt="" style="width:24px;height:24px;padding:0 3px;box-sizing:border-box">');
+  if (stage === 'done') $('#stepScan').insertAdjacentHTML('afterbegin', '<img class="done" src="assets/ic-tick.svg" alt="" style="width:24px;height:24px">');
   if (stage === 'failed') $('#stepScan').insertAdjacentHTML('afterbegin', '<img class="done" src="assets/badge-x.svg" alt="" style="width:24px;height:24px">');
   $('#scanLbl').textContent = stage === 'scanning' ? 'Scanning' : stage === 'done' ? 'Identified' : 'Not identified';
   $('#recogNote').hidden = !note; $('#recogNote').textContent = note || '';
@@ -2373,12 +2375,18 @@ function hintBlocked() {
   if (dismissed()) return 'dismissed during this visit';
   return '';
 }
-// a modal dims the whole screen, including the area iOS paints from the page background
-new MutationObserver(() => {
-  const on = !!phone.querySelector('.alert-ios, .sheet');
-  document.body.classList.toggle('dimmed', on);
-  themeMeta(on ? (mode === 'dark' ? '#080706' : '#a9a7a4') : (mode === 'dark' ? '#0c0a09' : '#f1efec'));
-}).observe(phone, { childList: true });
+// the strip iOS paints above the app (from the page background) matches what is on screen:
+// dimmed under a modal, the screen's own colour on full-bleed screens, the theme otherwise
+function paintTop(id = cur()) {
+  const TINT = { recog: '#317a31', camera: '#000000' };
+  const dim = !!phone.querySelector('.alert-ios, .sheet');
+  const tint = !dim && TINT[id];
+  document.body.classList.toggle('dimmed', dim);
+  document.documentElement.classList.toggle('top-tint', !!tint);
+  document.documentElement.style.setProperty('--top', tint || 'transparent');
+  themeMeta(dim ? (mode === 'dark' ? '#080706' : '#a9a7a4') : tint || (mode === 'dark' ? '#0c0a09' : '#f1efec'));
+}
+new MutationObserver(() => paintTop()).observe(phone, { childList: true });
 
 $('#installX').onclick = () => hideInstall(true);
 $('#installGo').onclick = async () => {
