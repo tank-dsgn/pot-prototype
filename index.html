@@ -1738,6 +1738,7 @@ function renderPlant() {
   const sub = p.name === p.latin ? p.common.split(',')[0].replace(/^./, c => c.toUpperCase()) : p.latin;
   $$('.plant-latin').forEach(e => { e.textContent = sub; e.style.fontStyle = sub === p.latin && e.closest('#detScroll') ? 'italic' : 'normal'; });
   $('#detPh').classList.remove('on'); $('#detImg').src = imgSrc(p); $('#detImg').alt = p.name;
+  sampleHero();
   if ($('#detImg').complete) $('#detPh').classList.add('on');
   $('#aboutTx').textContent = p.about; $('#aboutMore').textContent = 'Show More';
   $('#detTags').innerHTML = p.tags.map(t => `<span class="tag"><i class="i" style="--m:url(assets/${TAGDEF(t)[0]}.svg)"></i>${TAGDEF(t)[1]}</span>`).join('');
@@ -1780,7 +1781,7 @@ function renderPlant() {
 const detScroll = $('#detScroll');
 function onDetScroll() {
   const solid = detScroll.scrollTop > 300;
-  $('#detNav').classList.toggle('solid', solid);
+  if (solid !== $('#detNav').classList.contains('solid')) { $('#detNav').classList.toggle('solid', solid); paintTop(); }
   $('#detNavTitle').style.opacity = solid ? 1 : 0;
   $('#detSb').style.color = solid ? 'var(--ink)' : '#fff';
   // over the photo: dark glass buttons; on the page material: plain theme icons
@@ -2378,7 +2379,7 @@ function hintBlocked() {
 // the strip iOS paints above the app (from the page background) matches what is on screen:
 // dimmed under a modal, the screen's own colour on full-bleed screens, the theme otherwise
 function paintTop(id = cur()) {
-  const TINT = { recog: '#317a31', camera: '#000000' };
+  const TINT = { recog: '#317a31', camera: '#000000', details: !$('#detNav').classList.contains('solid') && heroTop };
   const dim = !!phone.querySelector('.alert-ios, .sheet');
   const tint = !dim && TINT[id];
   document.body.classList.toggle('dimmed', dim);
@@ -2387,6 +2388,28 @@ function paintTop(id = cur()) {
   themeMeta(dim ? (mode === 'dark' ? '#080706' : '#a9a7a4') : tint || (mode === 'dark' ? '#0c0a09' : '#f1efec'));
 }
 new MutationObserver(() => paintTop()).observe(phone, { childList: true });
+// over the plant photo the strip continues the header's glass: the photo's top colour, dimmed and saturated like the header
+var heroTop = null; // var: paintTop can run before this line on boot
+function sampleHero() {
+  const img = $('#detImg');
+  heroTop = null;
+  const read = () => {
+    try {
+      const c = document.createElement('canvas'); c.width = 8; c.height = 2;
+      const x = c.getContext('2d', { willReadFrequently: true });
+      x.drawImage(img, 0, 0, img.naturalWidth, Math.max(1, img.naturalHeight * .12), 0, 0, 8, 2);
+      const d = x.getImageData(0, 0, 8, 2).data;
+      let r = 0, g = 0, b = 0;
+      for (let i = 0; i < d.length; i += 4) { r += d[i]; g += d[i + 1]; b += d[i + 2]; }
+      const n = d.length / 4; r /= n; g /= n; b /= n;
+      const L = .2126 * r + .7152 * g + .0722 * b;
+      const k = v => Math.round(Math.max(0, Math.min(255, (L + (v - L) * 1.6) * .72)));
+      heroTop = `rgb(${k(r)}, ${k(g)}, ${k(b)})`;
+    } catch { heroTop = '#3b3936'; }
+    if (cur() === 'details') paintTop();
+  };
+  if (img.complete && img.naturalWidth) read(); else img.addEventListener('load', read, { once: true });
+}
 
 $('#installX').onclick = () => hideInstall(true);
 $('#installGo').onclick = async () => {
