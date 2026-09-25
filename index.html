@@ -1334,7 +1334,7 @@ phone.addEventListener('click', e => {
   if (!t || !phone.contains(t)) return;
   if (t.hasAttribute('data-back')) return back();
   if (t.dataset.toast && !t.closest('[data-seg]')) return toast(t.dataset.toast);
-  if (t.dataset.tab) return reset(t.dataset.tab === 'settings' ? 'settings' : gardenId(), 'fade');
+  if (t.dataset.tab && t.classList.contains('tab')) return reset(t.dataset.tab === 'settings' ? 'settings' : gardenId(), 'fade');
   if (t.hasAttribute('data-scan')) return startScan();
   if (t.hasAttribute('data-share')) return shareApp();
   if (t.id === 'detDelete') return removePlant();
