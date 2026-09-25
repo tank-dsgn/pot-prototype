@@ -229,7 +229,7 @@ function mockCare() {
 
 // Pot shows its interface in English or Russian; the generated text follows it.
 function inLanguage(lang, care) {
-  if (lang !== 'ru') return '';
+  if (lang !== 'ru') return '\n\nLANGUAGE: write every text value in English.';
   return care
     ? '\n\nLANGUAGE: write every text value in Russian, including month names in fertilizing (e.g. "Апрель | Раз в 2 недели | Раз в год") and the titles before the colon.'
     : '\n\nLANGUAGE: write every free-text field in Russian — name is the most common Russian name of the plant, common and commonFull are Russian names too. Keep latin in Latin, and keep the enum fields (confidence, tags, water, fert, level) exactly as the schema lists them.';
