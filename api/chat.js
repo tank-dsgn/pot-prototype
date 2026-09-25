@@ -33,7 +33,7 @@ const SYSTEM = `You are Dr Pot, the plant doctor inside Pot, a plant care app. Y
 - When you name a likely cause, say what to do about it in one or two concrete steps, then offer the next thing you could check.
 - If a photo comes with the message, describe only what you actually see in it.
 - Never invent plant facts you are unsure of; say what you would check instead.
-- Answer in the language the person writes in.`;
+- Answer in the app's language (given below), even if the person writes in another one.`;
 
 export async function POST(request) {
   let body;
@@ -45,7 +45,8 @@ export async function POST(request) {
 
   const history = Array.isArray(body.messages) ? body.messages.slice(-16) : [];
   const ru = body.lang === 'ru';
-  if (body.plan) return treatmentPlan(history, body.plant || {}, ru);
+  const langName = ru ? 'Russian' : 'English';
+  if (body.plan) return treatmentPlan(history, body.plant || {}, langName);
   if (!history.length) return json({ error: 'bad_request', message: 'Nothing to answer.' }, 400);
   const image = typeof body.image === 'string' && body.image.length > 1000 && body.image.length < 4_000_000
     ? body.image.replace(/^data:image\/\w+;base64,/, '') : null;
@@ -76,7 +77,7 @@ export async function POST(request) {
       fallbacks: 'default',
       thinking: { type: 'adaptive' },
       output_config: { effort: 'low' },
-      system: SYSTEM + context + (ru ? '\n\nThe app is in Russian: reply in Russian unless the person writes in another language.' : ''),
+      system: SYSTEM + context + `\n\nThe app is set to ${langName}. Always reply in ${langName}, whatever language earlier messages are in.`,
       messages,
     });
 
@@ -115,7 +116,7 @@ function json(body, status = 200) {
 }
 
 // A plan is a one-off structured answer, not a stream: the app stores it next to the plant.
-async function treatmentPlan(history, plant, ru) {
+async function treatmentPlan(history, plant, langName) {
   if (!history.length) return json({ error: 'bad_request', message: 'Nothing to plan.' }, 400);
   if (!process.env.ANTHROPIC_API_KEY) return json({ error: 'not_configured', message: 'The assistant is not connected yet.' }, 503);
   const transcript = history.map((m) => `${m.role === 'assistant' ? 'Dr Pot' : 'Owner'}: ${String(m.text ?? '').slice(0, 1500)}`).join('\n');
@@ -127,7 +128,7 @@ async function treatmentPlan(history, plant, ru) {
       fallbacks: 'default',
       thinking: { type: 'adaptive' },
       output_config: { effort: 'low', format: { type: 'json_schema', schema: PLAN_SCHEMA } },
-      system: PLAN_SYSTEM + (ru ? '\n- Write cause, summary and steps in Russian.' : ''),
+      system: PLAN_SYSTEM + `\n- Write cause, summary and steps in ${langName}, whatever language the conversation is in.`,
       messages: [{ role: 'user', content: `Plant: ${plant.name || 'houseplant'}${plant.latin ? ` (${plant.latin})` : ''}.${plant.care ? ` Care profile: ${String(plant.care).slice(0, 900)}` : ''}\n\nConversation:\n${transcript}` }],
     });
     if (response.stop_reason === 'refusal') return json({ error: 'refused', message: 'No plan for this one.' }, 422);
