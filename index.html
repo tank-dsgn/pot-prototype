@@ -312,6 +312,17 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .sw-wrap.one.open>.sw-front{transform:translateX(-72px)}
 
 /* treatment: Dr Pot inside the plant card, health tags in the garden */
+/* Dr Pot entry: a light runs around the border, in the cactus colours, so the AI help is noticed */
+@property --ai-a{syntax:'<angle>';initial-value:0deg;inherits:false}
+.drcta[data-drpot]{position:relative;isolation:isolate}
+.drcta[data-drpot]::before{content:"";position:absolute;inset:-3px;border-radius:19px;padding:3px;
+  background:conic-gradient(from var(--ai-a),#15803d 0deg,#4ade80 70deg,#fde047 110deg,#bbf7d0 150deg,#15803d 220deg,#15803d 360deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
+  animation:ai-spin 3.2s linear infinite;z-index:-1;pointer-events:none}
+.drcta[data-drpot]::after{content:"";position:absolute;inset:-3px;border-radius:19px;box-shadow:0 0 18px rgba(74,222,128,.45);animation:ai-glow 3.2s ease-in-out infinite;z-index:-2;pointer-events:none}
+@keyframes ai-spin{to{--ai-a:360deg}}
+@keyframes ai-glow{50%{box-shadow:0 0 26px rgba(253,224,71,.5)}}
+@media (prefers-reduced-motion:reduce){.drcta[data-drpot]::before,.drcta[data-drpot]::after{animation:none}}
 .drcta{width:100%;box-sizing:border-box;padding:12px 16px;display:flex;align-items:center;gap:12px;text-align:left;border-radius:16px;background:var(--grad);color:#fff;box-shadow:0 4px 14px rgba(21,128,61,.28)}
 .drcta .av{flex:none;width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;overflow:hidden}
 .drcta .av img{width:40px;height:40px}
