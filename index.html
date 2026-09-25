@@ -1647,9 +1647,56 @@ function saveScan(d, img) {
   persist(); renderGarden();
   return id;
 }
+/* ---------- plant photos live in IndexedDB: localStorage stops at ~5 MB, about 30 photos ----------
+   localStorage keeps only a reference ("idb:<id>"); without IndexedDB (rare private modes) photos stay inline */
+let photoDBp = null;
+function photoDB() {
+  return photoDBp || (photoDBp = new Promise((ok, no) => {
+    try {
+      const r = indexedDB.open('pot', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('photos');
+      r.onsuccess = () => ok(r.result); r.onerror = () => no(r.error);
+    } catch (e) { no(e); }
+  }));
+}
+async function photoTx(mode, fn) {
+  const db = await photoDB();
+  return new Promise((ok, no) => {
+    const tx = db.transaction('photos', mode), req = fn(tx.objectStore('photos'));
+    tx.oncomplete = () => ok(req?.result); tx.onerror = () => no(tx.error);
+  });
+}
+let photosInDB = false;          // true once IndexedDB answered; until then photos are written inline
+const photoSaved = new Set(), photoSaving = new Set(); // written to IndexedDB / on the way there
+function persistPhotos(keep) {
+  if (!photosInDB) return;
+  for (const id of keep) {
+    const img = PLANTS[id].img;
+    if (!img?.startsWith('data:') || photoSaved.has(id) || photoSaving.has(id)) continue;
+    photoSaving.add(id);
+    // the reference replaces the inline photo only after IndexedDB confirmed the write
+    photoTx('readwrite', st => st.put(img, id)).then(() => { photoSaved.add(id); persist(); }).catch(() => {}).finally(() => photoSaving.delete(id));
+  }
+  photoTx('readwrite', st => st.getAllKeys()).then(keys => { const gone = keys.filter(k => !keep.includes(k)); if (gone.length) photoTx('readwrite', st => gone.forEach(k => st.delete(k))); }).catch(() => {});
+}
+async function loadPhotos() {
+  try {
+    const db = await photoDB();
+    photosInDB = true;
+    const ids = Object.keys(PLANTS).filter(id => PLANTS[id].img?.startsWith('idb:'));
+    await Promise.all(ids.map(async id => {
+      const img = await photoTx('readonly', st => st.get(id));
+      if (img) { PLANTS[id].img = img; photoSaved.add(id); } else PLANTS[id].img = 'ficus-recog.jpg';
+    }));
+    if (ids.length) { refreshViews(); if (cur() === 'details') renderPlant(); }
+    persist(); // moves photos that were still stored inline
+  } catch {}
+}
 function persist() {
   const keep = [...new Set([...state.scans, ...state.garden])].filter(id => PLANTS[id]?.scanned);
-  store.set('plants', JSON.stringify(Object.fromEntries(keep.map(id => [id, PLANTS[id]]))));
+  persistPhotos(keep);
+  const ref = id => photoSaved.has(id) && PLANTS[id].img?.startsWith('data:') ? { ...PLANTS[id], img: 'idb:' + id } : PLANTS[id];
+  store.set('plants', JSON.stringify(Object.fromEntries(keep.map(id => [id, ref(id)]))));
   store.set('scans', JSON.stringify(state.scans)); store.set('garden', JSON.stringify(state.garden)); store.set('removed', JSON.stringify(state.removed)); store.set('treat', JSON.stringify(state.treat));
 }
 function restore() {
@@ -1742,7 +1789,7 @@ const view = id => localized(PLANTS[id]);
 const tl = t => { if (!t) return t; const o = (t.lang || 'en') === lang ? null : t.tr?.[lang]; return o ? { ...t, ...o } : t; };
 const P = () => localized(PLANTS[state.plant]);
 const inGarden = () => gardenIds().includes(state.plant);
-const imgSrc = p => p.img.startsWith('data:') ? p.img : 'assets/' + p.img;
+const imgSrc = p => p.img.startsWith('data:') ? p.img : p.img.startsWith('idb:') ? 'data:image/gif;base64,R0lGODlhAQABAAAAACw=' : 'assets/' + p.img;
 // a photo shows the pot placeholder until it has loaded (Figma 1697:45516)
 const photo = (p, size) => `<span class="ph"${size === 'sm' ? '' : ''}><i></i><img src="${imgSrc(p)}" alt="" onload="this.parentElement.classList.add('on')"></span>`;
 function openPlant(id, fromScan, opts) { state.plant = id; state.fromScan = fromScan; go('details', opts); }
@@ -2769,6 +2816,7 @@ try {
 
 /* ---------- boot ---------- */
 restore();
+loadPhotos();
 renderGarden();
 renderAvatar();
 renderPremium();
