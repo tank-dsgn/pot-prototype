@@ -204,6 +204,12 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 
 /* bottom action */
 .action{flex:none;background:var(--surface);padding:12px 16px 34px;z-index:4}
+/* Dr Pot docked at the bottom of the plant card once its block has scrolled away */
+.ai-dock{position:absolute;left:16px;right:16px;bottom:34px;z-index:5;transform:translateY(calc(100% + 60px));opacity:0;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s;pointer-events:none}
+.ai-dock.on{transform:none;opacity:1;pointer-events:auto}
+.ai-dock .drcta{padding:10px 14px;box-shadow:0 8px 24px rgba(0,0,0,.22)}
+.ai-dock .drcta .av{width:36px;height:36px}
+@media (prefers-reduced-motion:reduce){.ai-dock{transition:opacity .2s}}
 
 /* accordions */
 .acc{border-bottom:1px solid var(--border)}
@@ -312,17 +318,22 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .sw-wrap.one.open>.sw-front{transform:translateX(-72px)}
 
 /* treatment: Dr Pot inside the plant card, health tags in the garden */
-/* Dr Pot entry: a light runs around the border, in the cactus colours, so the AI help is noticed */
+/* AI help and Premium: a light runs around the border in the cactus colours, so these are noticed.
+   --r is the element's own corner radius, --ring the border width */
 @property --ai-a{syntax:'<angle>';initial-value:0deg;inherits:false}
-.drcta[data-drpot]{position:relative;isolation:isolate}
-.drcta[data-drpot]::before{content:"";position:absolute;inset:-3px;border-radius:19px;padding:3px;
+.ai-ring{position:relative;isolation:isolate;--ring:3px}
+.ai-ring::before{content:"";position:absolute;inset:calc(-1 * var(--ring));border-radius:calc(var(--r, 16px) + var(--ring));padding:var(--ring);
   background:conic-gradient(from var(--ai-a),#15803d 0deg,#4ade80 70deg,#fde047 110deg,#bbf7d0 150deg,#15803d 220deg,#15803d 360deg);
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0);
   animation:ai-spin 3.2s linear infinite;z-index:-1;pointer-events:none}
-.drcta[data-drpot]::after{content:"";position:absolute;inset:-3px;border-radius:19px;box-shadow:0 0 18px rgba(74,222,128,.45);animation:ai-glow 3.2s ease-in-out infinite;z-index:-2;pointer-events:none}
+/* small round buttons keep ::after as their 44pt touch area, so they get the ring without the glow */
+.ai-ring:not(.sm)::after{content:"";position:absolute;inset:calc(-1 * var(--ring));border-radius:calc(var(--r, 16px) + var(--ring));box-shadow:0 0 18px rgba(74,222,128,.45);animation:ai-glow 3.2s ease-in-out infinite;z-index:-2;pointer-events:none}
+.ai-ring.sm{--ring:2px;--r:50%}
+.ai-ring.sm::before{border-radius:50%}
+.ai-ring.btn{--r:12px}.ai-ring.btn.r16{--r:16px}
 @keyframes ai-spin{to{--ai-a:360deg}}
 @keyframes ai-glow{50%{box-shadow:0 0 26px rgba(253,224,71,.5)}}
-@media (prefers-reduced-motion:reduce){.drcta[data-drpot]::before,.drcta[data-drpot]::after{animation:none}}
+@media (prefers-reduced-motion:reduce){.ai-ring::before,.ai-ring:not(.sm)::after{animation:none}}
 .drcta{width:100%;box-sizing:border-box;padding:12px 16px;display:flex;align-items:center;gap:12px;text-align:left;border-radius:16px;background:var(--grad);color:#fff;box-shadow:0 4px 14px rgba(21,128,61,.28)}
 .drcta .av{flex:none;width:44px;height:44px;border-radius:50%;background:#fff;display:grid;place-items:center;overflow:hidden}
 .drcta .av img{width:40px;height:40px}
@@ -842,7 +853,7 @@ table.ft td:first-child{color:var(--text2)}
         <button class="circ" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-arrow-left-white.svg);width:20px;height:20px"></i></button>
         <p class="hd plant-name" id="detNavTitle" style="opacity:0;transition:opacity .2s">Peanut</p>
         <span style="display:flex;gap:12px;align-items:center">
-          <button class="circ" id="detDr" hidden aria-label="Chat with Dr Pot"><i class="i" style="--m:url(assets/ic-drpot.svg);width:24px;height:24px"></i></button>
+          <button class="circ ai-ring sm" id="detDr" hidden aria-label="Chat with Dr Pot"><i class="i" style="--m:url(assets/ic-drpot.svg);width:24px;height:24px"></i></button>
           <button class="circ" id="detDelete" hidden aria-label="Remove plant"><i class="i" style="--m:url(assets/ic-trash.svg);width:20px;height:20px"></i></button>
           <button class="circ" data-share aria-label="Share"><i class="i" style="--m:url(assets/ic-share.svg);width:18px;height:20px"></i></button>
         </span>
@@ -933,6 +944,7 @@ table.ft td:first-child{color:var(--text2)}
           <div id="stories" style="display:flex;flex-direction:column;gap:16px"></div>
         </div>
       </div>
+      <div class="ai-dock" id="aiDock"><button class="drcta ai-ring" data-drpot><span class="av"><img src="assets/cactus-happy.png" alt=""></span><span class="co s" style="flex:1;min-width:0">Something wrong? Ask Dr Pot</span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:#fff"></i></button></div>
       <div class="action" id="detAction"><button class="btn pri" id="addBtn" data-add>Add Plant to my Garden</button><button class="btn alt in-garden" data-garden hidden>✓ Already in My Garden</button></div>
       <div class="hi"></div>
     </section>
@@ -1118,7 +1130,7 @@ table.ft td:first-child{color:var(--text2)}
         <div class="box">
           <span id="aiPhotoWrap"></span>
           <textarea id="aiInput" rows="1" placeholder="How can Dr Pot help you today?" aria-label="Message"></textarea>
-          <button class="rnd" id="aiCam" aria-label="Add a photo"><i class="i" style="--m:url(assets/ic-camera.svg);width:20px;height:18px"></i></button>
+          <button class="rnd ai-ring sm" id="aiCam" aria-label="Add a photo"><i class="i" style="--m:url(assets/ic-camera.svg);width:20px;height:18px"></i></button>
           <button class="rnd send" id="aiSend" aria-label="Send" disabled><i class="i" style="--m:url(assets/ic-arrow-left.svg);width:20px;height:20px;transform:rotate(90deg)"></i></button>
         </div>
       </div>
@@ -1600,7 +1612,7 @@ const enter = {
     $('#camTips').style.visibility = dr ? 'hidden' : '';
     startCamera();
   },
-  details(isBack) { renderPlant(); if (!isBack && !state.fromScan) detailSkeleton(); },
+  details(isBack) { if (!isBack) $('#aiDock').classList.remove('on'); renderPlant(); if (!isBack && !state.fromScan) detailSkeleton(); requestAnimationFrame(dockDrPot); },
   review() { renderReview(); },
   settings() { renderPremium(); },
   aichats() { renderThreads(); },
@@ -1882,7 +1894,18 @@ function renderPlant() {
 
 /* ---------- details: scroll-linked nav ---------- */
 const detScroll = $('#detScroll');
+// the docked Dr Pot shows once the in-page block has gone up under the header, and sits above the Add bar if there is one
+function dockDrPot() {
+  const dock = $('#aiDock'), block = $('#drPot');
+  const k = phone.getBoundingClientRect().width / 440 || 1;
+  const r = block.getBoundingClientRect(); // zero while the skeleton hides the page
+  const past = r.height > 0 && !$('#s-details').classList.contains('sk-on') && (r.bottom - detScroll.getBoundingClientRect().top) / k < 96;
+  const bar = $('#detAction');
+  dock.style.bottom = (bar.hidden ? 34 : bar.offsetHeight + 12) + 'px';
+  dock.classList.toggle('on', past);
+}
 function onDetScroll() {
+  dockDrPot();
   const solid = detScroll.scrollTop > 300;
   if (solid !== $('#detNav').classList.contains('solid')) { $('#detNav').classList.toggle('solid', solid); paintTop(); }
   $('#detNavTitle').style.opacity = solid ? 1 : 0;
@@ -2066,7 +2089,7 @@ $('#carePills').addEventListener('click', e => { const b = e.target.closest('but
 function renderCare() {
   $$('#carePills button').forEach(b => { const on = b.dataset.tab === careTab; b.setAttribute('aria-selected', on); if (on) b.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); });
   const upsell = !unlocked() && PLANTS[state.plant]?.scanned
-    ? `<button class="drcta" data-premium><span class="av"><i class="i" style="--m:url(assets/ic-crown.svg);width:24px;height:24px;color:#15803d"></i></span><span style="flex:1;min-width:0"><span class="co s" style="display:block">Full care guide for ${esc(P().name)}</span><span class="fn sub" style="display:block">Feeding by month, soil pH, hardiness and diseases — Pot Premium</span></span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:#fff"></i></button>`
+    ? `<button class="drcta ai-ring" data-premium><span class="av"><i class="i" style="--m:url(assets/ic-crown.svg);width:24px;height:24px;color:#15803d"></i></span><span style="flex:1;min-width:0"><span class="co s" style="display:block">Full care guide for ${esc(P().name)}</span><span class="fn sub" style="display:block">Feeding by month, soil pH, hardiness and diseases — Pot Premium</span></span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:#fff"></i></button>`
     : '';
   $('#careBody').innerHTML = upsell + CARE[careTab]().join('');
   $('#careScroll').scrollTop = 0;
@@ -2180,7 +2203,7 @@ const premium = () => { try { return JSON.parse(store.get('premium') || 'null');
 function renderPremium() {
   const pr = premium(), box = $('#premiumCard'); if (!box) return;
   if (!pr) {
-    box.innerHTML = `<button class="drcta" id="premiumBtn">
+    box.innerHTML = `<button class="drcta ai-ring" id="premiumBtn">
         <span class="av"><i class="i" style="--m:url(assets/ic-crown.svg);width:24px;height:24px;color:#15803d"></i></span>
         <span style="flex:1;min-width:0"><span class="co s" style="display:block">Pot Premium</span><span class="fn sub" style="display:block">Try 7 days free</span></span>
         <i class="i" style="--m:url(assets/ic-chevron-right.svg);color:#fff"></i>
@@ -2599,7 +2622,7 @@ function renderChat(streamText) {
     + (streamText === undefined && P() && msgs.length >= 2 && msgs[msgs.length - 1].role === 'assistant'
         ? (activeT(state.plant)
             ? `<p class="fn c-3" style="text-align:center;padding:4px 0">${P().name} is already in treatment — the plan is on its card.</p>`
-            : `<button class="btn pri r16" id="aiPlan" style="margin-top:4px;flex:none">Start a treatment plan</button>`)
+            : `<button class="btn pri r16 ai-ring" id="aiPlan" style="margin-top:4px;flex:none">Start a treatment plan</button>`)
         : '');
   box.scrollTop = box.scrollHeight;
 }
@@ -2681,7 +2704,7 @@ function treatCard(id, compact) {
     ${compact ? `<div style="display:flex;align-items:center;gap:8px"><span class="tpill" style="display:block;line-height:24px;min-width:0;overflow:hidden;text-overflow:ellipsis">In treatment · ${esc(t.cause)}</span><span class="fn c-3" style="margin-left:auto;white-space:nowrap">Day ${tDay(t)} of ${t.days}</span><button class="tstop" data-stop="${id}" aria-label="Stop treatment"><i class="i" style="--m:url(assets/ic-close.svg);width:14px;height:14px"></i></button></div><p class="sh c-2">${esc(t.summary)}</p>` : ''}
     <div class="tbar"><i style="width:${Math.max(6, pct)}%"></i></div>
     <p class="tnext"><span>Step ${tStepIdx(t) + 1}/${t.steps.length}:</span> <b>${esc(t.steps[tStepIdx(t)])}</b></p>
-    <div class="row2"><button class="btn pri" data-checkin="${id}">Check in</button><button class="btn alt" data-askdr="${id}">Ask Dr Pot</button></div>
+    <div class="row2"><button class="btn pri" data-checkin="${id}">Check in</button><button class="btn alt ai-ring" data-askdr="${id}">Ask Dr Pot</button></div>
   </div>`;
 }
 // health tag on a garden card: only when there is something to say
@@ -2813,7 +2836,7 @@ function renderDrPot() {
   const had = pastThreads(id).length > 0;
   $('#detDr').hidden = !had;
   if (t && !t.done) { box.innerHTML = treatCard(id, true); return; }
-  box.innerHTML = `<button class="drcta" data-drpot>
+  box.innerHTML = `<button class="drcta ai-ring" data-drpot>
       <span class="av"><img src="assets/cactus-happy.png" alt=""></span>
       <span style="flex:1;min-width:0"><span class="co s" style="display:block">${t ? `Recovered ${fmtDate(t.done.at)} · ${esc(t.cause)}` : 'Something wrong? Ask Dr Pot'}</span><span class="fn sub" style="display:block">${had ? 'Continue your chat about this plant' : premium() ? 'Describe what you see — get a diagnosis and a plan' : unlocked() ? 'Free for your first plant' : 'Diagnosis and a treatment plan — Pot Premium'}</span></span>
       <i class="i" style="--m:url(assets/ic-chevron-right.svg);color:#fff"></i>
