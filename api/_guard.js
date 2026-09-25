@@ -3,7 +3,7 @@
 // this keeps a stray script from reaching the Anthropic key through a warm instance.
 const ALLOWED = [/^https:\/\/pot-prototype\.vercel\.app$/, /^https:\/\/pot-prototype-[a-z0-9-]+\.vercel\.app$/, /^http:\/\/localhost:\d+$/, /^http:\/\/127\.0\.0\.1:\d+$/];
 const MAX_BYTES = 6_000_000; // a 1280px JPEG as base64 is well under this
-const WINDOW_MS = 60_000, MAX_PER_WINDOW = 30;
+const WINDOW_MS = 60_000, MAX_PER_WINDOW = 60; // a language switch translates every plant at once
 const hits = new Map(); // ip -> timestamps (lives as long as the warm instance)
 
 export function guard(request) {
