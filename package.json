@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.126.0",
+    "@vercel/blob": "^2.8.0",
     "@vercel/functions": "^3.9.9",
     "web-push": "^3.6.7"
   }

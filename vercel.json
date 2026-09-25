@@ -11,6 +11,12 @@
     },
     "api/push.js": {
       "maxDuration": 60
+    },
+    "api/remind.js": {
+      "maxDuration": 30
+    },
+    "api/cron-remind.js": {
+      "maxDuration": 60
     }
   },
   "headers": [
@@ -31,6 +37,12 @@
           "value": "application/manifest+json"
         }
       ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/cron-remind",
+      "schedule": "0 6 * * *"
     }
   ]
 }
