@@ -17,6 +17,9 @@
     },
     "api/cron-remind.js": {
       "maxDuration": 60
+    },
+    "api/health.js": {
+      "maxDuration": 15
     }
   },
   "headers": [

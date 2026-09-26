@@ -1,6 +1,7 @@
 // POST /api/identify — { image: "<base64 JPEG>" } → plant card data for the prototype.
-// Runs as a Vercel function; needs ANTHROPIC_API_KEY in the project's environment variables.
+// Runs as a Vercel function; the key comes through ./_ai.js (ANTHROPIC_API_KEY in the project's environment variables).
 import Anthropic from '@anthropic-ai/sdk';
+import { client, aiDown, keyRejected } from './_ai.js';
 import { guard } from './_guard.js';
 
 const TAGS = ['heat', 'wild', 'pet', 'low', 'dry', 'bright'];
@@ -71,7 +72,6 @@ const SYSTEM = `You identify plants from a single photo for Pot, a plant care ap
 - howto: each value 2-5 words — watering frequency ("Every 7-10 days"), when the soil should be dry, sun level, sun/shade tolerance, repotting season, repotting interval, repotting soil mix, soil type, drainage, USDA hardiness zone (just the number or range), ideal temperature range, humidity range in percent.
 - Be honest in confidence: use low when the photo is blurry or the species is ambiguous, and still give your best guess.`;
 
-const client = new Anthropic();
 
 export async function POST(request) {
   const blocked = guard(request);
@@ -90,9 +90,7 @@ export async function POST(request) {
   image = image.replace(/^data:image\/\w+;base64,/, '');
 
   if (process.env.POT_MOCK === '1') return json(mock());
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return json({ error: 'not_configured', message: 'Plant recognition is not set up yet.' }, 503);
-  }
+  if (!client) return aiDown('Plant recognition is taking a short break. Try again a little later.');
 
   try {
     const response = await client.beta.messages.create({
@@ -122,9 +120,7 @@ export async function POST(request) {
     if (err instanceof Anthropic.RateLimitError) {
       return json({ error: 'busy', message: 'Too many scans right now. Try again in a minute.' }, 429);
     }
-    if (err instanceof Anthropic.AuthenticationError) {
-      return json({ error: 'not_configured', message: 'The API key is invalid.' }, 503);
-    }
+    if (keyRejected(err)) return aiDown('Plant recognition is taking a short break. Try again a little later.');
     if (err instanceof Anthropic.APIConnectionError) {
       return json({ error: 'network', message: 'Could not reach the recognition service.' }, 502);
     }
@@ -135,7 +131,8 @@ export async function POST(request) {
     if (err instanceof SyntaxError) {
       return json({ error: 'parse', message: 'The result was malformed. Try again.' }, 502);
     }
-    throw err;
+    console.error('Unexpected error', err?.message);
+    return json({ error: 'api', message: 'Something went wrong. Try again.' }, 502);
   }
 }
 
@@ -175,7 +172,7 @@ async function careGuide({ name, latin }, lang) {
     return json({ error: 'bad_request', message: 'Send the plant name.' }, 400);
   }
   if (process.env.POT_MOCK === '1') return json(mockCare());
-  if (!process.env.ANTHROPIC_API_KEY) return json({ error: 'not_configured', message: 'Plant recognition is not set up yet.' }, 503);
+  if (!client) return aiDown('The care guide is taking a short break. Try again a little later.');
   try {
     const response = await client.beta.messages.create({
       model: 'claude-opus-5',
@@ -192,12 +189,14 @@ async function careGuide({ name, latin }, lang) {
     if (!text) return json({ error: 'empty', message: 'No care guide came back.' }, 502);
     return json(JSON.parse(text));
   } catch (err) {
+    if (keyRejected(err)) return aiDown('The care guide is taking a short break. Try again a little later.');
     if (err instanceof Anthropic.APIError) {
       console.error('Anthropic care error', err.status, err.message);
       return json({ error: 'api', message: 'The care guide failed.' }, 502);
     }
     if (err instanceof SyntaxError) return json({ error: 'parse', message: 'The care guide was malformed.' }, 502);
-    throw err;
+    console.error('Unexpected error', err?.message);
+    return json({ error: 'api', message: 'Something went wrong. Try again.' }, 502);
   }
 }
 
@@ -259,7 +258,7 @@ async function translateContent({ kind, data }, lang) {
   const schema = TR_SCHEMAS[kind];
   if (!schema || !data || typeof data !== 'object') return json({ error: 'bad_request', message: 'Nothing to translate.' }, 400);
   if (process.env.POT_MOCK === '1') return json(data);
-  if (!process.env.ANTHROPIC_API_KEY) return json({ error: 'not_configured', message: 'Translation is not set up yet.' }, 503);
+  if (!client) return aiDown('Translation is taking a short break. Try again a little later.');
   const target = lang === 'ru' ? 'Russian' : 'English';
   try {
     const response = await client.beta.messages.create({
@@ -275,11 +274,13 @@ async function translateContent({ kind, data }, lang) {
     if (!text) return json({ error: 'empty', message: 'No translation came back.' }, 502);
     return json(JSON.parse(text));
   } catch (err) {
+    if (keyRejected(err)) return aiDown('Translation is taking a short break. Try again a little later.');
     if (err instanceof Anthropic.APIError) {
       console.error('Pot translate error', err.status, err.message);
       return json({ error: 'api', message: 'Translation failed.' }, 502);
     }
     if (err instanceof SyntaxError) return json({ error: 'parse', message: 'Translation was malformed.' }, 502);
-    throw err;
+    console.error('Unexpected error', err?.message);
+    return json({ error: 'api', message: 'Something went wrong. Try again.' }, 502);
   }
 }

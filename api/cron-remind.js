@@ -3,12 +3,15 @@
 import webpush from 'web-push';
 import { list, get, put, del } from '@vercel/blob';
 import { configured, PREFIX, json } from './_reminders.js';
+import { checkAi } from './_aicheck.js';
 
 const DAY = 86_400_000;
 
 export async function GET(request) {
   const secret = process.env.CRON_SECRET;
   if (!secret || request.headers.get('authorization') !== `Bearer ${secret}`) return json({ error: 'forbidden' }, 403);
+  const ai = await checkAi(); // the daily run doubles as the AI key check
+  if (!ai.ok) console.error('AI KEY PROBLEM:', ai.reason);
   if (!configured()) return json({ error: 'not_configured' }, 503);
   webpush.setVapidDetails('https://pot-prototype.vercel.app', process.env.VAPID_PUBLIC_KEY, process.env.VAPID_PRIVATE_KEY);
 
