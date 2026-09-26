@@ -385,7 +385,8 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 @keyframes blink{50%{opacity:1}}
 .ai-bar{flex:none;padding:8px 16px 34px;background:var(--bg);display:flex;gap:8px;align-items:flex-end}
 .ai-bar .box{flex:1;min-width:0;display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:28px;min-height:56px;box-sizing:border-box;padding:6px 6px 6px 18px;box-shadow:var(--shadow-card)}
-.ai-bar textarea{-webkit-user-select:text;user-select:text;flex:1;min-width:0;border:0;background:none;font:inherit;font-size:17px;line-height:22px;color:var(--text);outline:none;resize:none;max-height:96px;padding:4px 0}
+/* iOS gives a textarea its own inset and appearance, which lifts a single line off centre: strip both and size the line exactly */
+.ai-bar textarea{-webkit-appearance:none;appearance:none;-webkit-user-select:text;user-select:text;flex:1;min-width:0;border:0;border-radius:0;background:none;font:inherit;font-size:17px;line-height:22px;color:var(--text);outline:none;resize:none;display:block;box-sizing:content-box;height:22px;min-height:22px;max-height:88px;margin:0;padding:0;align-self:center}
 .ai-bar textarea::placeholder{color:var(--text3)}
 .ai-bar .rnd{flex:none;width:44px;height:44px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;color:var(--icon)}
 .ai-bar .rnd.send{background:var(--brand);color:#fff}
@@ -2619,7 +2620,7 @@ $('#aiScroll').addEventListener('click', e => {
   if (e.target.closest('#aiPlan')) startTreatment();
 });
 $('#aiInput').addEventListener('input', e => {
-  e.target.style.height = 'auto'; e.target.style.height = Math.min(96, e.target.scrollHeight) + 'px';
+  e.target.style.height = '22px'; e.target.style.height = Math.min(88, Math.max(22, e.target.scrollHeight)) + 'px';
   $('#aiSend').disabled = !e.target.value.trim() && !aiPhoto;
 });
 $('#aiInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('#aiSend').click(); } });
@@ -2643,7 +2644,7 @@ async function askAi(text) {
   const photo = aiPhoto;
   chat().push({ role: 'user', text, img: photo?.keep });
   aiPhoto = null; $('#aiPhotoWrap').innerHTML = '';
-  $('#aiInput').value = ''; $('#aiInput').style.height = 'auto'; $('#aiSend').disabled = true;
+  $('#aiInput').value = ''; $('#aiInput').style.height = ''; $('#aiSend').disabled = true;
   aiBusy = true; renderChat('');
   const p = P();
   let answer = '';
