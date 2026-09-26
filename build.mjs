@@ -7,6 +7,20 @@ import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = fileURLToPath(new URL('.', import.meta.url));
+
+// Production deploys check the AI key first. A missing, half-copied (e.g. "sk-ant-api03-bU0…ZQAA" from the console list),
+// expired or revoked key stops the deploy, so the previous working version stays online instead.
+if (process.env.VERCEL_ENV === 'production') {
+  const key = String(process.env.ANTHROPIC_API_KEY || '').trim();
+  const fail = (why) => { console.error(`\n✖ ANTHROPIC_API_KEY ${why}. Deploy stopped; the previous version stays live.\n  Fix: Anthropic console → API keys → Create key (Expires: Never) → Copy in the dialog → Vercel env ANTHROPIC_API_KEY.\n`); process.exit(1); };
+  if (!key) fail('is missing');
+  if (!/^sk-ant-[A-Za-z0-9_-]{40,}$/.test(key)) fail('is not a whole key (copied from the key list, or with extra characters)');
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/models?limit=1', { headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01' } });
+    if (res.status === 401 || res.status === 403) fail('was rejected by Anthropic (expired or revoked)');
+    console.log('✓ AI key works');
+  } catch (e) { console.warn('! Could not reach Anthropic to check the key:', e.message); }
+}
 const out = join(root, 'build', 'pot-prototype');
 await rm(out, { recursive: true, force: true });
 await mkdir(out, { recursive: true });

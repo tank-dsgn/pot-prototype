@@ -1,9 +1,9 @@
 // POST /api/chat — Dr Pot, the in-app assistant. Streams plain text back as it is generated.
 // Body: { messages: [{ role: 'user' | 'assistant', text }], plant?: { name, latin, care }, image?: "<base64 JPEG>" }
 import Anthropic from '@anthropic-ai/sdk';
+import { client, aiDown, keyRejected } from './_ai.js';
 import { guard } from './_guard.js';
 
-const client = new Anthropic();
 
 const str = { type: 'string' };
 const PLAN_SCHEMA = {
@@ -54,9 +54,7 @@ export async function POST(request) {
   const image = typeof body.image === 'string' && body.image.length > 1000 && body.image.length < 4_000_000
     ? body.image.replace(/^data:image\/\w+;base64,/, '') : null;
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    return json({ error: 'not_configured', message: 'The assistant is not connected yet.' }, 503);
-  }
+  if (!client) return aiDown('Dr Pot is taking a short break. Try again a little later.');
 
   const messages = history.map((m, i) => {
     const text = String(m.text ?? '').slice(0, 4000);
@@ -95,7 +93,7 @@ export async function POST(request) {
           }
         } catch (err) {
           console.error('Dr Pot stream error', err?.status, err?.message);
-          controller.enqueue(encoder.encode('\n\n(The answer stopped early — try again.)'));
+          controller.enqueue(encoder.encode(keyRejected(err) ? 'Dr Pot is taking a short break. Try again a little later.' : '\n\n(The answer stopped early — try again.)'));
         }
         controller.close();
       },
@@ -105,12 +103,13 @@ export async function POST(request) {
     return new Response(out, { headers: { 'content-type': 'text/plain; charset=utf-8', 'cache-control': 'no-store' } });
   } catch (err) {
     if (err instanceof Anthropic.RateLimitError) return json({ error: 'busy', message: 'Too many questions right now. Try again in a minute.' }, 429);
-    if (err instanceof Anthropic.AuthenticationError) return json({ error: 'not_configured', message: 'The API key is invalid.' }, 503);
+    if (keyRejected(err)) return aiDown('Dr Pot is taking a short break. Try again a little later.');
     if (err instanceof Anthropic.APIError) {
       console.error('Dr Pot error', err.status, err.message);
       return json({ error: 'api', message: 'The assistant is unavailable. Try again.' }, 502);
     }
-    throw err;
+    console.error('Unexpected error', err?.message);
+    return json({ error: 'api', message: 'Something went wrong. Try again.' }, 502);
   }
 }
 
@@ -121,7 +120,7 @@ function json(body, status = 200) {
 // A plan is a one-off structured answer, not a stream: the app stores it next to the plant.
 async function treatmentPlan(history, plant, langName) {
   if (!history.length) return json({ error: 'bad_request', message: 'Nothing to plan.' }, 400);
-  if (!process.env.ANTHROPIC_API_KEY) return json({ error: 'not_configured', message: 'The assistant is not connected yet.' }, 503);
+  if (!client) return aiDown('Dr Pot is taking a short break. Try again a little later.');
   const transcript = history.map((m) => `${m.role === 'assistant' ? 'Dr Pot' : 'Owner'}: ${String(m.text ?? '').slice(0, 1500)}`).join('\n');
   try {
     const response = await client.beta.messages.create({
@@ -139,11 +138,13 @@ async function treatmentPlan(history, plant, langName) {
     if (!text) return json({ error: 'empty', message: 'No plan came back.' }, 502);
     return json(JSON.parse(text));
   } catch (err) {
+    if (keyRejected(err)) return aiDown('Dr Pot is taking a short break. Try again a little later.');
     if (err instanceof Anthropic.APIError) {
       console.error('Dr Pot plan error', err.status, err.message);
       return json({ error: 'api', message: 'Couldn’t build the plan. Try again.' }, 502);
     }
     if (err instanceof SyntaxError) return json({ error: 'parse', message: 'The plan was malformed.' }, 502);
-    throw err;
+    console.error('Unexpected error', err?.message);
+    return json({ error: 'api', message: 'Something went wrong. Try again.' }, 502);
   }
 }
