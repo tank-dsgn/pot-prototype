@@ -384,10 +384,10 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
 @keyframes blink{50%{opacity:1}}
 .ai-bar{flex:none;padding:8px 16px 34px;background:var(--bg);display:flex;gap:8px;align-items:flex-end}
-.ai-bar .box{flex:1;min-width:0;display:flex;align-items:center;gap:8px;background:var(--surface);border-radius:20px;padding:8px 8px 8px 16px;box-shadow:var(--shadow-card)}
+.ai-bar .box{flex:1;min-width:0;display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:28px;min-height:56px;box-sizing:border-box;padding:6px 6px 6px 18px;box-shadow:var(--shadow-card)}
 .ai-bar textarea{-webkit-user-select:text;user-select:text;flex:1;min-width:0;border:0;background:none;font:inherit;font-size:17px;line-height:22px;color:var(--text);outline:none;resize:none;max-height:96px;padding:4px 0}
 .ai-bar textarea::placeholder{color:var(--text3)}
-.ai-bar .rnd{flex:none;width:36px;height:36px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;color:var(--icon)}
+.ai-bar .rnd{flex:none;width:44px;height:44px;border-radius:50%;background:var(--surface2);display:grid;place-items:center;color:var(--icon)}
 .ai-bar .rnd.send{background:var(--brand);color:#fff}
 .ai-bar .rnd[disabled]{opacity:.4}
 .ai-photo{position:relative;margin-bottom:8px;align-self:flex-start}
@@ -1123,8 +1123,8 @@ table.ft td:first-child{color:var(--text2)}
         <div class="box">
           <span id="aiPhotoWrap"></span>
           <textarea id="aiInput" rows="1" placeholder="How can Dr Pot help you today?" aria-label="Message"></textarea>
-          <button class="rnd ai-ring sm" id="aiCam" aria-label="Add a photo"><i class="i" style="--m:url(assets/ic-camera.svg);width:20px;height:18px"></i></button>
-          <button class="rnd send" id="aiSend" aria-label="Send" disabled><i class="i" style="--m:url(assets/ic-arrow-left.svg);width:20px;height:20px;transform:rotate(90deg)"></i></button>
+          <button class="rnd ai-ring sm" id="aiCam" aria-label="Add a photo"><i class="i" style="--m:url(assets/ic-camera.svg);width:23px;height:21px"></i></button>
+          <button class="rnd send" id="aiSend" aria-label="Send" disabled><i class="i" style="--m:url(assets/ic-arrow-left.svg);width:22px;height:22px;transform:rotate(90deg)"></i></button>
         </div>
       </div>
       <div class="hi"></div>
@@ -2541,9 +2541,10 @@ else if (isIOS) showInstall('ios');
 
 /* ---------- Dr Pot ---------- */
 const PROMPTS = [
-  ['ic-bulb', 'Leaf color'], ['ic-sprouts', 'Falling leaves'], ['ic-alert', 'Deformed or damaged leaves'], ['ic-eye', 'Coating on leaves'],
-  ['qf-water', 'Am I watering it right?'], ['qf-sun', 'Is this spot bright enough?'], ['ht-soil', 'Soil looks wrong'], ['cp-pests', 'I think it has pests'],
-  ['ht-temp', 'Is it too cold here?'], ['ht-waterdrop', 'When should I repot it?'], ['qf-fert', 'How do I feed it?'], ['tag-cat', 'Is it safe for my cat?'],
+  // one outline set (Lucide, ISC) so every prompt icon reads the same
+  ['ai-palette', 'Leaf color'], ['ai-leaf', 'Falling leaves'], ['ai-circle-alert', 'Deformed or damaged leaves'], ['ai-layers', 'Coating on leaves'],
+  ['ai-droplets', 'Am I watering it right?'], ['ai-sun', 'Is this spot bright enough?'], ['ai-shovel', 'Soil looks wrong'], ['ai-bug', 'I think it has pests'],
+  ['ai-thermometer-snowflake', 'Is it too cold here?'], ['ai-sprout', 'When should I repot it?'], ['ai-flask-conical', 'How do I feed it?'], ['ai-cat', 'Is it safe for my cat?'],
 ];
 let promptSet = 0;
 // chats[plantId] = [{ id, at, msgs }], newest first — one plant can have many conversations
@@ -2594,7 +2595,7 @@ function renderChat(streamText) {
       <div style="display:flex;flex-direction:column;gap:8px">
         ${four.map(([ic, t]) => `<button class="ai-prompt" data-prompt="${t}"><i class="i" style="--m:url(assets/${ic}.svg);width:24px;height:24px"></i>${t}</button>`).join('')}
       </div>
-      <button class="ai-refresh" id="aiRefresh"><span style="font-size:17px;line-height:1">↻</span>Refresh prompts</button>`;
+      <button class="ai-refresh" id="aiRefresh"><i class="i" style="--m:url(assets/ai-refresh-cw.svg);width:18px;height:18px"></i>Refresh prompts</button>`;
     return;
   }
   box.innerHTML = msgs.map(m => m.role === 'user'
