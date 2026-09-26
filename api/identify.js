@@ -16,7 +16,7 @@ const SCHEMA = obj({
   name: str, latin: str, common: str, commonFull: str, genus: str, tax: str,
   about: str, more: str, dist: str, light: str,
   tags: { type: 'array', items: { type: 'string', enum: TAGS } },
-  sun: str, temp: str,
+  sun: { type: 'string', enum: ['Full sun', 'Sun to shade', 'Bright indirect', 'Part sun', 'Part shade', 'Shade', 'Low light'] }, temp: str,
   water: { type: 'string', enum: ['Low', 'Medium', 'High'] },
   fert: { type: 'string', enum: LEVEL },
   level: { type: 'string', enum: LEVEL },
@@ -64,7 +64,7 @@ const SYSTEM = `You identify plants from a single photo for Pot, a plant care ap
 - If the photo shows no plant, set is_plant to false and leave the other text fields empty.
 - name: the most common English name (e.g. "Rubber Plant"); latin: the binomial; common: 2-3 short alternative names, comma-separated; commonFull: 3-5 names, Title Case, comma-separated; genus; tax: rank path like "Dicotyledons → Rosales → Moraceae → Angiosperms → Plantae".
 - about: one sentence, under 110 characters; more: one or two sentences with a care insight. dist: native range in one short phrase. light: one short phrase.
-- sun: 2-3 words (e.g. "Bright indirect"); temp: a Celsius range like "15 - 30°C".
+- sun: the one label from the list that fits best (it sits in a small card, so it stays short); temp: a Celsius range like "15 - 30°C".
 - tags: up to 3 that truly apply — heat (heat tolerant), wild (attracts wildlife), pet (safe for pets), low (tolerates low light), dry (drought tolerant), bright (needs bright light). Never use pet for a plant that is toxic to cats or dogs.
 - level: overall care difficulty; tip: one practical sentence for this plant.
 - toxic: true if harmful to cats or dogs when eaten. tox: very short values (e.g. "Mildly toxic", "Toxic to cats and dogs", "Environmentally safe"). details: 2-3 items explaining toxicity (why, symptoms, what to do) or safety.
@@ -235,7 +235,7 @@ function inLanguage(lang, care) {
   if (lang !== 'ru') return '\n\nLANGUAGE: write every text value in English.';
   return care
     ? '\n\nLANGUAGE: write every text value in Russian, including month names in fertilizing (e.g. "Апрель | Раз в 2 недели | Раз в год") and the titles before the colon.'
-    : '\n\nLANGUAGE: write every free-text field in Russian — name is the most common Russian name of the plant, common and commonFull are Russian names too. Keep latin in Latin, and keep the enum fields (confidence, tags, water, fert, level) exactly as the schema lists them.';
+    : '\n\nLANGUAGE: write every free-text field in Russian — name is the most common Russian name of the plant, common and commonFull are Russian names too. Keep latin in Latin, and keep the enum fields (confidence, tags, sun, water, fert, level) exactly as the schema lists them.';
 }
 
 // Text that was generated in one language, re-told in the other when the person switches.
