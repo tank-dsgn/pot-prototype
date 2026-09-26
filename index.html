@@ -431,10 +431,14 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .sheet button.opt.del{color:#dc2626}
 .sheet button.opt.cancel{font-weight:600}
 @keyframes up{from{transform:translateY(100%)}}
-.toast{position:absolute;left:50%;bottom:120px;transform:translateX(-50%);z-index:50;background:var(--text);color:var(--bg);box-shadow:0 6px 20px rgba(0,0,0,.2);padding:10px 16px;border-radius:999px;font-size:15px;font-weight:600;white-space:nowrap;display:flex;gap:8px;align-items:center;animation:drop .3s cubic-bezier(.2,.9,.3,1.2)}
+.toast{position:absolute;left:16px;right:16px;bottom:120px;z-index:50;min-height:56px;box-sizing:border-box;padding:16px;border-radius:16px;background:#292524;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.22);display:flex;gap:8px;align-items:center;font-size:17px;line-height:22px;font-weight:400;letter-spacing:-.43px;animation:toastIn .3s cubic-bezier(.2,.9,.3,1.2)}
+.toast>img,.toast>.i{flex:none;width:24px;height:24px}
+.toast>span{flex:1;min-width:0}
+.toast.out{opacity:0;transform:translateY(12px);transition:opacity .25s,transform .25s}
+.phone.dark .toast{background:#3a3532;box-shadow:0 8px 24px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.08)}
+@keyframes toastIn{from{transform:translateY(20px);opacity:0}}
 @keyframes fade{from{opacity:0}}
 @keyframes pop{from{transform:scale(1.15);opacity:0}}
-@keyframes drop{from{transform:translate(-50%,20px);opacity:0}}
 
 .spin{width:40px;height:40px;position:relative;animation:spin 1s steps(8) infinite;flex:none}
 .spin i{position:absolute;left:43.33%;top:0;width:13.33%;height:33.33%;border-radius:8px;background:currentColor;transform-origin:50% 150%}
@@ -514,6 +518,10 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 /* plant header: icons only — white with a soft shadow over the photo, theme colour once scrolled */
 .float-nav .circ{background:transparent!important;box-shadow:none!important}
 .float-nav .circ{width:36px;height:36px}
+/* Dr Pot chats in the accent green: bright over the photo, brand green on the page */
+.float-nav #detDr{color:#4ade80!important}
+.float-nav.solid #detDr{color:var(--brand)!important}
+.phone.dark .float-nav.solid #detDr{color:#22c55e!important}
 .float-nav:not(.solid) .circ .i{filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.6)) drop-shadow(0 0 6px rgba(0,0,0,.35))}
 .qf{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 .qf .card{padding:8px 12px;display:flex;gap:12px;align-items:center;white-space:nowrap;min-width:0}
@@ -1416,12 +1424,32 @@ function signedIn() {
 
 /* ---------- toast & alert ---------- */
 let toastT;
+// Figma .Toast (1614:45097): dark bar with an icon picked by what the message says;
+// plain confirmations get the component's green tick. First match wins.
+const TOAST_ICONS = [
+  [/can’t|can't|couldn|unavailable|isn’t|aren’t|not set up|no purchases|too many|failed|try again/i, 'ai-circle-alert.svg', '#fbbf24'],
+  [/reminders off/i, 'ai-bell-off.svg', '#d6d3d1'],
+  [/reminder/i, 'ic-bell.svg', '#4ade80'],
+  [/watered/i, 'ai-droplets.svg', '#60a5fa'],
+  [/deleted|removed|stopped|cancelled/i, 'ic-trash.svg', '#d6d3d1'],
+  [/copied/i, 'ic-copy.svg', '#d6d3d1'],
+  [/translating/i, 'ic-globe.svg', '#d6d3d1'],
+  [/premium|free trial/i, 'ic-crown.svg', '#fbbf24'],
+  [/rating/i, 'ic-star.svg', '#fbbf24'],
+  [/flash/i, 'ic-flash.svg', '#fde047'],
+  [/photo/i, 'ic-camera.svg', '#d6d3d1'],
+];
 function toast(msg) {
   $('.toast', phone)?.remove();
+  msg = String(msg).replace(/^✓\s*/, '');
   const el = document.createElement('div');
-  el.className = 'toast'; el.setAttribute('role', 'status'); el.textContent = msg;
+  el.className = 'toast'; el.setAttribute('role', 'status');
+  const hit = TOAST_ICONS.find(([rx]) => rx.test(msg));
+  el.innerHTML = hit ? `<i class="i" style="--m:url(assets/${hit[1]});color:${hit[2]}"></i>` : '<img src="assets/ic-toast-tick.svg" alt="">';
+  const text = document.createElement('span'); text.textContent = msg; el.append(text);
   phone.append(el); clearTimeout(toastT);
-  toastT = setTimeout(() => el.remove(), 2200);
+  // long enough to read: 3.5 s, a little more for longer lines
+  toastT = setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 260); }, msg.length > 50 ? 5000 : 3500);
 }
 function iosAlert(title, text, actions, opts = {}) {
   const wrap = document.createElement('div');
