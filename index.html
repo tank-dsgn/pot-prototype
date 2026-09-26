@@ -136,8 +136,8 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .c-2{color:var(--text2)}.c-3{color:var(--text3)}.c-link{color:var(--link)}
 
 /* buttons */
-/* touch targets: 44pt on the device itself, whatever the phone's width (--inv undoes the canvas scale) */
-.btn{display:flex;align-items:center;justify-content:center;gap:6px;height:calc(44px * var(--inv, 1));padding:0 20px;box-sizing:border-box;border-radius:12px;font-weight:600;font-size:17px;line-height:22px;width:100%;transition:transform .12s,opacity .2s}
+/* buttons and inputs: 56 on the 440 design canvas (Figma 1026:27031), and never under 44pt on the device itself */
+.btn{display:flex;align-items:center;justify-content:center;gap:6px;height:max(56px, calc(44px * var(--inv, 1)));padding:0 20px;box-sizing:border-box;border-radius:12px;font-weight:600;font-size:17px;line-height:22px;width:100%;transition:transform .12s,opacity .2s}
 .btn:active{transform:scale(.98)}
 .btn.pri{background:var(--grad);color:#fff;font-size:18px;letter-spacing:-.23px}
 .btn.pri.r16{border-radius:16px}
@@ -258,7 +258,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .legal ol ol li::before{content:"•";font-size:16px}
 
 /* inputs */
-.field{height:50px;box-sizing:border-box;border-radius:12px;background:var(--surface);display:flex;align-items:center;padding:0 16px;gap:4px}
+.field{height:max(56px, calc(44px * var(--inv, 1)));box-sizing:border-box;border-radius:12px;background:var(--surface);display:flex;align-items:center;padding:0 16px;gap:4px}
 .field input{-webkit-user-select:text;user-select:text;flex:1;border:0;background:none;font:inherit;font-size:17px;letter-spacing:-.43px;color:var(--text);outline:none;min-width:0}
 .field input::placeholder{color:var(--text3)}
 .field .eye{width:24px;height:24px;display:grid;place-items:center;color:#a8a29e}
