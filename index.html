@@ -204,12 +204,6 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 
 /* bottom action */
 .action{flex:none;background:var(--surface);padding:12px 16px 34px;z-index:4}
-/* Dr Pot docked at the bottom of the plant card once its block has scrolled away */
-.ai-dock{position:absolute;left:16px;right:16px;bottom:34px;z-index:5;transform:translateY(calc(100% + 60px));opacity:0;transition:transform .35s cubic-bezier(.2,.8,.2,1),opacity .25s;pointer-events:none}
-.ai-dock.on{transform:none;opacity:1;pointer-events:auto}
-.ai-dock .drcta{padding:10px 14px;box-shadow:0 8px 24px rgba(0,0,0,.22)}
-.ai-dock .drcta .av{width:36px;height:36px}
-@media (prefers-reduced-motion:reduce){.ai-dock{transition:opacity .2s}}
 
 /* accordions */
 .acc{border-bottom:1px solid var(--border)}
@@ -944,7 +938,6 @@ table.ft td:first-child{color:var(--text2)}
           <div id="stories" style="display:flex;flex-direction:column;gap:16px"></div>
         </div>
       </div>
-      <div class="ai-dock" id="aiDock"><button class="drcta ai-ring" data-drpot><span class="av"><img src="assets/cactus-happy.png" alt=""></span><span class="co s" style="flex:1;min-width:0">Something wrong? Ask Dr Pot</span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:#fff"></i></button></div>
       <div class="action" id="detAction"><button class="btn pri" id="addBtn" data-add>Add Plant to my Garden</button><button class="btn alt in-garden" data-garden hidden>✓ Already in My Garden</button></div>
       <div class="hi"></div>
     </section>
@@ -1612,7 +1605,7 @@ const enter = {
     $('#camTips').style.visibility = dr ? 'hidden' : '';
     startCamera();
   },
-  details(isBack) { if (!isBack) $('#aiDock').classList.remove('on'); renderPlant(); if (!isBack && !state.fromScan) detailSkeleton(); requestAnimationFrame(dockDrPot); },
+  details(isBack) { renderPlant(); if (!isBack && !state.fromScan) detailSkeleton(); },
   review() { renderReview(); },
   settings() { renderPremium(); },
   aichats() { renderThreads(); },
@@ -1894,18 +1887,7 @@ function renderPlant() {
 
 /* ---------- details: scroll-linked nav ---------- */
 const detScroll = $('#detScroll');
-// the docked Dr Pot shows once the in-page block has gone up under the header, and sits above the Add bar if there is one
-function dockDrPot() {
-  const dock = $('#aiDock'), block = $('#drPot');
-  const k = phone.getBoundingClientRect().width / 440 || 1;
-  const r = block.getBoundingClientRect(); // zero while the skeleton hides the page
-  const past = r.height > 0 && !$('#s-details').classList.contains('sk-on') && (r.bottom - detScroll.getBoundingClientRect().top) / k < 96;
-  const bar = $('#detAction');
-  dock.style.bottom = (bar.hidden ? 34 : bar.offsetHeight + 12) + 'px';
-  dock.classList.toggle('on', past);
-}
 function onDetScroll() {
-  dockDrPot();
   const solid = detScroll.scrollTop > 300;
   if (solid !== $('#detNav').classList.contains('solid')) { $('#detNav').classList.toggle('solid', solid); paintTop(); }
   $('#detNavTitle').style.opacity = solid ? 1 : 0;
