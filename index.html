@@ -9,7 +9,7 @@
   --btn2:#ffffff; --btn2-text:#1c1917; --ink:#000000; --dark:#052e16;
   --pill:#e7e5e4; --pill-text:#57534e; --pill-on:#ffffff; --pill-on-text:#1c1917;
   --soft-stone:#f5f5f4; --darkgrey:#475569; --chev-bg:#f3f4f6; --chev:#000000;
-  --disabled:#e7e5e4; --disabled-text:#f5f5f4;
+  --disabled:#e7e5e4; --disabled-text:#a8a29e;
   --grad:linear-gradient(90deg,#07813c,#029c45);
   --stage:#e4e1dc; --stage-ink:#44403c; --stage-muted:#8a847d;
   --shadow-card:0 2px 6px rgba(0,0,0,.05);
@@ -31,7 +31,7 @@
   --btn2:#fafaf9; --btn2-text:#1c1917; --ink:#ffffff; --dark:#14532d;
   --pill:#292524; --pill-text:#d6d3d1; --pill-on:#fafaf9; --pill-on-text:#1c1917;
   --soft-stone:#166534; --darkgrey:#cbd5e1; --chev-bg:#292524; --chev:#e7e5e4;
-  --disabled:#292524; --disabled-text:#57534e;
+  --disabled:#292524; --disabled-text:#78716c;
   --shadow-card:0 2px 6px rgba(0,0,0,.4);
   --dim:#080706;
 }
@@ -146,6 +146,8 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .btn[disabled]{background:var(--disabled);color:var(--disabled-text);cursor:default}
 .btn[disabled]:active{transform:none}
 .link{color:var(--link);font-weight:600}
+/* text buttons (Terms of Use, Sign up, Skip, View All, Refresh prompts…): 32 high, the label centred both ways */
+.link,.skip,.ai-refresh{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:32px;padding:0 12px;box-sizing:border-box;line-height:20px;text-align:center;vertical-align:middle;white-space:nowrap}
 
 /* header rows */
 .nav{flex:none;height:44px;display:flex;align-items:center;gap:8px;padding-inline:16px;position:relative;z-index:2}
@@ -274,7 +276,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .quote p{font-size:15px;line-height:20px;color:var(--text2)}
 .quote small{font-size:13px;line-height:18px;color:var(--text3)}
 .onb-foot{flex:none;display:flex;flex-direction:column;align-items:center;gap:12px;padding:16px 16px 34px;background:var(--bg)}
-.onb-foot .skip{color:var(--link);font-weight:600;font-size:17px;padding:0 20px;min-height:calc(44px * var(--inv, 1))}
+.onb-foot .skip{color:var(--link);font-weight:600;font-size:17px}
 .onb-note{font-size:15px;line-height:20px;color:var(--text2);text-align:center}
 
 /* skeletons (Figma 1697:45923 / 1697:45729) */
@@ -367,7 +369,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .ai-prompt{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;padding:14px 16px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow-card);font-size:17px;line-height:22px;color:var(--text);text-align:left}
 .ai-prompt .i{color:#15803d}
 .phone.dark .ai-prompt .i{color:#22c55e}
-.ai-refresh{display:flex;align-items:center;gap:8px;color:var(--text3);font-size:15px;line-height:20px;padding:4px 2px}
+.ai-refresh{color:var(--text3);font-size:15px;align-self:flex-start;margin-left:-10px}
 .msg{display:flex;gap:8px;align-items:flex-end;max-width:100%}
 .msg .av{flex:none;width:32px;height:32px;border-radius:50%;background:#f0fdf4;overflow:hidden;display:grid;place-items:center}
 .phone.dark .msg .av{background:#44403c}
@@ -511,6 +513,8 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 
 .hero{position:relative;height:380px;flex:none;overflow:hidden;background:#fff}
 .hero img{width:100%;height:100%;object-fit:cover}
+/* plant card header: the title starts 16px after the back arrow and runs left-aligned up to the icons */
+#detNavTitle{flex:1;min-width:0;margin:0 12px 0 8px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .float-nav{position:absolute;left:0;right:0;top:0;padding:50px 16px 10px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);z-index:5;transition:background .2s}
 .float-nav.solid{background:color-mix(in srgb,var(--bg) 78%,transparent);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);box-shadow:0 .5px 0 rgba(0,0,0,.12)}
 .phone.dark .float-nav.solid{box-shadow:0 .5px 0 rgba(255,255,255,.1)}
@@ -536,7 +540,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 
 .pills{display:flex;gap:8px;overflow-x:auto;padding:4px 16px;scrollbar-width:none}
 .pills::-webkit-scrollbar{display:none}
-.pills button{flex:none;height:36px;padding:0 20px;border-radius:99px;background:var(--pill);color:var(--pill-text);font-weight:600;font-size:15px;transition:background .2s,color .2s}
+.pills button{flex:none;height:44px;padding:0 20px;border-radius:99px;background:var(--pill);color:var(--pill-text);font-weight:600;font-size:15px;transition:background .2s,color .2s}
 .pills button[aria-selected="true"]{background:var(--pill-on);color:var(--pill-on-text)}
 .care-head{flex:none;background:var(--bg);box-shadow:0 8px 8px rgba(0,0,0,0);position:relative;z-index:2}
 .care-head::after{content:"";position:absolute;left:0;right:0;bottom:-12px;height:12px;background:linear-gradient(var(--bg),transparent);pointer-events:none}
@@ -930,7 +934,7 @@ table.ft td:first-child{color:var(--text2)}
           <p class="t2">FAQ</p>
           <div class="card" style="border-radius:24px;padding:24px 16px 8px">
             <div id="faqShort"></div>
-            <button class="link bd" data-go="faq" style="display:block;margin:8px auto 4px;padding:6px 14px">View All</button>
+            <button class="link bd" data-go="faq" style="display:flex;width:fit-content;margin:8px auto 4px">View All</button>
           </div>
         </div>
 
@@ -2018,7 +2022,7 @@ const TABS = [['soil', 'Soil'], ['watering', 'Watering'], ['climatic', 'Climatic
 let careTab = 'soil';
 const moisture = 'To maintain a healthy moisture balance, allow the soil to partially dry before watering again. This supports steady, healthy growth. Since soil dries from top to bottom, use a thin wooden stick to check the top 1–2 inches (3–5 cm) for moisture.';
 const tips = 'Most houseplants thrive in loose, well-draining soil with moderate moisture. They grow best when the soil stays evenly damp, but not soggy. Adjust watering to the season — use less water during cooler months to avoid root rot.';
-const viewAll = '<button class="link bd" data-toast="Full article opens here" style="display:block;margin:4px auto 0">View All</button>';
+const viewAll = '<button class="link bd" data-toast="Full article opens here" style="display:flex;width:fit-content;margin:4px auto 0">View All</button>';
 const card = (inner, extra = '') => `<div class="card pad" style="display:flex;flex-direction:column;gap:12px;${extra}">${inner}</div>`;
 const head = (t, rows) => card(`<p class="t2">${t}</p>${rows.join('')}`);
 const PHCOL = ['#b91c1c', '#ef4444', '#ea580c', '#f59e0b', '#facc15', '#84cc16', '#16a34a', '#15803d', '#0d9488', '#3b82f6', '#4338ca', '#312e81', '#7c3aed', '#581c87'];
