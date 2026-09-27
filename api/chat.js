@@ -36,6 +36,25 @@ const SYSTEM = `You are Dr Pot, the plant doctor inside Pot, a plant care app. Y
 - Never invent plant facts you are unsure of; say what you would check instead.
 - Answer in the app's language (given below), even if the person writes in another one.`;
 
+// What onboarding told us about the owner, as one short paragraph for the system prompt.
+function ownerNote(o) {
+  if (!o || typeof o !== 'object') return '';
+  const clip = (v) => String(v || '').replace(/[\r\n]+/g, ' ').slice(0, 40).trim();
+  const where = { 'At home': 'indoors', 'In the garden': 'outdoors in a garden', 'Both': 'both indoors and outdoors in a garden' }[o.where];
+  const light = { 'Lots of direct sun': 'lots of direct sun', 'Bright, no direct sun': 'bright light without direct sun', 'Not much light': 'not much light' }[o.light];
+  const level = {
+    'Just starting': 'is new to plant care: explain step by step and say why',
+    'Some experience': 'has some experience: keep advice practical',
+    'Seasoned gardener': 'is an experienced gardener: be brief and skip the basics',
+  }[o.level];
+  const bits = [
+    clip(o.name) && `Their name is ${clip(o.name)}; you may use it now and then.`,
+    where && `Their plants live ${where}${where !== 'outdoors in a garden' && light ? `, with ${light} at home` : ''}; take that into account (for outdoor plants: weather, rain, frost and seasons).`,
+    level && `The owner ${level}.`,
+  ].filter(Boolean);
+  return bits.length ? '\n\nAbout the owner: ' + bits.join(' ') : '';
+}
+
 export async function POST(request) {
   const blocked = guard(request);
   if (blocked) return blocked;
@@ -49,7 +68,7 @@ export async function POST(request) {
   const history = Array.isArray(body.messages) ? body.messages.slice(-16) : [];
   const ru = body.lang === 'ru';
   const langName = ru ? 'Russian' : 'English';
-  if (body.plan) return treatmentPlan(history, body.plant || {}, langName);
+  if (body.plan) return treatmentPlan(history, body.plant || {}, langName, ownerNote(body.owner));
   if (!history.length) return json({ error: 'bad_request', message: 'Nothing to answer.' }, 400);
   const image = typeof body.image === 'string' && body.image.length > 1000 && body.image.length < 4_000_000
     ? body.image.replace(/^data:image\/\w+;base64,/, '') : null;
@@ -78,7 +97,7 @@ export async function POST(request) {
       fallbacks: 'default',
       thinking: { type: 'adaptive' },
       output_config: { effort: 'low' },
-      system: SYSTEM + context + `\n\nThe app is set to ${langName}. Always reply in ${langName}, whatever language earlier messages are in.`,
+      system: SYSTEM + context + ownerNote(body.owner) + `\n\nThe app is set to ${langName}. Always reply in ${langName}, whatever language earlier messages are in.`,
       messages,
     });
 
@@ -118,7 +137,7 @@ function json(body, status = 200) {
 }
 
 // A plan is a one-off structured answer, not a stream: the app stores it next to the plant.
-async function treatmentPlan(history, plant, langName) {
+async function treatmentPlan(history, plant, langName, owner = '') {
   if (!history.length) return json({ error: 'bad_request', message: 'Nothing to plan.' }, 400);
   if (!client) return aiDown('Dr Pot is taking a short break. Try again a little later.');
   const transcript = history.map((m) => `${m.role === 'assistant' ? 'Dr Pot' : 'Owner'}: ${String(m.text ?? '').slice(0, 1500)}`).join('\n');
@@ -130,7 +149,7 @@ async function treatmentPlan(history, plant, langName) {
       fallbacks: 'default',
       thinking: { type: 'adaptive' },
       output_config: { effort: 'low', format: { type: 'json_schema', schema: PLAN_SCHEMA } },
-      system: PLAN_SYSTEM + `\n- Write cause, summary and steps in ${langName}, whatever language the conversation is in.`,
+      system: PLAN_SYSTEM + owner + `\n- Write cause, summary and steps in ${langName}, whatever language the conversation is in.`,
       messages: [{ role: 'user', content: `Plant: ${plant.name || 'houseplant'}${plant.latin ? ` (${plant.latin})` : ''}.${plant.care ? ` Care profile: ${String(plant.care).slice(0, 900)}` : ''}\n\nConversation:\n${transcript}` }],
     });
     if (response.stop_reason === 'refusal') return json({ error: 'refused', message: 'No plan for this one.' }, 422);
