@@ -461,8 +461,9 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .pcard img{width:100%;height:206px;object-fit:cover;border-radius:8px 8px 0 0}
 .pcard .nm{font-family:"Arial Rounded MT Bold","SF Pro Rounded",-apple-system,sans-serif;font-weight:700;font-size:16px;line-height:22px;padding-inline:12px}
 .pcard .cm{font-size:14px;line-height:22px;font-weight:500;color:var(--text3);padding-inline:12px}
-.wpill{position:absolute;left:10px;top:172px;display:flex;align-items:center;gap:4px;height:24px;padding:0 10px 0 7px;border-radius:99px;background:#dbeafe;color:#1e3a8a;font-size:13px;font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.18);white-space:nowrap}
-.wpill img{width:14px;height:14px}
+/* every garden card is the same height: the name gets one line, the other names exactly two; the rest ends in … */
+#gardenGrid .pcard .nm{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#gardenGrid .pcard .cm{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;line-clamp:2;overflow:hidden;height:44px;overflow-wrap:anywhere}
 .water{display:flex;align-items:center;gap:12px;padding:12px 12px 12px 16px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow-card)}
 .water .wic{flex:none;width:40px;height:40px;border-radius:50%;background:#dbeafe;display:grid;place-items:center}
 .water .wic img{width:22px;height:22px}
@@ -471,8 +472,20 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .water .ws{display:block;font-size:14px;line-height:19px;color:var(--text3)}
 .water .wbtn{flex:none;height:calc(36px * var(--inv, 1));min-width:calc(44px * var(--inv, 1));padding:0 14px;border-radius:99px;background:#dbeafe;color:#1e3a8a;font-weight:600;font-size:15px;position:relative}
 .water .wbtn::after{content:"";position:absolute;left:0;right:0;top:50%;height:calc(44px * var(--inv, 1));transform:translateY(-50%)}
-.phone.dark .wpill,.phone.dark .water .wbtn{background:#1e3a5f;color:#bfdbfe}
+.phone.dark .water .wbtn{background:#1e3a5f;color:#bfdbfe}
 .phone.dark .water.due .wt{color:#93c5fd}
+/* garden card state icons: 28×24 pills, 4 apart */
+.pcard .ptags{display:flex;gap:4px;padding-inline:12px;margin-top:-4px;height:24px;overflow:hidden}
+.ptag.ic{flex:none;display:inline-flex;align-items:center;justify-content:center;width:28px;height:24px;border-radius:99px}
+.ptag.ic .i{width:14px;height:14px}
+.ptag.thirsty{background:#eff6ff;color:#2563eb}
+.ptag.warn{background:#fef3c7;color:#b45309}
+.ptag.ok{background:#dcfce7;color:#15803d}
+.phone.dark .ptag.thirsty{background:rgba(59,130,246,.2);color:#93c5fd}
+.phone.dark .ptag.warn{background:rgba(217,119,6,.22);color:#fcd34d}
+.phone.dark .ptag.ok{background:rgba(34,197,94,.18);color:#86efac}
+/* names sit together (no gap between them), like the design */
+#gardenGrid .pcard .cm{margin-top:-12px}
 .pcard .new{position:absolute;top:0;right:0;margin:10px;background:#15803d;color:#fff;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px}
 .plist{display:flex;flex-direction:column;gap:18px;padding:10px 16px 24px}
 .plist button{display:flex;align-items:center;gap:15px}
@@ -2305,7 +2318,7 @@ $('#subscribe').onclick = () => {
 function renderGarden(fresh) {
   const ids = gardenIds();
   const scans = scanIds();
-  $('#gardenGrid').innerHTML = ids.map(id => { const p = view(id); return `<div class="sw-wrap one" data-id="${id}"><div class="acts-sw"><button class="del" data-act="del" aria-label="Remove ${p.name}"><i class="i" style="--m:url(assets/ic-trash.svg);width:22px;height:22px"></i>Delete</button></div><button class="sw-front pcard" data-plant="${id}" style="position:relative">${photo(p)}${id === fresh ? '<span class="new">New</span>' : ''}<span class="nm">${p.name}</span><span class="cm">${p.common}</span>${healthTag(id)}${waterTag(id)}</button></div>`; }).join('');
+  $('#gardenGrid').innerHTML = ids.map(id => { const p = view(id); return `<div class="sw-wrap one" data-id="${id}"><div class="acts-sw"><button class="del" data-act="del" aria-label="Remove ${p.name}"><i class="i" style="--m:url(assets/ic-trash.svg);width:22px;height:22px"></i>Delete</button></div><button class="sw-front pcard" data-plant="${id}" style="position:relative">${photo(p)}${id === fresh ? '<span class="new">New</span>' : ''}<span class="nm">${p.name}</span><span class="cm">${p.common}</span>${plantTags(id)}</button></div>`; }).join('');
   $('#scanList').innerHTML = scans.map(id => { const p = view(id); const has = gardenIds().includes(id); return `<div class="sw-wrap" data-id="${id}"><div class="acts-sw">${has ? '' : `<button class="add" data-act="add" aria-label="Add ${p.name} to My Plants"><span style="font-size:22px;line-height:22px">+</span>Add</button>`}<button class="del" data-act="del-scan" aria-label="Delete ${p.name} from history"><i class="i" style="--m:url(assets/ic-trash.svg);width:22px;height:22px"></i>Delete</button></div><button class="sw-front" data-plant="${id}">${photo(p, 'sm')}<span class="tx"><span class="hd" style="display:block;letter-spacing:-.43px">${p.name}</span><span class="fn c-3" style="display:block">${p.common}</span></span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i></button></div>`; }).join('');
   $$('#s-garden .sw-wrap').forEach(w => { if (!$('.acts-sw button', w)) return; if ($$('.acts-sw button', w).length === 1) w.classList.add('one'); else w.classList.remove('one'); });
 }
@@ -2741,12 +2754,14 @@ function treatCard(id, compact) {
   </div>`;
 }
 // health tag on a garden card: only when there is something to say
-function healthTag(id) {
-  const t = tl(state.treat[id]);
-  if (!t) return '';
-  return t.done
-    ? `<span class="tpill photo ok">Recovered</span>`
-    : `<span class="tpill photo">${esc(t.cause)}</span>`;
+// Figma "Plant Tag" (184:4333…), icon-only: what is going on with the plant right now —
+// being treated, recovered, or due for water. No state, no icons (the row keeps its height so cards stay even).
+function plantTags(id) {
+  const t = tl(state.treat[id]), d = daysToWater(id), tags = [];
+  const tag = (cls, icon, label) => `<span class="ptag ic ${cls}" role="img" aria-label="${esc(label)}" title="${esc(label)}"><i class="i" style="--m:url(assets/${icon})"></i></span>`;
+  if (t) tags.push(t.done ? tag('ok', 'ai-heart.svg', 'Recovered') : tag('warn', 'ai-heart-pulse.svg', t.cause));
+  if (d != null && d <= 0) tags.push(tag('thirsty', 'ai-droplets.svg', 'Water today'));
+  return `<span class="ptags">${tags.join('')}</span>`;
 }
 /* ---------- watering: a schedule per plant in My Garden, and the daily push reminder ---------- */
 const DAY = 86400000;
@@ -2774,10 +2789,6 @@ function waterLine(d) {
   if (d === 0) return 'Water today';
   if (d === 1) return 'Next watering tomorrow';
   return `Next watering in ${d} days`;
-}
-function waterTag(id) {
-  const d = daysToWater(id);
-  return d != null && d <= 0 ? `<span class="wpill"><img src="assets/ht-waterdrop.svg" alt="">Water today</span>` : '';
 }
 function renderWater() {
   const id = state.plant, box = $('#waterBox'); if (!box) return;
