@@ -147,6 +147,8 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .btn[disabled]:active{transform:none}
 .link{color:var(--link);font-weight:600}
 /* text buttons (Terms of Use, Sign up, Skip, View All, Refresh prompts…): 32 high, the label centred both ways */
+/* a text button right under a full button sits further away (24 in the usual 12px stacks) */
+.btn + .link,.btn + .skip,.btn + div:has(> .link),.btn + p:has(+ .link){margin-top:12px}
 .link,.skip,.ai-refresh{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:32px;padding:0 12px;box-sizing:border-box;line-height:20px;text-align:center;vertical-align:middle;white-space:nowrap}
 
 /* header rows */
@@ -747,7 +749,7 @@ table.ft td:first-child{color:var(--text2)}
           <p class="bd c-3" style="text-align:center;margin-bottom:20px">Please enter the email address associated with your account</p>
           <label class="field" style="width:100%"><input id="fg-email" type="email" placeholder="Email" autocomplete="email" aria-label="Email"></label>
           <button class="btn" id="forgotSubmit" type="submit" disabled style="font-size:18px">Send</button>
-          <p class="bd c-3" style="margin-top:4px">Already have an account?</p>
+          <p class="bd c-3">Already have an account?</p>
           <button type="button" class="link bd" data-back>Sign in</button>
         </form>
       </div>
@@ -2326,8 +2328,10 @@ function finishOnb() {
 // what onboarding learned, for the greeting, Dr Pot and the watering rhythm
 function profile() { try { return JSON.parse(store.get('profile') || '{}'); } catch { return {}; } }
 function renderHello() {
+  // by the clock, with the name once onboarding has it
   const n = profile().name || store.get('name') || '', h = new Date().getHours();
-  const text = !n ? '' : h < 12 ? L(`Good morning, ${n}`, `Доброе утро, ${n}`) : h < 18 ? L(`Good afternoon, ${n}`, `Добрый день, ${n}`) : L(`Good evening, ${n}`, `Добрый вечер, ${n}`);
+  const hi = h >= 5 && h < 12 ? L('Good morning', 'Доброе утро') : h >= 12 && h < 18 ? L('Good afternoon', 'Добрый день') : L('Good evening', 'Добрый вечер');
+  const text = n ? `${hi}, ${n}` : hi;
   $$('.hello').forEach(el => { el.textContent = text; el.hidden = !text; });
 }
 
@@ -2461,7 +2465,7 @@ function restartPrototype() {
   Object.keys(PLANTS).filter(id => PLANTS[id].scanned).forEach(id => delete PLANTS[id]);
   Object.assign(state, { authed: false, camAllowed: false, tipsSeen: false, plant: 'peanut', fromScan: false, garden: [], scans: [], removed: [], treat: {} });
   store.set('avatar', ''); renderAvatar();
-  store.set('premium', ''); store.set('freeThread', ''); store.set('freePlant', ''); store.set('pwFirst', ''); store.set('profile', ''); store.set('name', ''); store.set('water', ''); water = {}; store.set('remind', ''); renderRemind(); store.set('authed', ''); store.set('onboarded', ''); renderPremium();
+  store.set('premium', ''); store.set('freeThread', ''); store.set('freePlant', ''); store.set('pwFirst', ''); store.set('profile', ''); store.set('name', ''); Object.keys(answers).forEach(k => delete answers[k]); renderHello(); store.set('water', ''); water = {}; store.set('remind', ''); renderRemind(); store.set('authed', ''); store.set('onboarded', ''); renderPremium();
   Object.keys(chats).forEach(k => delete chats[k]); saveChats();
   persist(); renderGarden(); reset('loading');
 }
