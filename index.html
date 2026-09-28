@@ -910,7 +910,7 @@ table.ft td:first-child{color:var(--text2)}
             <p class="lt b plant-name">Peanut</p>
             <p class="sh c-2 plant-latin" style="font-style:italic;letter-spacing:-.23px">Arachis hypogaea</p>
           </div>
-          <p class="bd c-2"><span id="aboutTx"></span> <button class="more" id="aboutMore">Show More</button></p>
+          <p class="bd c-2"><span id="aboutTx"></span> <button class="more" id="aboutMore" aria-expanded="false">Show More</button></p>
         </div>
         <div class="pills" id="detTags" style="padding:12px 16px 0;gap:12px"></div>
 
@@ -1928,7 +1928,7 @@ function renderPlant() {
   $('#detPh').classList.remove('on'); $('#detImg').src = imgSrc(p); $('#detImg').alt = p.name;
   sampleHero();
   if ($('#detImg').complete) $('#detPh').classList.add('on');
-  $('#aboutTx').textContent = p.about; $('#aboutMore').textContent = 'Show More';
+  $('#aboutTx').textContent = p.about; $('#aboutMore').textContent = 'Show More'; $('#aboutMore').setAttribute('aria-expanded', 'false');
   $('#detTags').innerHTML = p.tags.map(t => `<span class="tag"><i class="i" style="--m:url(assets/${TAGDEF(t)[0]}.svg)"></i>${TAGDEF(t)[1]}</span>`).join('');
   $('#qfGrid').innerHTML = [['y', 'qf-sun.svg', 'Light', shortLight(p.sun)], ['o', 'qf-temp.svg', p.temp, 'Temperature'], ['bl', 'qf-water.svg', p.water, 'Watering'], ['am', 'qf-fert.svg', p.fert, 'Fertilizer']]
     .map(([c, i, k, v]) => `<div class="card"><span class="surf ${c}"><img src="assets/${i}" alt=""></span><div><p class="fn c-3">${k}</p><p class="co s c-2">${v}</p></div></div>`).join('');
@@ -1981,7 +1981,7 @@ function onDetScroll() {
 }
 detScroll.addEventListener('scroll', onDetScroll, { passive: true });
 
-$('#aboutMore').onclick = () => { const open = $('#aboutMore').textContent === 'Show More'; $('#aboutTx').textContent = open ? P().about + ' ' + P().more : P().about; $('#aboutMore').textContent = open ? 'Show Less' : 'Show More'; };
+$('#aboutMore').onclick = () => { const b = $('#aboutMore'), open = b.getAttribute('aria-expanded') !== 'true'; $('#aboutTx').textContent = open ? P().about + ' ' + P().more : P().about; b.textContent = open ? 'Show Less' : 'Show More'; b.setAttribute('aria-expanded', open); };
 
 const ALERT = '<i class="i" style="--m:url(assets/ic-alert.svg);color:var(--icon2)"></i>';
 const kvCard = rows => rows.map(([k, v]) => `<div class="kv" style="flex-direction:row;align-items:center;gap:12px"><div style="flex:1;display:flex;flex-direction:column;gap:4px"><p class="sh c-3">${k}</p><p class="co">${v}</p></div>${ALERT}</div>`).join('');
