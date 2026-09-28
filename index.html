@@ -2665,7 +2665,8 @@ function hintBlocked() {
 // the strip iOS paints above the app (from the page background) matches what is on screen:
 // dimmed under a modal, the screen's own colour on full-bleed screens, the theme otherwise
 function paintTop(id = cur()) {
-  const TINT = { recog: '#317a31', camera: '#000000', details: !$('#detNav').classList.contains('solid') && heroTop };
+  const bg = sel => getComputedStyle($(sel)).backgroundColor; // screens painted with a theme token follow the theme
+  const TINT = { recog: '#317a31', camera: '#000000', tips: bg('#s-tips'), review: bg('#s-review'), details: !$('#detNav').classList.contains('solid') && heroTop };
   const dim = !!phone.querySelector('.alert-ios, .sheet');
   const tint = !dim && TINT[id];
   document.body.classList.toggle('dimmed', dim);
