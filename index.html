@@ -429,7 +429,8 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .si-a-art .halo{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#d9f5d2 0%,rgba(217,245,210,.55) 45%,rgba(217,245,210,0) 70%)}
 .phone.dark .si-a-art .halo{background:radial-gradient(circle at 50% 45%,rgba(74,222,128,.22) 0%,rgba(74,222,128,.08) 45%,rgba(74,222,128,0) 70%)}
 .si-a-art img{position:relative;width:260px;height:260px}
-.si-a .si-copy{display:flex;flex-direction:column;gap:12px;text-align:center;padding:8px 32px 0}
+.si-a .si-copy{display:flex;flex-direction:column;gap:12px;text-align:center;padding:12px 32px 0}
+.si-a .si-sub{font-size:19px;line-height:26px;color:var(--text)}
 
 .alert-ios{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.3);display:grid;place-items:center;animation:fade .2s}
 .alert-ios .box{width:270px;border-radius:14px;overflow:hidden;background:rgba(246,246,246,.94);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);text-align:center;animation:pop .25s cubic-bezier(.2,.9,.3,1.2);color:#000;letter-spacing:-.4px}
@@ -717,7 +718,7 @@ table.ft td:first-child{color:var(--text2)}
       <!-- one image, one line: the mascot on a soft halo and a headline, then sign-in -->
       <div class="si si-a">
         <div class="si-a-art"><span class="halo"></span><img src="assets/cactus-happy.png" alt="Pot, the cactus mascot"></div>
-        <div class="si-copy"><h1 class="si-h">Your plants,<br>in good hands</h1><p class="si-sub">Snap a plant to learn what it is, what it needs and when to water it.</p></div>
+        <div class="si-copy"><p class="si-sub">Snap a plant to learn what it is, what it needs and when to water it.</p></div>
         <div class="si-acts"><button class="btn alt" data-go="garden-empty" data-auth="1"><i class="i" style="--m:url(assets/ic-apple.svg);width:22px;height:24px;color:#78716c"></i>Continue with Apple</button><button class="btn ter" data-go="email"><i class="i" style="--m:url(assets/ic-mail.svg);color:var(--icon)"></i>Continue with Email</button><p class="bd c-3 si-legal">By continuing to use Pot,<br>you agree to <button class="s c-2" data-go="terms">the Terms of Use</button> and <button class="s c-2" data-go="privacy">the Privacy Policy</button></p></div>
       </div>
 
