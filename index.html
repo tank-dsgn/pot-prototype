@@ -411,17 +411,10 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 
 /* misc */
 .pot{width:250px;height:250px;margin-block:0 16px}
-.si-pick{position:absolute;top:58px;left:50%;transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:2px;padding:3px 3px 3px 12px;border-radius:99px;background:rgba(28,25,23,.78);color:#fff;font-size:12px;font-weight:600;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
-.si-pick span{margin-right:6px;opacity:.7}
-.si-pick button{width:32px;height:28px;display:grid;place-items:center;border-radius:99px;color:#fff;font-weight:700;font-size:13px}
-.si-pick button[aria-selected="true"]{background:#fff;color:#1c1917}
 .si{flex:1;min-height:0;display:flex;flex-direction:column}
 .si-h{margin:0;font-size:34px;line-height:40px;font-weight:800;letter-spacing:-.6px;color:var(--text);text-wrap:balance}
 .si-sub{margin:0;font-size:17px;line-height:24px;color:var(--text2);text-wrap:pretty}
 .si-acts{display:flex;flex-direction:column;gap:12px;padding:0 16px 30px}
-.si-apple{background:#000;color:#fff;font-size:18px}
-.phone.dark .si-apple{background:#fff;color:#000}
-.si-mail{background:transparent;color:var(--text);box-shadow:inset 0 0 0 1.5px var(--on-bgr);font-size:18px}
 .si-legal{text-align:center;margin:6px 8px 0;font-size:13px;line-height:18px}
 .si-legal button{font-size:13px}
 /* A */
@@ -431,43 +424,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .phone.dark .si-a-art .halo{background:radial-gradient(circle at 50% 45%,rgba(74,222,128,.22) 0%,rgba(74,222,128,.08) 45%,rgba(74,222,128,0) 70%)}
 .si-a-art img{position:relative;width:260px;height:260px}
 .si-a .si-copy{display:flex;flex-direction:column;gap:12px;text-align:center;padding:8px 32px 0;margin-bottom:auto}
-/* B */
-.si-b{padding-top:100px}
-.si-b-track{flex:1;min-height:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
-.si-b-track::-webkit-scrollbar{display:none}
-.si-slide{flex:none;width:100%;scroll-snap-align:center;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding:0 32px;box-sizing:border-box}
-.si-b-art{height:360px;width:100%;display:grid;place-items:center;margin-bottom:12px}
-.scanpic{position:relative;width:280px;height:340px;border-radius:28px;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,.18)}
-.scanpic img{width:100%;height:100%;object-fit:cover}
-.scanpic .corner{position:absolute;width:34px;height:34px;border:3px solid #fff;border-radius:6px}
-.scanpic .c-tl{top:28px;left:28px;border-right:0;border-bottom:0}.scanpic .c-tr{top:28px;right:28px;border-left:0;border-bottom:0}
-.scanpic .c-bl{bottom:78px;left:28px;border-right:0;border-top:0}.scanpic .c-br{bottom:78px;right:28px;border-left:0;border-top:0}
-.scanpic .corner{background:none}
-.idchip{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);white-space:nowrap;background:#fff;color:#1c1917;border-radius:99px;padding:8px 14px;font-size:14px;box-shadow:0 6px 16px rgba(0,0,0,.18)}
-.idchip{display:flex;gap:6px}.idchip b{color:#15803d}
-.chatmock{width:280px;height:340px;box-sizing:border-box;padding:18px 14px;border-radius:28px;background:var(--surface);box-shadow:0 18px 40px rgba(0,0,0,.14);display:flex;flex-direction:column;justify-content:flex-end;gap:10px;text-align:left}
-.chatmock .mepic{align-self:flex-end;width:132px;height:150px;object-fit:cover;border-radius:18px 18px 6px 18px}
-.chatmock .me{align-self:flex-end;margin:0;background:var(--surface2);color:var(--text);padding:10px 14px;border-radius:18px 18px 6px 18px;font-size:15px}
-.chatmock .dr{display:flex;align-items:flex-end;gap:8px}
-.chatmock .dr img{flex:none;width:34px;height:34px;border-radius:50%;background:#e8f7e4}
-.chatmock .dr p{margin:0;background:#15803d;color:#fff;padding:10px 14px;border-radius:18px 18px 18px 6px;font-size:15px;line-height:20px}
-.notemock{position:relative;width:280px;height:340px;border-radius:28px;overflow:hidden;box-shadow:0 18px 40px rgba(0,0,0,.18)}
-.notemock .bgpic{width:100%;height:100%;object-fit:cover;filter:brightness(.8)}
-.notemock .note{position:absolute;left:12px;right:12px;top:24px;display:flex;gap:10px;align-items:center;text-align:left;padding:12px;border-radius:18px;background:rgba(245,245,244,.86);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:#1c1917}
-.notemock .note img{width:36px;height:36px;border-radius:9px}
-.notemock .note p{margin:0;font-size:14px;line-height:19px}
-.notemock .note .t{display:flex;justify-content:space-between;gap:8px}.notemock .note .t span{opacity:.55}
-.si-dots{display:flex;justify-content:center;gap:8px;padding:16px 0 20px}
-.si-dots i{width:8px;height:8px;border-radius:99px;background:var(--on-bgr);transition:width .25s,background .25s}
-.si-dots i.on{width:22px;background:#15803d}
-/* C */
-.si-c{position:absolute;inset:0;padding:0}
-.si-c-photo{position:absolute;left:0;right:0;top:0;height:62%;width:100%;object-fit:cover;object-position:60% 30%}
-.si-c-sheet{position:absolute;left:0;right:0;bottom:0;min-height:44%;box-sizing:border-box;padding:28px 0 0;border-radius:32px 32px 0 0;background:var(--bg);display:flex;flex-direction:column;gap:12px;box-shadow:0 -10px 30px rgba(0,0,0,.08)}
-.si-c-sheet > .si-mark,.si-c-sheet > .si-h,.si-c-sheet > .si-sub{padding:0 24px}
-.si-mark{margin:0;font-size:15px;font-weight:800;letter-spacing:.2px;color:#15803d}
-.phone.dark .si-mark{color:#4ade80}
-.si-c .si-acts{margin-top:auto;padding-top:12px}
+
 .alert-ios{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.3);display:grid;place-items:center;animation:fade .2s}
 .alert-ios .box{width:270px;border-radius:14px;overflow:hidden;background:rgba(246,246,246,.94);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);text-align:center;animation:pop .25s cubic-bezier(.2,.9,.3,1.2);color:#000;letter-spacing:-.4px}
 .phone.dark .alert-ios .box{background:rgba(44,44,46,.94);color:#fff}
@@ -751,46 +708,13 @@ table.ft td:first-child{color:var(--text2)}
     <!-- 2.1 Sign in -->
     <section class="screen" id="s-signin" data-title="Sign In" hidden>
       <div class="sb"></div>
-      <!-- prototype only: compare three directions for this screen -->
-      <div class="si-pick" role="tablist" aria-label="Sign-in version"><span>Version</span><button data-si="a" aria-selected="true">A</button><button data-si="b" aria-selected="false">B</button><button data-si="c" aria-selected="false">C</button></div>
-
-      <!-- A · one image, one line: the mascot on a soft halo, a headline, native Sign in with Apple -->
-      <div class="si si-a" data-v="a">
+      <!-- one image, one line: the mascot on a soft halo and a headline, then sign-in -->
+      <div class="si si-a">
         <div class="si-a-art"><span class="halo"></span><img src="assets/cactus-happy.png" alt="Pot, the cactus mascot"></div>
         <div class="si-copy"><h1 class="si-h">Your plants,<br>in good hands</h1><p class="si-sub">Snap a plant to learn what it is, what it needs and when to water it.</p></div>
-        <div class="si-acts"><button class="btn si-apple" data-go="garden-empty" data-auth="1"><i class="i" style="--m:url(assets/ic-apple.svg);width:20px;height:22px"></i>Continue with Apple</button><button class="btn si-mail" data-go="email"><i class="i" style="--m:url(assets/ic-mail.svg)"></i>Continue with Email</button><p class="bd c-3 si-legal">By continuing to use Pot,<br>you agree to <button class="s c-2" data-go="terms">the Terms of Use</button> and <button class="s c-2" data-go="privacy">the Privacy Policy</button></p></div>
+        <div class="si-acts"><button class="btn alt" data-go="garden-empty" data-auth="1"><i class="i" style="--m:url(assets/ic-apple.svg);width:22px;height:24px;color:#78716c"></i>Continue with Apple</button><button class="btn ter" data-go="email"><i class="i" style="--m:url(assets/ic-mail.svg);color:var(--icon)"></i>Continue with Email</button><p class="bd c-3 si-legal">By continuing to use Pot,<br>you agree to <button class="s c-2" data-go="terms">the Terms of Use</button> and <button class="s c-2" data-go="privacy">the Privacy Policy</button></p></div>
       </div>
 
-      <!-- B · show, don't list: three swipeable moments of the app itself -->
-      <div class="si si-b" data-v="b" hidden>
-        <div class="si-b-track" id="siTrack">
-          <div class="si-slide">
-            <div class="si-b-art"><div class="scanpic"><img src="assets/ficus-tree2.jpg" alt=""><span class="corner c-tl"></span><span class="corner c-tr"></span><span class="corner c-bl"></span><span class="corner c-br"></span><span class="idchip"><b>Ficus</b><span>98% match</span></span></div></div>
-            <h1 class="si-h">Know every plant</h1><p class="si-sub">Point the camera — Pot names the plant and how to care for it.</p>
-          </div>
-          <div class="si-slide">
-            <div class="si-b-art"><div class="chatmock"><img class="mepic" src="assets/plant-2.jpg" alt=""><p class="me">The lower leaves turn yellow</p><div class="dr"><img src="assets/cactus-happy.png" alt=""><p>Sounds like too much water. Let the top 3 cm dry out first.</p></div></div></div>
-            <h1 class="si-h">A doctor for your plants</h1><p class="si-sub">Describe the trouble or send a photo — Dr Pot suggests a plan.</p>
-          </div>
-          <div class="si-slide">
-            <div class="si-b-art"><div class="notemock"><img class="bgpic" src="assets/plant-1.jpg" alt=""><div class="note"><img src="assets/app-icon.png" alt=""><div><p class="t"><b>Pot</b><span>now</span></p><p class="m">Time to water 💧 Ficus</p></div></div></div></div>
-            <h1 class="si-h">Never miss watering</h1><p class="si-sub">One nudge in the morning, only on the days a plant needs it.</p>
-          </div>
-        </div>
-        <div class="si-dots" aria-hidden="true"><i class="on"></i><i></i><i></i></div>
-        <div class="si-acts"><button class="btn si-apple" data-go="garden-empty" data-auth="1"><i class="i" style="--m:url(assets/ic-apple.svg);width:20px;height:22px"></i>Continue with Apple</button><button class="btn si-mail" data-go="email"><i class="i" style="--m:url(assets/ic-mail.svg)"></i>Continue with Email</button><p class="bd c-3 si-legal">By continuing to use Pot,<br>you agree to <button class="s c-2" data-go="terms">the Terms of Use</button> and <button class="s c-2" data-go="privacy">the Privacy Policy</button></p></div>
-      </div>
-
-      <!-- C · photo first: a real plant fills the screen, a sheet holds the words and the buttons -->
-      <div class="si si-c" data-v="c" hidden>
-        <img class="si-c-photo" src="assets/ficus-tree.jpg" alt="A ficus in a grey pot">
-        <div class="si-c-sheet">
-          <p class="si-mark">Pot</p>
-          <h1 class="si-h">Every plant at home, understood</h1>
-          <p class="si-sub">Identify, heal and water on time — with a plant doctor in your pocket.</p>
-          <div class="si-acts"><button class="btn si-apple" data-go="garden-empty" data-auth="1"><i class="i" style="--m:url(assets/ic-apple.svg);width:20px;height:22px"></i>Continue with Apple</button><button class="btn si-mail" data-go="email"><i class="i" style="--m:url(assets/ic-mail.svg)"></i>Continue with Email</button><p class="bd c-3 si-legal">By continuing to use Pot,<br>you agree to <button class="s c-2" data-go="terms">the Terms of Use</button> and <button class="s c-2" data-go="privacy">the Privacy Policy</button></p></div>
-        </div>
-      </div>
       <div class="hi"></div>
     </section>
 
@@ -1549,27 +1473,6 @@ phone.addEventListener('click', e => {
   }
 });
 
-/* sign-in versions (prototype review): A / B / C, remembered; ?signin=b picks one from a link */
-function setSignin(v) {
-  $$('#s-signin .si').forEach(el => el.hidden = el.dataset.v !== v);
-  $$('.si-pick button').forEach(b => b.setAttribute('aria-selected', b.dataset.si === v));
-  store.set('signinV', v); paintTop();
-}
-$$('.si-pick button').forEach(b => b.onclick = () => setSignin(b.dataset.si));
-{ const q = new URLSearchParams(location.search).get('signin'); setSignin(['a', 'b', 'c'].includes(q) ? q : (store.get('signinV') || 'a')); }
-// B: dots follow the swipe, and the slides move on by themselves until someone touches them
-const siTrack = $('#siTrack'); let siAuto = null;
-siTrack.addEventListener('scroll', () => { const i = Math.round(siTrack.scrollLeft / siTrack.clientWidth); $$('.si-dots i').forEach((d, n) => d.classList.toggle('on', n === i)); }, { passive: true });
-siTrack.addEventListener('pointerdown', () => { clearInterval(siAuto); siAuto = null; });
-function siAutoplay() {
-  clearInterval(siAuto);
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  siAuto = setInterval(() => {
-    if (cur() !== 'signin' || $('.si-b').hidden) return;
-    const i = Math.round(siTrack.scrollLeft / siTrack.clientWidth), n = siTrack.children.length;
-    siTrack.scrollTo({ left: ((i + 1) % n) * siTrack.clientWidth, behavior: 'smooth' });
-  }, 3500);
-}
 function signedIn() {
   state.authed = true; store.set('authed', '1');
   reset(gardenId(), 'fwd');
@@ -1805,7 +1708,6 @@ const enter = {
   care() { renderPlant(); renderCare(); },
   toxicity() { renderPlant(); },
   loading() { setTimeout(() => cur() === 'loading' && reset(store.get('authed') ? gardenId() : 'signin'), 1800); },
-  signin() { siTrack.scrollLeft = 0; siAutoplay(); },
   boot() { setTimeout(() => cur() === 'boot' && reset('loading'), 900); },
   onb() { renderOnb(); },
   garden() { gardenSkeleton(); },
@@ -2765,7 +2667,7 @@ function hintBlocked() {
 // dimmed under a modal, the screen's own colour on full-bleed screens, the theme otherwise
 function paintTop(id = cur()) {
   const bg = sel => getComputedStyle($(sel)).backgroundColor; // screens painted with a theme token follow the theme
-  const TINT = { recog: '#317a31', camera: '#000000', tips: bg('#s-tips'), review: bg('#s-review'), signin: store.get('signinV') === 'c' && '#ece4d6', details: !$('#detNav').classList.contains('solid') && heroTop };
+  const TINT = { recog: '#317a31', camera: '#000000', tips: bg('#s-tips'), review: bg('#s-review'), details: !$('#detNav').classList.contains('solid') && heroTop };
   const dim = !!phone.querySelector('.alert-ios, .sheet');
   const tint = !dim && TINT[id];
   document.body.classList.toggle('dimmed', dim);
