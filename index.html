@@ -1406,6 +1406,17 @@ function show(id, dir) {
   (back ? next : prev).style.zIndex = 1;
   const run = (el, frames) => anims.push(el.animate(frames, opts));
   if (dir === 'fade') run(next, [{ opacity: 0 }, { opacity: 1 }]);
+  else if (dir === 'tabL' || dir === 'tabR') {
+    // switching tabs: the screens slide across while the tab bar stays where it is.
+    // tabL — the new screen comes in from the left; tabR — from the right.
+    const from = dir === 'tabL' ? '-100%' : '100%', to = dir === 'tabL' ? '100%' : '-100%';
+    const parts = el => [...el.children].filter(c => !c.classList.contains('tabbar'));
+    next.style.background = 'transparent';
+    parts(next).forEach(c => run(c, [{ transform: `translateX(${from})` }, { transform: 'none' }]));
+    parts(prev).forEach(c => run(c, [{ transform: 'none' }, { transform: `translateX(${to})` }]));
+    const bar = $('.tabbar', prev); if (bar) bar.style.visibility = 'hidden';
+    setTimeout(() => { next.style.background = ''; if (bar) bar.style.visibility = ''; }, opts.duration);
+  }
   else if (isModal && !back) run(next, [{ transform: 'translateY(100%)' }, { transform: 'none' }]);
   else if (isModal && back) run(prev, [{ transform: 'none' }, { transform: 'translateY(100%)' }]);
   else if (!back) { run(next, [{ transform: 'translateX(100%)' }, { transform: 'none' }]); run(prev, [{ transform: 'none' }, { transform: 'translateX(-30%)' }]); }
@@ -1434,7 +1445,12 @@ phone.addEventListener('click', e => {
   if (!t || !phone.contains(t)) return;
   if (t.hasAttribute('data-back')) return back();
   if (t.dataset.toast && !t.closest('[data-seg]')) return toast(t.dataset.toast);
-  if (t.dataset.tab && t.classList.contains('tab')) return reset(t.dataset.tab === 'settings' ? 'settings' : gardenId(), 'fade');
+  if (t.dataset.tab && t.classList.contains('tab')) {
+    const to = t.dataset.tab === 'settings' ? 'settings' : gardenId();
+    if (to === cur()) return;
+    // My Garden → Settings: Settings slides in from the left; Settings → My Garden: the garden slides in from the right
+    return reset(to, to === 'settings' ? 'tabL' : 'tabR');
+  }
   if (t.hasAttribute('data-scan')) return startScan();
   if (t.hasAttribute('data-share')) return shareApp();
   if (t.id === 'detDelete') return removePlant();
