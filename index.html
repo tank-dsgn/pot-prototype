@@ -288,6 +288,13 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 @media (prefers-reduced-motion:reduce){.sk::after{animation-duration:4s}}
 .sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;padding:10px 16px 24px}
 .sk-grid .sk{height:280px}
+/* Past Scans skeleton: the same rows as the list — 56px thumbnail, name, other names */
+.sk-list{display:flex;flex-direction:column;gap:18px;padding:10px 16px 24px}
+.sk-row{display:flex;align-items:center;gap:15px}
+.sk-row .sk.sq{flex:none;width:56px;height:56px;border-radius:8px}
+.sk-row .lines{flex:1;display:flex;flex-direction:column;gap:8px}
+.sk-row .sk.l1{height:16px;width:55%;border-radius:6px}
+.sk-row .sk.l2{height:12px;width:78%;border-radius:6px}
 #s-details.sk-on #detScroll>:not(#detSk){display:none}
 #s-details.sk-on .float-nav,#s-details.sk-on .action{visibility:hidden}
 .ph{position:relative}
@@ -798,6 +805,7 @@ table.ft td:first-child{color:var(--text2)}
       <div style="padding:16px"><div class="segc" id="gardenSeg" data-seg><div class="thumb"></div><button aria-selected="true" data-pane="plants">My Plants</button><button aria-selected="false" data-pane="scans">Past Scans</button></div></div>
       <div class="scroll">
         <div class="sk-grid" id="gardenSk" hidden><div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div></div>
+        <div class="sk-list" id="scanSk" hidden aria-hidden="true"></div>
         <div class="grid" id="gardenGrid"></div>
         <div class="plist" id="scanList" hidden></div>
       </div>
@@ -1356,7 +1364,7 @@ $$('[data-seg]').forEach(seg => {
     if (b.dataset.toast) return toast(b.dataset.toast);
     setSeg(seg, i);
     if (seg.closest('#s-garden-empty')) { $('#emptyPlants').hidden = i !== 0; $('#emptyScans').hidden = i !== 1; }
-    if (seg.id === 'gardenSeg') { $('#gardenGrid').hidden = i !== 0; $('#scanList').hidden = i !== 1; $('#s-garden .scroll').scrollTop = 0; }
+    if (seg.id === 'gardenSeg') { $('#s-garden .scroll').scrollTop = 0; gardenSkeleton(); }
     if (seg.id === 'charSeg') renderChar(b.dataset.c);
   }));
 });
@@ -1824,9 +1832,13 @@ let skT = [];
 function gardenSkeleton() {
   skT.forEach(clearTimeout);
   const pane = $$('#gardenSeg button').findIndex(b => b.getAttribute('aria-selected') === 'true');
-  $('#gardenSk').hidden = false; $('#gardenGrid').hidden = true; $('#scanList').hidden = true;
+  // the skeleton matches the tab: cards for My Plants, rows for Past Scans
+  const rows = Math.min(6, Math.max(3, scanIds().length));
+  $('#scanSk').innerHTML = '<div class="sk-row"><div class="sk sq"></div><div class="lines"><div class="sk l1"></div><div class="sk l2"></div></div></div>'.repeat(rows);
+  $('#gardenSk').hidden = pane === 1; $('#scanSk').hidden = pane !== 1;
+  $('#gardenGrid').hidden = true; $('#scanList').hidden = true;
   skT = [setTimeout(() => {
-    $('#gardenSk').hidden = true;
+    $('#gardenSk').hidden = true; $('#scanSk').hidden = true;
     $('#gardenGrid').hidden = pane === 1; $('#scanList').hidden = pane !== 1;
   }, 700)];
 }
