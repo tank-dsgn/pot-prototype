@@ -291,7 +291,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 /* Past Scans skeleton: the same rows as the list — 56px thumbnail, name, other names */
 .sk-list{display:flex;flex-direction:column;gap:18px;padding:10px 16px 24px}
 .sk-row{display:flex;align-items:center;gap:15px}
-.sk-row .sk.sq{flex:none;width:56px;height:56px;border-radius:8px}
+.sk-row .sk.skq{flex:none;width:56px;height:56px;border-radius:8px}
 .sk-row .lines{flex:1;display:flex;flex-direction:column;gap:8px}
 .sk-row .sk.l1{height:16px;width:55%;border-radius:6px}
 .sk-row .sk.l2{height:12px;width:78%;border-radius:6px}
@@ -1850,7 +1850,7 @@ function gardenSkeleton() {
   const pane = $$('#gardenSeg button').findIndex(b => b.getAttribute('aria-selected') === 'true');
   // the skeleton matches the tab: cards for My Plants, rows for Past Scans
   const rows = Math.min(6, Math.max(3, scanIds().length));
-  $('#scanSk').innerHTML = '<div class="sk-row"><div class="sk sq"></div><div class="lines"><div class="sk l1"></div><div class="sk l2"></div></div></div>'.repeat(rows);
+  $('#scanSk').innerHTML = '<div class="sk-row"><div class="sk skq"></div><div class="lines"><div class="sk l1"></div><div class="sk l2"></div></div></div>'.repeat(rows);
   $('#gardenSk').hidden = pane === 1; $('#scanSk').hidden = pane !== 1;
   $('#gardenGrid').hidden = true; $('#scanList').hidden = true;
   skT = [setTimeout(() => {
