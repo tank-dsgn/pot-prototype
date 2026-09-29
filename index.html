@@ -465,12 +465,13 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .sheet button.opt.del{color:#dc2626}
 .sheet button.opt.cancel{font-weight:600}
 @keyframes up{from{transform:translateY(100%)}}
-.toast{position:absolute;left:16px;right:16px;bottom:16px;z-index:50;min-height:56px;box-sizing:border-box;padding:16px 20px;border-radius:999px;background:#292524;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.22);display:flex;gap:8px;align-items:center;font-size:17px;line-height:22px;font-weight:400;letter-spacing:-.43px;animation:toastIn .3s cubic-bezier(.2,.9,.3,1.2)}
+.toast{position:absolute;left:16px;right:16px;top:var(--tt, 58px);z-index:50;min-height:56px;box-sizing:border-box;padding:16px 20px;border-radius:999px;background:#292524;color:#fff;box-shadow:0 8px 24px rgba(0,0,0,.22);display:flex;gap:8px;align-items:center;font-size:17px;line-height:22px;font-weight:400;letter-spacing:-.43px;animation:toastIn .3s cubic-bezier(.2,.9,.3,1.2)}
 .toast>img,.toast>.i{flex:none;width:24px;height:24px}
 .toast>span{flex:1;min-width:0}
-.toast.out{opacity:0;transform:translateY(12px);transition:opacity .25s,transform .25s}
+/* the toast drops in from above the screen and stops 8px under the status bar */
+.toast.out{opacity:0;transform:translateY(calc(-100% - var(--tt, 58px)));transition:opacity .3s,transform .3s cubic-bezier(.4,0,1,1)}
 .phone.dark .toast{background:#3a3532;box-shadow:0 8px 24px rgba(0,0,0,.5),0 0 0 .5px rgba(255,255,255,.08)}
-@keyframes toastIn{from{transform:translateY(20px);opacity:0}}
+@keyframes toastIn{from{transform:translateY(calc(-100% - var(--tt, 58px)))}}
 @keyframes fade{from{opacity:0}}
 @keyframes pop{from{transform:scale(1.15);opacity:0}}
 
@@ -1525,9 +1526,12 @@ function toast(msg) {
   const hit = TOAST_ICONS.find(([rx]) => rx.test(msg));
   el.innerHTML = hit ? `<i class="i" style="--m:url(assets/${hit[1]});color:${hit[2]}"></i>` : '<img src="assets/ic-toast-tick.svg" alt="">';
   const text = document.createElement('span'); text.textContent = msg; el.append(text);
+  // stops 8px under the status bar of the screen on show
+  const sb = $('.screen:not([hidden]) .sb', phone);
+  el.style.setProperty('--tt', (sb ? sb.offsetHeight : 50) + 8 + 'px');
   phone.append(el); clearTimeout(toastT);
   // long enough to read: 3.5 s, a little more for longer lines
-  toastT = setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 260); }, msg.length > 50 ? 5000 : 3500);
+  toastT = setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, msg.length > 50 ? 5000 : 3500);
 }
 function iosAlert(title, text, actions, opts = {}) {
   const wrap = document.createElement('div');
