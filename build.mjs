@@ -56,7 +56,7 @@ let note = '';
 try { note = execSync('git log -1 --pretty=%s', { cwd: root }).toString().trim(); } catch {}
 
 const head = `<!doctype html>
-<html lang="en" translate="no" class="notranslate">
+<html lang="ru" translate="no" class="notranslate">
 <head>
 <meta charset="utf-8">
 <meta name="google" content="notranslate">
