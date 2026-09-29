@@ -74,7 +74,7 @@ const head = `<!doctype html>
 // the phone's status bar follows the app's own theme, before the first paint
 (() => {
   let dark = false;
-  try { dark = (localStorage.getItem('pot:mode') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')) === 'dark'; } catch {}
+  try { dark = localStorage.getItem('pot:mode') === 'dark'; } catch {} // light until someone picks dark in Settings
   if (dark) document.documentElement.className += ' dark-app';
   document.write('<meta name="theme-color" content="' + (dark ? '#0c0a09' : '#f1efec') + '">'
     + '<meta name="apple-mobile-web-app-status-bar-style" content="' + (dark ? 'black' : 'default') + '">'

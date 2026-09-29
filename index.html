@@ -1330,7 +1330,7 @@ const SB = '<span class="t">9:41</span><span class="gap"></span><span class="lv"
 $$('.sb').forEach(s => s.innerHTML = SB);
 
 /* ---------- theme ---------- */
-let mode = store.get('mode') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+let mode = store.get('mode') === 'dark' ? 'dark' : 'light'; // the prototype starts light; dark only once someone picks it
 function applyTheme() {
   const dark = mode === 'dark';
   phone.classList.toggle('dark', dark);
@@ -2491,6 +2491,7 @@ $('#restart').onclick = () => iosAlert('Start from the beginning?', 'Your saved 
   { label: 'Start Over', bold: true, do: restartPrototype }
 ]);
 function restartPrototype() {
+  setMode('light');
   Object.keys(PLANTS).filter(id => PLANTS[id].scanned).forEach(id => delete PLANTS[id]);
   Object.assign(state, { authed: false, camAllowed: false, tipsSeen: false, plant: 'peanut', fromScan: false, garden: [], scans: [], removed: [], treat: {} });
   store.set('avatar', ''); renderAvatar();
