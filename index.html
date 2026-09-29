@@ -2676,12 +2676,13 @@ function showInstall(kind) {
   // written whole in each language: the hint mixes bold words into sentences, which word-by-word translation can't handle
   // two steps, one action per line
   const share = '<i class="i" style="--m:url(assets/ic-share.svg)"></i>';
+  const addHome = '<i class="i" style="--m:url(assets/ic-add-home.svg);width:15px;height:15px;vertical-align:-2px"></i>';
   const steps = (title, a, b) => `<b>${title}</b><ol><li>${a}</li><li>${b}</li></ol>`;
   $('#installText').innerHTML = kind === 'android'
     ? (ru ? '<b>Установите Pot</b>Открывайте на весь экран, как приложение.' : '<b>Install Pot</b>Use it full-screen like an app.')
     : kind === 'ios'
-      ? (ru ? steps('Установите Pot на iPhone', `Нажмите ${share} ${B('«Поделиться»')}`, `Выберите ${B('«На экран „Домой“»')}`)
-            : steps('Install Pot on your iPhone', `Tap ${share} ${B('Share')}`, `Choose ${B('Add to Home Screen')}`))
+      ? (ru ? steps('Установите Pot на iPhone', `Нажмите ${share} ${B('«Поделиться»')}`, `${addHome} ${B('«Добавить на экран „Домой“»')}`)
+            : steps('Install Pot on your iPhone', `Tap ${share} ${B('Share')}`, `${addHome} ${B('Add to Home Screen')}`))
       : (ru ? steps('Установите Pot', `Нажмите ${B('⋮')} в Chrome`, `Выберите ${B('«Установить приложение»')}`)
             : steps('Install Pot', `Tap ${B('⋮')} in Chrome`, `Choose ${B('Install app')}`));
   $('#installGo').hidden = kind !== 'android';
