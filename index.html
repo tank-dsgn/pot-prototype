@@ -175,7 +175,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .phone.dark .segc.dim{background:var(--surface2)}
 
 /* tab bar */
-.tabbar{flex:none;height:83px;background:var(--surface);position:relative;display:flex;padding:12px 36px 0;box-sizing:border-box;z-index:4}
+.tabbar{flex:none;height:83px;background:var(--surface);position:relative;display:flex;padding:12px 32px 0;box-sizing:border-box;z-index:4}
 .tabbar.lift{box-shadow:0 4px 8px rgba(0,0,0,.25)}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;font-size:12px;line-height:16px;font-weight:500;color:var(--text2);height:48px}
 .tab.on{color:var(--brand)}
@@ -219,7 +219,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .acc .body{display:grid;grid-template-rows:0fr;transition:grid-template-rows .3s ease}
 .acc.open .body{grid-template-rows:1fr}
 .acc .body>div{overflow:hidden}
-.acc .body ol,.steps{margin:0;padding:0 0 16px;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:10px}
+.acc .body ol,.steps{margin:0;padding:0 0 16px;list-style:none;counter-reset:s;display:flex;flex-direction:column;gap:8px}
 .acc .body li,.steps li{counter-increment:s;display:flex;gap:6px;font-size:17px;line-height:22px;color:var(--text2)}
 .acc .body li::before,.steps li::before{content:counter(s) ".";font-weight:700;font-size:15px;color:var(--text3);width:16px;flex:none;margin-top:1px}
 .steps li b{display:block;font-weight:600}
@@ -228,7 +228,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 
 /* paywall perks: one block centred under the title, lines aligned to its left edge */
 .perks{list-style:none;margin:0;padding:0;align-self:center;display:flex;flex-direction:column;gap:12px;max-width:100%}
-.perks li{display:flex;gap:10px;align-items:baseline;font-size:20px;line-height:25px;font-weight:600;color:var(--text2)}
+.perks li{display:flex;gap:8px;align-items:baseline;font-size:20px;line-height:25px;font-weight:600;color:var(--text2)}
 .perks li::before{content:"✓";color:#15803d;flex:none;width:16px}
 .phone.dark .perks li::before{color:#22c55e}
 
@@ -288,11 +288,11 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .phone.dark .sk::after{background:linear-gradient(90deg,transparent,rgba(255,255,255,.07),transparent)}
 @keyframes shimmer{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
 @media (prefers-reduced-motion:reduce){.sk::after{animation-duration:4s}}
-.sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;padding:10px 16px 24px}
+.sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;padding:8px 16px 24px}
 .sk-grid .sk{height:280px}
 /* Past Scans skeleton: the same rows as the list — 56px thumbnail, name, other names */
-.sk-list{display:flex;flex-direction:column;gap:18px;padding:10px 16px 24px}
-.sk-row{display:flex;align-items:center;gap:15px}
+.sk-list{display:flex;flex-direction:column;gap:16px;padding:8px 16px 24px}
+.sk-row{display:flex;align-items:center;gap:16px}
 .sk-row .sk.skq{flex:none;width:56px;height:56px;border-radius:8px}
 .sk-row .lines{flex:1;display:flex;flex-direction:column;gap:8px}
 .sk-row .sk.l1{height:16px;width:55%;border-radius:6px}
@@ -348,7 +348,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .tcard{display:flex;flex-direction:column;gap:12px;padding:12px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow-card);text-align:left;width:100%;box-sizing:border-box}
 .tcard .top{display:flex;gap:12px;align-items:center}
 .tcard .top img{width:48px;height:48px;border-radius:10px;object-fit:cover;flex:none}
-.tpill{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 10px;border-radius:99px;background:#fef3c7;color:#92400e;font-size:13px;font-weight:600;white-space:nowrap}
+.tpill{display:inline-flex;align-items:center;gap:6px;height:24px;padding:0 8px;border-radius:99px;background:#fef3c7;color:#92400e;font-size:13px;font-weight:600;white-space:nowrap}
 .phone.dark .tpill{background:rgba(217,119,6,.22);color:#fcd34d}
 .tpill.ok{background:#dcfce7;color:#166534}
 .tpill.photo{position:absolute;top:10px;left:10px;margin:0;box-shadow:0 1px 4px rgba(0,0,0,.18);display:block;line-height:24px;max-width:calc(100% - 20px);box-sizing:border-box;overflow:hidden;text-overflow:ellipsis}
@@ -376,15 +376,15 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .ai-intro .ava{width:104px;height:104px;border-radius:50%;background:#f0fdf4;display:grid;place-items:center;overflow:hidden}
 .phone.dark .ai-intro .ava{background:#44403c}
 .ai-intro .ava img{width:96px;height:96px}
-.ai-prompt{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;padding:14px 16px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow-card);font-size:17px;line-height:22px;color:var(--text);text-align:left}
+.ai-prompt{display:flex;align-items:center;gap:12px;width:100%;box-sizing:border-box;padding:12px 16px;border-radius:12px;background:var(--surface);box-shadow:var(--shadow-card);font-size:17px;line-height:22px;color:var(--text);text-align:left}
 .ai-prompt .i{color:#15803d}
 .phone.dark .ai-prompt .i{color:#22c55e}
-.ai-refresh{color:var(--text3);font-size:15px;align-self:flex-start;margin-left:-10px}
+.ai-refresh{color:var(--text3);font-size:15px;align-self:flex-start;margin-left:-8px}
 .msg{display:flex;gap:8px;align-items:flex-end;max-width:100%}
 .msg .av{flex:none;width:32px;height:32px;border-radius:50%;background:#f0fdf4;overflow:hidden;display:grid;place-items:center}
 .phone.dark .msg .av{background:#44403c}
 .msg .av img{width:30px;height:30px}
-.msg .bub{max-width:78%;padding:10px 14px;border-radius:16px;font-size:16px;line-height:21px;white-space:pre-wrap;word-break:break-word}
+.msg .bub{max-width:78%;padding:8px 12px;border-radius:16px;font-size:16px;line-height:21px;white-space:pre-wrap;word-break:break-word}
 .msg.bot .bub{background:#f0fdf4;color:#1c1917;border-bottom-left-radius:6px}
 .phone.dark .msg.bot .bub{background:#14532d;color:#fafaf9}
 .msg.me{justify-content:flex-end}
@@ -396,7 +396,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .dots i:nth-child(2){animation-delay:.2s}.dots i:nth-child(3){animation-delay:.4s}
 @keyframes blink{50%{opacity:1}}
 .ai-bar{flex:none;padding:8px 16px 34px;background:var(--bg);display:flex;gap:8px;align-items:flex-end}
-.ai-bar .box{flex:1;min-width:0;display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:28px;min-height:56px;box-sizing:border-box;padding:6px 6px 6px 18px;box-shadow:var(--shadow-card)}
+.ai-bar .box{flex:1;min-width:0;display:flex;align-items:center;gap:12px;background:var(--surface);border-radius:28px;min-height:56px;box-sizing:border-box;padding:6px 6px 6px 16px;box-shadow:var(--shadow-card)}
 /* iOS gives a textarea its own inset and appearance, which lifts a single line off centre: strip both and size the line exactly */
 .ai-bar textarea{-webkit-appearance:none;appearance:none;-webkit-user-select:text;user-select:text;flex:1;min-width:0;border:0;border-radius:0;background:none;font:inherit;font-size:17px;line-height:22px;color:var(--text);outline:none;resize:none;display:block;box-sizing:content-box;height:22px;min-height:22px;max-height:88px;margin:0;padding:0;align-self:center}
 .ai-bar textarea::placeholder{color:var(--text3)}
@@ -414,7 +414,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .si{flex:1;min-height:0;display:flex;flex-direction:column}
 .si-h{margin:0;font-size:34px;line-height:40px;font-weight:800;letter-spacing:-.6px;color:var(--text);text-wrap:balance}
 .si-sub{margin:0;font-size:17px;line-height:24px;color:var(--text2);text-wrap:pretty}
-.si-acts{display:flex;flex-direction:column;gap:12px;padding:0 16px 30px}
+.si-acts{display:flex;flex-direction:column;gap:12px;padding:0 16px 32px}
 .si-legal{text-align:center;margin:6px 8px 0;font-size:13px;line-height:18px}
 .si-legal button{font-size:13px}
 /* A */
@@ -429,14 +429,14 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .si-a-art .halo{position:absolute;width:300px;height:300px;border-radius:50%;background:radial-gradient(circle at 50% 45%,#d9f5d2 0%,rgba(217,245,210,.55) 45%,rgba(217,245,210,0) 70%)}
 .phone.dark .si-a-art .halo{background:radial-gradient(circle at 50% 45%,rgba(74,222,128,.22) 0%,rgba(74,222,128,.08) 45%,rgba(74,222,128,0) 70%)}
 .si-a-art img{position:relative;width:260px;height:260px}
-.si-a .si-copy{display:flex;flex-direction:column;gap:10px;text-align:center;padding:12px 24px 0}
+.si-a .si-copy{display:flex;flex-direction:column;gap:8px;text-align:center;padding:12px 24px 0}
 /* one line of headline over the line that explains it */
 .si-a .si-one{font-size:28px;line-height:34px;white-space:nowrap}
 
 .alert-ios{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.3);display:grid;place-items:center;animation:fade .2s}
 .alert-ios .box{width:270px;border-radius:14px;overflow:hidden;background:rgba(246,246,246,.94);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);text-align:center;animation:pop .25s cubic-bezier(.2,.9,.3,1.2);color:#000;letter-spacing:-.4px}
 .phone.dark .alert-ios .box{background:rgba(44,44,46,.94);color:#fff}
-.alert-ios .tx{padding:19px 16px 15px;display:flex;flex-direction:column;gap:2px}
+.alert-ios .tx{padding:20px 16px 16px;display:flex;flex-direction:column;gap:2px}
 .alert-ios .tx b{letter-spacing:-.43px}
 .alert-ios .icon+.tx{padding-top:16px}
 .alert-ios .tx p{font-size:13px;line-height:18px;letter-spacing:-.08px;color:#000}
@@ -449,9 +449,9 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .phone.dark .alert-ios .acts button+button{border-left-color:rgba(255,255,255,.16)}
 .alert-ios .acts button.del{color:#dc2626}
 .alert-ios .icon{width:56px;height:56px;border-radius:13px;margin:16px auto 0;display:block}
-.alert-ios .row{height:52px;display:flex;align-items:center;justify-content:center;gap:18px;margin-top:-6px}
+.alert-ios .row{height:52px;display:flex;align-items:center;justify-content:center;gap:16px;margin-top:-6px}
 .alert-ios .row button{color:#007aff;font-size:30px;line-height:1;padding:0 2px}
-.alert-ios textarea{-webkit-user-select:text;user-select:text;width:calc(100% - 32px);height:76px;margin:0 16px 14px;box-sizing:border-box;border:0;border-radius:8px;padding:8px 10px;background:rgba(120,120,128,.12);color:inherit;font:inherit;font-size:15px;line-height:20px;resize:none;outline:none}
+.alert-ios textarea{-webkit-user-select:text;user-select:text;width:calc(100% - 32px);height:76px;margin:0 16px 12px;box-sizing:border-box;border:0;border-radius:8px;padding:8px 8px;background:rgba(120,120,128,.12);color:inherit;font:inherit;font-size:15px;line-height:20px;resize:none;outline:none}
 .phone.dark .alert-ios textarea{background:rgba(120,120,128,.28)}
 /* action sheet (Figma 8.10 share) */
 .sheet{position:absolute;inset:0;z-index:40;background:rgba(0,0,0,.3);display:flex;flex-direction:column;justify-content:flex-end;animation:fade .2s}
@@ -488,7 +488,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 @media (prefers-reduced-motion:reduce){.spin{animation-duration:3s}*{transition-duration:0s!important}}
 
 /* screen-specific */
-#s-garden .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;padding:10px 16px 24px}
+#s-garden .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px 16px;padding:8px 16px 24px}
 .pcard{background:var(--surface);border-radius:12px;box-shadow:0 1px 1.5px rgba(0,0,0,.11);overflow:hidden;display:flex;flex-direction:column;gap:12px;padding-bottom:12px;text-align:left}
 .pcard img{width:100%;height:206px;object-fit:cover;border-radius:8px 8px 0 0}
 .pcard .nm{font-family:"Arial Rounded MT Bold","SF Pro Rounded",-apple-system,sans-serif;font-weight:700;font-size:16px;line-height:22px;padding-inline:12px}
@@ -502,7 +502,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .water .wt{display:block;font-weight:600;font-size:16px;line-height:21px;color:var(--text)}
 .water.due .wt{color:#1d4ed8}
 .water .ws{display:block;font-size:14px;line-height:19px;color:var(--text3)}
-.water .wbtn{flex:none;height:calc(36px * var(--inv, 1));min-width:calc(44px * var(--inv, 1));padding:0 14px;border-radius:99px;background:#dbeafe;color:#1e3a8a;font-weight:600;font-size:15px;position:relative}
+.water .wbtn{flex:none;height:calc(36px * var(--inv, 1));min-width:calc(44px * var(--inv, 1));padding:0 12px;border-radius:99px;background:#dbeafe;color:#1e3a8a;font-weight:600;font-size:15px;position:relative}
 .water .wbtn::after{content:"";position:absolute;left:0;right:0;top:50%;height:calc(44px * var(--inv, 1));transform:translateY(-50%)}
 .phone.dark .water .wbtn{background:#1e3a5f;color:#bfdbfe}
 .phone.dark .water.due .wt{color:#93c5fd}
@@ -518,9 +518,9 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .phone.dark .ptag.ok{background:rgba(34,197,94,.18);color:#86efac}
 /* names sit together (no gap between them), like the design */
 #gardenGrid .pcard .cm{margin-top:-12px}
-.pcard .new{position:absolute;top:0;right:0;margin:10px;background:#15803d;color:#fff;font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px}
-.plist{display:flex;flex-direction:column;gap:18px;padding:10px 16px 24px}
-.plist button{display:flex;align-items:center;gap:15px}
+.pcard .new{position:absolute;top:0;right:0;margin:8px;background:#15803d;color:#fff;font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px}
+.plist{display:flex;flex-direction:column;gap:16px;padding:8px 16px 24px}
+.plist button{display:flex;align-items:center;gap:16px}
 .plist img{width:56px;height:56px;border-radius:8px;object-fit:cover}
 .plist .tx{flex:1;min-width:0}
 .empty{display:flex;flex-direction:column;justify-content:center;padding:0 16px 24px}
@@ -543,7 +543,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 
 #s-camera{background:#052e16}
 .cam-top{position:absolute;left:16px;right:16px;top:60px;display:flex;justify-content:space-between;align-items:center;z-index:3}
-.glass{background:rgba(0,0,0,.5);color:#fff;border-radius:99px;padding:10px;font-weight:600;font-size:17px;line-height:22px}
+.glass{background:rgba(0,0,0,.5);color:#fff;border-radius:99px;padding:8px;font-weight:600;font-size:17px;line-height:22px}
 .xbtn{width:36px;height:36px;border-radius:50%;background:#fff;display:grid;place-items:center;color:#78716c}
 .shutter{width:72px;height:72px;border-radius:50%;border:4px solid #fff;display:grid;place-items:center;box-sizing:border-box;transition:transform .1s}
 .shutter::after{content:"";width:56px;height:56px;border-radius:50%;background:#fff}
@@ -566,7 +566,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .hero img{width:100%;height:100%;object-fit:cover}
 /* plant card header: the title starts 16px after the back arrow and runs left-aligned up to the icons */
 #detNavTitle{flex:1;min-width:0;margin:0 12px 0 8px;text-align:left;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.float-nav{position:absolute;left:0;right:0;top:0;padding:50px 16px 10px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);z-index:5;transition:background .2s}
+.float-nav{position:absolute;left:0;right:0;top:0;padding:50px 16px 8px;display:flex;justify-content:space-between;align-items:center;background:rgba(0,0,0,.28);-webkit-backdrop-filter:blur(14px) saturate(160%);backdrop-filter:blur(14px) saturate(160%);z-index:5;transition:background .2s}
 .float-nav.solid{background:color-mix(in srgb,var(--bg) 78%,transparent);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);box-shadow:0 .5px 0 rgba(0,0,0,.12)}
 .phone.dark .float-nav.solid{box-shadow:0 .5px 0 rgba(255,255,255,.1)}
 .circ{width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.45);display:grid;place-items:center;color:#fff;box-shadow:0 0 0 .5px rgba(255,255,255,.18)}
@@ -596,7 +596,7 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .care-head{flex:none;background:var(--bg);box-shadow:0 8px 8px rgba(0,0,0,0);position:relative;z-index:2}
 .care-head::after{content:"";position:absolute;left:0;right:0;bottom:-12px;height:12px;background:linear-gradient(var(--bg),transparent);pointer-events:none}
 
-.scale{display:flex;justify-content:space-between;gap:3px}
+.scale{display:flex;justify-content:space-between;gap:2px}
 .scale span{flex:1;height:24px;border-radius:4px;color:#fff;font-size:13px;display:grid;place-items:center;opacity:.3}
 .scale span.on{opacity:1}
 .track{position:relative;height:30px;border-radius:6px;background:var(--border)}
@@ -624,8 +624,8 @@ table.ft td:first-child{color:var(--text2)}
 #s-settings .scroll{padding:24px 16px 48px!important;gap:32px!important}
 #s-settings .scroll>div{gap:12px!important}
 #s-settings .scroll>div>p.t3{padding-left:4px}
-#s-settings .set-group{border-radius:12px;padding:0 18px}
-#s-settings .set-row{height:60px;gap:14px}
+#s-settings .set-group{border-radius:12px;padding:0 16px}
+#s-settings .set-row{height:60px;gap:12px}
 .set-row .val{color:#78716c;font-size:15px}
 </style>
 
@@ -692,7 +692,7 @@ table.ft td:first-child{color:var(--text2)}
         </ul>
         <p class="fn c-3" style="text-align:center;margin-top:12px">Plant ID and toxicity checks are always free.</p>
         <div style="display:flex;flex-direction:column;gap:12px;width:100%;margin-top:24px" id="plans">
-          <button class="opt" data-plan="annual" aria-checked="true" role="radio"><span class="mark">✓</span><span class="lbl"><b class="hd">Annual</b><br><span class="sh c-3">Full access for just <b>$39.99/year</b></span></span><span class="tag" style="background:#fef08a;color:#854d0e;font-size:13px;height:24px;padding:2px 10px">33% off</span></button>
+          <button class="opt" data-plan="annual" aria-checked="true" role="radio"><span class="mark">✓</span><span class="lbl"><b class="hd">Annual</b><br><span class="sh c-3">Full access for just <b>$39.99/year</b></span></span><span class="tag" style="background:#fef08a;color:#854d0e;font-size:13px;height:24px;padding:2px 8px">33% off</span></button>
           <button class="opt" data-plan="monthly" aria-checked="false" role="radio"><span class="mark">✓</span><span class="lbl"><b class="hd">Monthly</b><br><span class="sh c-3">Full access for just <b>$4.99/month</b></span></span></button>
         </div>
         <p class="sh c-3" style="text-align:center;margin:16px 0"><span id="trialLine">7 days free, then $39.99/year</span><br>Cancel anytime on the App Store</p>
@@ -707,14 +707,14 @@ table.ft td:first-child{color:var(--text2)}
     <!-- 1. Loading -->
     <section class="screen" id="s-loading" data-title="Loading" hidden>
       <div class="sb"></div>
-      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;margin-top:40px;padding-inline:35px">
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;margin-top:40px;padding-inline:32px">
         <p class="lt b" style="color:var(--link)">Pot</p>
         <div style="display:flex;flex-direction:column;gap:8px">
           <p class="t1 b c-2">Identify &amp; Grow Plants</p>
           <p style="font-size:22px;line-height:28px" class="c-3">Care Tips &amp; Home Collection</p>
         </div>
       </div>
-      <img src="assets/cactus-happy.png" alt="Pot, the cactus mascot" style="width:320px;height:320px;margin:84px auto 60px;flex:none">
+      <img src="assets/cactus-happy.png" alt="Pot, the cactus mascot" style="width:320px;height:320px;margin:80px auto 56px;flex:none">
       <div style="display:flex;justify-content:center;margin-top:-4px;color:#15803d"><div class="spin"><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
       <div class="hi"></div>
     </section>
@@ -838,31 +838,31 @@ table.ft td:first-child{color:var(--text2)}
     <section class="screen" id="s-tips" data-title="Snap Tips" hidden>
       <div class="sb inv"></div>
       <div class="nav" style="color:#fff"><span style="width:24px"></span><p class="ttl t3 s" style="letter-spacing:-.45px">Snap Tips</p><button class="ic" style="color:#fff" data-close-tips aria-label="Close"><i class="i" style="--m:url(assets/ic-close.svg)"></i></button></div>
-      <div class="scroll" style="display:flex;flex-direction:column;align-items:center;padding-top:76px;gap:24px">
+      <div class="scroll" style="display:flex;flex-direction:column;align-items:center;padding-top:72px;gap:24px">
         <div style="position:relative;display:flex;flex-direction:column;align-items:center">
           <div class="bubble" style="width:168px;height:168px;border:4px solid #5fd39c;background:#000"><img src="assets/ficus-dark.jpg" alt="Plant centred in frame" style="left:-23px;top:0;width:205px;height:205px"></div>
           <img src="assets/badge-ok.svg" alt="" style="width:40px;height:40px;margin-top:-24px;position:relative">
-          <p class="t2" style="text-align:center;margin-top:11px">One plant at a time,<br>keep in center</p>
+          <p class="t2" style="text-align:center;margin-top:12px">One plant at a time,<br>keep in center</p>
         </div>
         <div style="display:flex;gap:8px;justify-content:center;width:100%">
           <div style="width:128px;display:flex;flex-direction:column;align-items:center">
             <div class="bubble" style="width:92px;height:92px;border:4px solid #ff631b"><img src="assets/ficus-dark.jpg" alt="Too close" style="left:-95px;top:-67px;width:300px;height:300px"></div>
             <img src="assets/badge-x.svg" alt="" style="width:24px;height:24px;margin-top:-12px;position:relative">
-            <p class="bd" style="margin-top:9px">Too close</p>
+            <p class="bd" style="margin-top:8px">Too close</p>
           </div>
           <div style="width:112px;display:flex;flex-direction:column;align-items:center">
             <div class="bubble" style="width:92px;height:92px;border:4px solid #ff3d1b;background:linear-gradient(90deg,#09181d 12%,#000 87%)"><img src="assets/ficus-dark.jpg" alt="Too far" style="left:12px;top:24px;width:68px;height:68px"></div>
             <img src="assets/badge-x.svg" alt="" style="width:24px;height:24px;margin-top:-12px;position:relative">
-            <p class="bd" style="margin-top:9px">Too far</p>
+            <p class="bd" style="margin-top:8px">Too far</p>
           </div>
           <div style="width:144px;display:flex;flex-direction:column;align-items:center">
             <div class="bubble" style="width:92px;height:92px;border:4px solid #ff3d1b;background:#000"><img src="assets/many-plants.jpg" alt="Too many plants" style="left:-4px;top:-26px;width:133px;height:118px;object-fit:cover"></div>
             <img src="assets/badge-x.svg" alt="" style="width:24px;height:24px;margin-top:-12px;position:relative">
-            <p class="bd" style="margin-top:9px;white-space:nowrap">Too many plants</p>
+            <p class="bd" style="margin-top:8px;white-space:nowrap">Too many plants</p>
           </div>
         </div>
       </div>
-      <div style="padding:0 16px 58px"><button class="btn pri r16" data-tips-continue>Continue</button></div>
+      <div style="padding:0 16px 56px"><button class="btn pri r16" data-tips-continue>Continue</button></div>
       <div class="hi w"></div>
     </section>
 
@@ -890,7 +890,7 @@ table.ft td:first-child{color:var(--text2)}
     <section class="screen" id="s-recog" data-title="Recognising" hidden>
       <div class="sb inv"></div>
       <button class="xbtn recog-x" id="recogClose" aria-label="Close"><svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M2 2l10 10M12 2 2 12"/></svg></button>
-      <div style="display:flex;flex-direction:column;align-items:center;gap:32px;padding:64px 51px 0">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:32px;padding:64px 48px 0">
         <div style="display:flex;flex-direction:column;gap:24px;align-items:center;width:100%">
           <div style="width:100%;height:430px;border-radius:24px;overflow:hidden;background:#000"><img id="recogImg" src="assets/ficus-recog.jpg" alt="Captured photo" style="width:100%;height:100%;object-fit:cover"></div>
           <p class="lt b" id="recogTitle" style="text-align:center;text-wrap:balance">Recognizing</p>
@@ -956,8 +956,8 @@ table.ft td:first-child{color:var(--text2)}
             <div id="charBody"></div>
           </div>
           <button class="card" data-toast="Growth timeline isn’t part of this prototype" style="padding:0 16px 16px;display:flex;flex-direction:column;text-align:left">
-            <div style="display:flex;justify-content:space-between;align-items:center;height:40px;padding:12px 0 10px;width:100%;border-bottom:1px solid var(--border)"><span class="hd c-2">Development</span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i></div>
-            <div class="row-li" style="padding:10px 0 12px;border-bottom:1px solid var(--border);width:100%"><span class="surf gr"><img src="assets/ic-sprouts.svg" alt="" style="filter:invert(33%) sepia(84%) saturate(600%) hue-rotate(100deg) brightness(85%)"></span><div><p class="fn c-3">Grows very quickly</p><p class="co s" style="color:var(--link)">Fast Growth Speed</p></div></div>
+            <div style="display:flex;justify-content:space-between;align-items:center;height:40px;padding:12px 0 8px;width:100%;border-bottom:1px solid var(--border)"><span class="hd c-2">Development</span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:var(--icon)"></i></div>
+            <div class="row-li" style="padding:8px 0 12px;border-bottom:1px solid var(--border);width:100%"><span class="surf gr"><img src="assets/ic-sprouts.svg" alt="" style="filter:invert(33%) sepia(84%) saturate(600%) hue-rotate(100deg) brightness(85%)"></span><div><p class="fn c-3">Grows very quickly</p><p class="co s" style="color:var(--link)">Fast Growth Speed</p></div></div>
             <img src="assets/grow-stages.png" alt="Five growth stages from seedling to mature plant" style="width:100%;height:auto;margin-top:0">
             <div class="kv" style="padding:8px 0;width:100%"><p class="sh c-3">Propagation</p><p class="co">Stem cuttings, Leaf cuttings</p></div>
             <div class="kv" style="padding:8px 0;border:0;width:100%"><p class="sh c-3">Cycle</p><p class="co">Perennial</p></div>
@@ -1018,7 +1018,7 @@ table.ft td:first-child{color:var(--text2)}
         </div>
         <div class="pills" id="carePills" role="tablist"></div>
       </div>
-      <div class="scroll" id="careScroll"><div id="careBody" style="display:flex;flex-direction:column;gap:16px;padding:13px 16px 16px"></div></div>
+      <div class="scroll" id="careScroll"><div id="careBody" style="display:flex;flex-direction:column;gap:16px;padding:12px 16px 16px"></div></div>
       <div class="action care-act"><button class="btn pri" data-add>Add Plant to my Garden</button><button class="btn alt in-garden" data-garden hidden>✓ Already in My Garden</button></div>
       <div class="hi"></div>
     </section>
