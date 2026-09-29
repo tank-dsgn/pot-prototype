@@ -1466,6 +1466,12 @@ phone.addEventListener('click', e => {
   if (t.dataset.tab && t.classList.contains('tab')) {
     const to = t.dataset.tab === 'settings' ? 'settings' : gardenId();
     if (to === cur()) return;
+    // from Settings the garden always opens on My Plants
+    if (to !== 'settings') {
+      setSeg($('#gardenSeg'), 0); setSeg($('#s-garden-empty [data-seg]'), 0);
+      $('#emptyPlants').hidden = false; $('#emptyScans').hidden = true;
+      $$('#s-garden .scroll, #s-garden-empty .scroll').forEach(s => s.scrollTop = 0);
+    }
     // My Garden → Settings: Settings slides in from the left; Settings → My Garden: the garden slides in from the right
     return reset(to, to === 'settings' ? 'tabL' : 'tabR');
   }
