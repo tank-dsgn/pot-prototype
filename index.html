@@ -2750,8 +2750,8 @@ function showInstall(kind) {
   $('#installText').innerHTML = kind === 'android'
     ? (ru ? '<b>Установите Pot</b>Открывайте на весь экран, как приложение.' : '<b>Install Pot</b>Use it full-screen like an app.')
     : kind === 'ios'
-      ? (ru ? steps('Установите Pot на iPhone', `Нажмите ${share} ${B('«Поделиться»')}`, `${addHome} ${B('«Добавить на экран „Домой“»')}`)
-            : steps('Install Pot on your iPhone', `Tap ${share} ${B('Share')}`, `${addHome} ${B('Add to Home Screen')}`))
+      ? (ru ? steps('Установите Pot на iPhone', `Нажмите ${share} ${B('«Поделиться»')}`, `Выберите ${addHome} ${B('«На экран „Домой“»')}`)
+            : steps('Install Pot on your iPhone', `Tap ${share} ${B('Share')}`, `Choose ${addHome} ${B('Add to Home Screen')}`))
       : (ru ? steps('Установите Pot', `Нажмите ${B('⋮')} в Chrome`, `Выберите ${B('«Установить приложение»')}`)
             : steps('Install Pot', `Tap ${B('⋮')} in Chrome`, `Choose ${B('Install app')}`));
   $('#installGo').hidden = kind !== 'android';
