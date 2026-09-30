@@ -2343,7 +2343,8 @@ function renderOnb() {
     ? (st.multi ? OPTROW(o[1], (answers[st.id] || []).includes(o[1]), o[0]) : OPTROW(o[1], answers[st.id] === o[1], o[0], undefined, 'radio'))
     : OPTROW(o, answers[st.id] === o)).join('')}</div>`;
   if (st.quote) inner += `<div class="quote"><span class="q">“</span><p>${st.quote[0]}</p><small>${st.quote[1]}</small></div>`;
-  body.innerHTML = inner;
+  // steps with the mascot (the name): picture, question and field as one centred block
+  body.innerHTML = st.mascot ? `<div class="onb-center" style="align-items:stretch;text-align:center">${inner}</div>` : inner;
   const picked = st.groups ? st.groups.some(([g]) => answers[st.id + ':' + g]) : st.multi ? (answers[st.id] || []).length : st.input ? !!answers.name : !!answers[st.id];
   foot.innerHTML = `${st.note && picked ? `<p class="onb-note">${st.note}</p>` : ''}
     <button class="btn pri r16" data-onb="next" ${picked ? '' : 'disabled'}>Next</button>
