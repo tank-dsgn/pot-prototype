@@ -82,6 +82,7 @@ p,h1,h2,h3{margin:0}
 .install .tx li>em{font-style:normal;color:var(--text3)}
 .install .tx .ico{display:flex;justify-content:center;min-width:15px}
 .install .tx .ico .i{margin:0}
+.install .tx .wide{grid-column:span 2} /* no icon: the name takes the icon's column too */
 .install .go{flex:none;height:34px;padding:0 14px;border-radius:99px;background:var(--brand);color:#fff;font-weight:600;font-size:15px}
 /* the close button sits in the corner, level with the title, so the steps get the full width */
 .install .x{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;background:var(--surface2);color:var(--text3);display:grid;place-items:center}
@@ -2329,9 +2330,10 @@ function renderOnb() {
     return;
   }
   if (st.id === 'remind') {
-    body.innerHTML = `<img src="assets/cactus-happy.png" alt="" style="width:200px;height:200px;margin:16px auto 0">
+    // like the name and done steps: picture and text as one block in the middle of the free space
+    body.innerHTML = `<div class="onb-center"><img src="assets/cactus-happy.png" alt="" style="width:200px;height:200px">
       <div style="text-align:center;display:flex;flex-direction:column;gap:8px"><p class="onb-q">Want a nudge on watering day?</p>
-      <p class="bd c-3">One notification in the morning, only when a plant needs water. You can turn it off in Settings.</p></div>`;
+      <p class="bd c-3" style="text-wrap:balance">One notification in the morning, only when a plant needs water. You can turn it off in Settings.</p></div></div>`;
     foot.innerHTML = `<button class="btn pri r16" data-onb="remindyes"><i class="i" style="--m:url(assets/ic-bell.svg);width:22px;height:22px"></i>Yes, remind me</button>
       <button class="skip" data-onb="next">Not Now</button>`;
     return;
@@ -2750,7 +2752,7 @@ function showInstall(kind) {
   const share = '<i class="i" style="--m:url(assets/ic-share.svg)"></i>';
   const addHome = '<i class="i" style="--m:url(assets/ic-add-home.svg);width:15px;height:15px"></i>';
   const steps = (title, ...rows) => `<b>${title}</b><ol>${rows.map(([verb, icon, name], i) =>
-    `<li><em>${i + 1}.</em><span>${verb}</span><span class="ico">${icon}</span><span>${name}</span></li>`).join('')}</ol>`;
+    `<li><em>${i + 1}.</em><span>${verb}</span>${icon ? `<span class="ico">${icon}</span><span>${name}</span>` : `<span class="wide">${name}</span>`}</li>`).join('')}</ol>`;
   $('#installText').innerHTML = kind === 'android'
     ? (ru ? '<b>Установите Pot</b>Открывайте на весь экран, как приложение.' : '<b>Install Pot</b>Use it full-screen like an app.')
     : kind === 'ios'
