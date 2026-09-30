@@ -122,7 +122,8 @@ self.addEventListener('fetch', e => {
     e.respondWith(fetch(e.request).then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put('/', copy)); return r; }).catch(() => caches.match('/')));
     return;
   }
-  e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request)));
+  // assets: cache first; a changed image gets a new ?v= address, and offline that address falls back to the cached file
+  e.respondWith(caches.match(e.request).then(hit => hit || fetch(e.request).catch(() => caches.match(e.request, { ignoreSearch: true }))));
 });
 // reminders: show the push, and open the plant it is about
 self.addEventListener('push', e => {
