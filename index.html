@@ -1527,34 +1527,50 @@ const TOAST_ICONS = [
   [/flash/i, 'ic-flash.svg', '#fde047'],
   [/photo/i, 'ic-camera.svg', '#d6d3d1'],
 ];
-// banners that drop in from the top (toast, install hint) can be flicked back up with a finger
-function swipeAway(el, gone) {
-  let y0 = null, t0 = 0, dy = 0, k = 1;
-  el.style.touchAction = 'none';
+// banners that drop in from the top (toast, install hint) can be flicked back up with a finger, iOS-style:
+// the banner sticks to the finger, leaves at the speed it was thrown, and rubber-bands when pulled down
+function swipeAway(el, gone, hold) {
+  let y0 = null, base = 0, pos = 0, k = 1, pts = [], raf = 0;
+  el.style.touchAction = 'none'; el.style.willChange = 'transform';
+  const paint = () => { raf = 0; el.style.transform = `translate3d(0,${pos}px,0)`; };
+  const rubber = d => 40 * (1 - 1 / (d / 120 + 1)); // pulling down: gives a little, never more than 40px
   el.addEventListener('pointerdown', e => {
     if (e.button) return;
-    y0 = e.clientY; t0 = e.timeStamp; dy = 0;
     k = el.getBoundingClientRect().height / el.offsetHeight || 1; // the phone canvas is scaled
+    // pick the banner up where it is, even halfway through its drop-in
+    base = new DOMMatrix(getComputedStyle(el).transform).m42;
     el.style.animation = 'none'; el.style.transition = 'none';
+    pos = base; paint();
+    y0 = e.clientY; pts = [{ y: 0, t: e.timeStamp }];
+    hold?.(true);
   });
   el.addEventListener('pointermove', e => {
     if (y0 === null) return;
-    dy = (e.clientY - y0) / k;
-    if (Math.abs(dy) > 4 && !el.hasPointerCapture(e.pointerId)) el.setPointerCapture(e.pointerId);
-    // up follows the finger; down only stretches a little
-    el.style.transform = `translateY(${dy < 0 ? dy : Math.sqrt(dy) * 2}px)`;
+    const d = (e.clientY - y0) / k;
+    if (Math.abs(d) > 4 && !el.hasPointerCapture(e.pointerId)) el.setPointerCapture(e.pointerId);
+    pts.push({ y: d, t: e.timeStamp }); if (pts.length > 6) pts.shift();
+    const p = base + d;
+    pos = p < 0 ? p : rubber(p);
+    if (!raf) raf = requestAnimationFrame(paint);
   });
   const end = e => {
     if (y0 === null) return;
-    y0 = null;
-    const fast = dy < -8 && dy / Math.max(1, e.timeStamp - t0) < -.4;
-    if (dy < -24 || fast) {
-      el.style.transition = 'transform .25s cubic-bezier(.4,0,1,1),opacity .25s';
-      el.style.transform = 'translateY(calc(-100% - var(--tt, 58px)))'; el.style.opacity = '0';
-      setTimeout(gone, 250);
+    y0 = null; cancelAnimationFrame(raf); raf = 0; paint();
+    // release speed from the last ~100ms of movement, px per ms (negative = up)
+    const last = pts[pts.length - 1], first = pts.find(q => last.t - q.t <= 100) || pts[0];
+    const v = last.t > first.t ? (last.y - first.y) / (last.t - first.t) : 0;
+    if (pos < -24 || v < -.3) {
+      const tt = parseFloat(getComputedStyle(el).top) || 58, dist = el.offsetHeight + tt + 16 + pos;
+      // the curve starts at 2.5× its average speed: pick a duration so that start matches the finger
+      const dur = Math.round(Math.min(360, Math.max(160, v < -.05 ? 2.5 * dist / -v : 300)));
+      el.style.transition = `transform ${dur}ms cubic-bezier(.2,.5,.3,1)`;
+      pos = -(el.offsetHeight + tt + 16); paint();
+      setTimeout(gone, dur);
     } else {
-      el.style.transition = 'transform .2s cubic-bezier(.2,.9,.3,1.2)'; el.style.transform = '';
-      setTimeout(() => { if (y0 === null) el.style.transition = ''; }, 200);
+      el.style.transition = 'transform .35s cubic-bezier(.25,1,.5,1)';
+      pos = 0; paint();
+      setTimeout(() => { if (y0 === null) { el.style.transition = ''; el.style.transform = ''; } }, 350);
+      hold?.(false);
     }
   };
   el.addEventListener('pointerup', end);
@@ -1572,9 +1588,10 @@ function toast(msg) {
   const sb = $('.screen:not([hidden]) .sb', phone);
   el.style.setProperty('--tt', (sb ? sb.offsetHeight : 50) + 8 + 'px');
   phone.append(el); clearTimeout(toastT);
-  swipeAway(el, () => { if (el.isConnected) { clearTimeout(toastT); el.remove(); } });
-  // long enough to read: 3.5 s, a little more for longer lines
-  toastT = setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, msg.length > 50 ? 5000 : 3500);
+  // long enough to read: 3.5 s, a little more for longer lines; held while a finger is on it
+  const autoHide = ms => { clearTimeout(toastT); toastT = setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, ms); };
+  swipeAway(el, () => { clearTimeout(toastT); el.remove(); }, held => held ? clearTimeout(toastT) : autoHide(2500));
+  autoHide(msg.length > 50 ? 5000 : 3500);
 }
 function iosAlert(title, text, actions, opts = {}) {
   const wrap = document.createElement('div');
@@ -2780,7 +2797,7 @@ function sampleHero() {
 $('#installX').onclick = () => hideInstall(true);
 swipeAway($('#installHint'), () => {
   const h = $('#installHint');
-  h.hidden = true; h.style.transform = h.style.opacity = h.style.transition = h.style.animation = '';
+  h.hidden = true; h.style.transform = h.style.transition = h.style.animation = '';
   hideInstall(true);
 });
 $('#installGo').onclick = async () => {
