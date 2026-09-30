@@ -78,7 +78,8 @@ p,h1,h2,h3{margin:0}
 .install .tx b{display:block;font-size:16px;line-height:21px}
 .install .tx .i{width:15px;height:17px;vertical-align:-3px;color:var(--link);margin:0 1px}
 .install .tx ol{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:4px}
-.install .tx li{display:block}
+.install .tx li{display:flex;gap:4px}
+.install .tx li>em{flex:none;min-width:16px;font-style:normal;color:var(--text3)}
 .install .go{flex:none;height:34px;padding:0 14px;border-radius:99px;background:var(--brand);color:#fff;font-weight:600;font-size:15px}
 .install .x{flex:none;width:28px;height:28px;border-radius:50%;background:var(--surface2);color:var(--text3);display:grid;place-items:center}
 @keyframes rise{from{transform:translateY(24px);opacity:0}}
@@ -2742,15 +2743,15 @@ function showInstall(kind) {
   if (!forceHint && hintBlocked()) return;
   const B = t => `<b style="display:inline;font-size:15px">${t}</b>`, ru = lang === 'ru';
   // written whole in each language: the hint mixes bold words into sentences, which word-by-word translation can't handle
-  // two steps, one action per line
+  // two numbered steps; a long step wraps under its own text, not under the number
   const share = '<i class="i" style="--m:url(assets/ic-share.svg)"></i>';
   const addHome = '<i class="i" style="--m:url(assets/ic-add-home.svg);width:15px;height:15px;vertical-align:-2px"></i>';
-  const steps = (title, a, b) => `<b>${title}</b><ol><li>${a}</li><li>${b}</li></ol>`;
+  const steps = (title, a, b) => `<b>${title}</b><ol><li><em>1.</em><span>${a}</span></li><li><em>2.</em><span>${b}</span></li></ol>`;
   $('#installText').innerHTML = kind === 'android'
     ? (ru ? '<b>Установите Pot</b>Открывайте на весь экран, как приложение.' : '<b>Install Pot</b>Use it full-screen like an app.')
     : kind === 'ios'
-      ? (ru ? steps('Установите Pot на iPhone', `Нажмите ${share} ${B('«Поделиться»')}`, `${addHome} ${B('«Добавить на экран „Домой“»')}`)
-            : steps('Install Pot on your iPhone', `Tap ${share} ${B('Share')}`, `${addHome} ${B('Add to Home Screen')}`))
+      ? (ru ? steps('Установите Pot на iPhone', `Нажмите ${share} ${B('«Поделиться»')}`, `Выберите <span style="white-space:nowrap">${addHome} ${B('«Добавить на экран „Домой“»')}</span>`)
+            : steps('Install Pot on your iPhone', `Tap ${share} ${B('Share')}`, `Choose ${addHome} ${B('Add to Home Screen')}`))
       : (ru ? steps('Установите Pot', `Нажмите ${B('⋮')} в Chrome`, `Выберите ${B('«Установить приложение»')}`)
             : steps('Install Pot', `Tap ${B('⋮')} in Chrome`, `Choose ${B('Install app')}`));
   $('#installGo').hidden = kind !== 'android';
