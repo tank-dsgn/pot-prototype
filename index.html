@@ -1527,6 +1527,39 @@ const TOAST_ICONS = [
   [/flash/i, 'ic-flash.svg', '#fde047'],
   [/photo/i, 'ic-camera.svg', '#d6d3d1'],
 ];
+// banners that drop in from the top (toast, install hint) can be flicked back up with a finger
+function swipeAway(el, gone) {
+  let y0 = null, t0 = 0, dy = 0, k = 1;
+  el.style.touchAction = 'none';
+  el.addEventListener('pointerdown', e => {
+    if (e.button) return;
+    y0 = e.clientY; t0 = e.timeStamp; dy = 0;
+    k = el.getBoundingClientRect().height / el.offsetHeight || 1; // the phone canvas is scaled
+    el.style.animation = 'none'; el.style.transition = 'none';
+  });
+  el.addEventListener('pointermove', e => {
+    if (y0 === null) return;
+    dy = (e.clientY - y0) / k;
+    if (Math.abs(dy) > 4 && !el.hasPointerCapture(e.pointerId)) el.setPointerCapture(e.pointerId);
+    // up follows the finger; down only stretches a little
+    el.style.transform = `translateY(${dy < 0 ? dy : Math.sqrt(dy) * 2}px)`;
+  });
+  const end = e => {
+    if (y0 === null) return;
+    y0 = null;
+    const fast = dy < -8 && dy / Math.max(1, e.timeStamp - t0) < -.4;
+    if (dy < -24 || fast) {
+      el.style.transition = 'transform .25s cubic-bezier(.4,0,1,1),opacity .25s';
+      el.style.transform = 'translateY(calc(-100% - var(--tt, 58px)))'; el.style.opacity = '0';
+      setTimeout(gone, 250);
+    } else {
+      el.style.transition = 'transform .2s cubic-bezier(.2,.9,.3,1.2)'; el.style.transform = '';
+      setTimeout(() => { if (y0 === null) el.style.transition = ''; }, 200);
+    }
+  };
+  el.addEventListener('pointerup', end);
+  el.addEventListener('pointercancel', end);
+}
 function toast(msg) {
   $('.toast', phone)?.remove();
   msg = String(msg).replace(/^✓\s*/, '');
@@ -1539,6 +1572,7 @@ function toast(msg) {
   const sb = $('.screen:not([hidden]) .sb', phone);
   el.style.setProperty('--tt', (sb ? sb.offsetHeight : 50) + 8 + 'px');
   phone.append(el); clearTimeout(toastT);
+  swipeAway(el, () => { if (el.isConnected) { clearTimeout(toastT); el.remove(); } });
   // long enough to read: 3.5 s, a little more for longer lines
   toastT = setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, msg.length > 50 ? 5000 : 3500);
 }
@@ -2691,7 +2725,7 @@ function showInstall(kind) {
   hintTimer = setTimeout(() => {
     const h = $('#installHint'), sb = $('.screen:not([hidden]) .sb', phone);
     h.style.setProperty('--tt', (sb ? sb.offsetHeight : 50) + 8 + 'px');
-    h.classList.remove('out'); h.hidden = false; phone.classList.add('hint-open');
+    h.classList.remove('out'); h.style.animation = h.style.transform = h.style.opacity = ''; h.hidden = false; phone.classList.add('hint-open');
   }, 300); // right away, over the loading screen
 }
 // dismissing hides it for this visit only, so a later visit (e.g. from the QR code) shows it again
@@ -2744,6 +2778,11 @@ function sampleHero() {
 }
 
 $('#installX').onclick = () => hideInstall(true);
+swipeAway($('#installHint'), () => {
+  const h = $('#installHint');
+  h.hidden = true; h.style.transform = h.style.opacity = h.style.transition = h.style.animation = '';
+  hideInstall(true);
+});
 $('#installGo').onclick = async () => {
   if (!installEvent) return hideInstall(true);
   installEvent.prompt();
