@@ -72,7 +72,8 @@ p,h1,h2,h3{margin:0}
 .install{position:absolute;left:16px;right:16px;top:var(--tt, 58px);z-index:45;display:flex;gap:12px;align-items:center;padding:12px;border-radius:16px;background:var(--surface);color:var(--text);box-shadow:0 8px 28px rgba(0,0,0,.22),0 0 0 .5px rgba(0,0,0,.06);animation:dropIn .4s cubic-bezier(.2,.9,.3,1.1)}
 .install.out{transform:translateY(calc(-100% - var(--tt, 58px)));opacity:0;transition:transform .3s cubic-bezier(.4,0,1,1),opacity .3s}
 @keyframes dropIn{from{transform:translateY(calc(-100% - var(--tt, 58px)))}}
-.install .app{flex:none;width:72px;height:72px;border-radius:16px;overflow:hidden}
+.install .app{flex:none;width:72px;height:72px;border-radius:16px;overflow:hidden;position:relative}
+.install .app::after{content:"";position:absolute;inset:0;border-radius:inherit;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.12)} /* the light icon keeps its edge on the white card */
 .install .app img{display:block;width:72px;height:72px}
 .install .tx{flex:1;min-width:0;font-size:15px;line-height:20px}
 .install .tx b{display:block;font-size:16px;line-height:21px}
@@ -683,7 +684,7 @@ table.ft td:first-child{color:var(--text2)}
   <div class="frame" id="frame">
   <div class="phone" id="phone">
     <div class="install" id="installHint" hidden role="dialog" aria-label="Install Pot">
-      <span class="app"><img src="assets/app-icon.png?v=3" alt=""></span>
+      <span class="app"><img src="assets/app-icon.png?v=4" alt=""></span>
       <div class="tx" id="installText"></div>
       <button class="go" id="installGo" hidden>Install</button>
       <button class="x" id="installX" aria-label="Dismiss"><svg width="10" height="10" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M2 2l10 10M12 2 2 12"/></svg></button>
@@ -1167,7 +1168,7 @@ table.ft td:first-child{color:var(--text2)}
       <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button><p class="ttl hd">App Info</p><span style="width:24px"></span></div>
       <div class="scroll" style="padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px">
         <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
-          <img src="assets/app-icon.png?v=3" alt="Pot app icon" style="width:134px;height:134px;border-radius:30px;box-shadow:0 4px 14px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.06)">
+          <img src="assets/app-icon.png?v=4" alt="Pot app icon" style="width:134px;height:134px;border-radius:30px;box-shadow:0 4px 14px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.06)">
           <div style="text-align:center"><p class="lt">POT</p><p class="sh c-2">Version 1.0.0</p></div>
         </div>
         <div class="card" style="width:100%;box-sizing:border-box;padding:16px;display:flex;flex-direction:column;gap:24px">
@@ -1189,7 +1190,7 @@ table.ft td:first-child{color:var(--text2)}
       <div class="nav"><button class="bd" style="color:#007aff" data-back>Cancel</button><p class="ttl hd">Write a Review</p><button class="bd s" id="reviewSubmit" style="color:#a8a29e">Submit</button></div>
       <div class="scroll" style="padding:16px">
         <div style="display:flex;gap:16px;align-items:center;padding-bottom:16px">
-          <img src="assets/app-icon.png?v=3" alt="" style="width:64px;height:64px;border-radius:14px">
+          <img src="assets/app-icon.png?v=4" alt="" style="width:64px;height:64px;border-radius:14px">
           <div><p class="t3 s">Pot: Plant Identifier</p><p class="sh c-3">Plant Care &amp; Identification</p></div>
         </div>
         <div class="divider"></div>
@@ -2513,7 +2514,7 @@ $('#subscribe').onclick = () => {
   wrap.innerHTML = `<div class="card-s" style="background:rgba(28,25,23,.96);color:#fff;padding:16px;margin-bottom:34px">
       <p class="t3 s" style="margin-bottom:12px">App Store</p>
       <div style="background:rgba(255,255,255,.08);border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:12px">
-        <div style="display:flex;gap:12px;align-items:center"><img src="assets/app-icon.png?v=3" alt="" style="width:48px;height:48px;border-radius:10px"><div><p class="co s">${plan === 'annual' ? 'Yearly' : 'Monthly'} premium subscription</p><p class="fn" style="opacity:.6">Plant Care &amp; Identification</p></div></div>
+        <div style="display:flex;gap:12px;align-items:center"><img src="assets/app-icon.png?v=4" alt="" style="width:48px;height:48px;border-radius:10px"><div><p class="co s">${plan === 'annual' ? 'Yearly' : 'Monthly'} premium subscription</p><p class="fn" style="opacity:.6">Plant Care &amp; Identification</p></div></div>
         <div class="divider" style="background:rgba(255,255,255,.12)"></div>
         <div><p class="co s">1-week free trial</p><p class="fn" style="opacity:.6">Starting today</p></div>
         <div><p class="co s">${price}</p><p class="fn" style="opacity:.6">After the trial</p></div>
@@ -2632,7 +2633,7 @@ function renderAvatar() {
 }
 $('#rateBtn').onclick = () => {
   const stars = '<div class="row" id="rateStars">' + [1,2,3,4,5].map(n => `<button data-n="${n}" aria-label="${n} stars">☆</button>`).join('') + '</div>';
-  const box = iosAlert('Enjoying Pot?', 'Tap a star to rate it on the App Store.', [{ label: 'Not Now' }], { icon: 'assets/app-icon.png?v=3', extra: stars });
+  const box = iosAlert('Enjoying Pot?', 'Tap a star to rate it on the App Store.', [{ label: 'Not Now' }], { icon: 'assets/app-icon.png?v=4', extra: stars });
   $('#rateStars', box).addEventListener('click', e => {
     const b = e.target.closest('button'); if (!b) return;
     box.remove(); openReview(+b.dataset.n);
