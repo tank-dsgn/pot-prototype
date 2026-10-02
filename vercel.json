@@ -20,6 +20,9 @@
     },
     "api/health.js": {
       "maxDuration": 15
+    },
+    "api/install.js": {
+      "maxDuration": 15
     }
   },
   "headers": [
