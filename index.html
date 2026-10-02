@@ -2743,6 +2743,13 @@ const standalone = matchMedia('(display-mode: standalone)').matches || navigator
 const framed = window.self !== window.top; // e.g. the claude.ai artifact viewer: installing would add that page, not Pot
 const isAndroid = /Android/i.test(navigator.userAgent);
 const isIOS = !isAndroid && (/iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+// one anonymous mark per installed copy, so installs can be counted: a random id, the kind of phone, the language
+if (standalone && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && store.get('installPing') !== '1') {
+  const id = store.get('installId') || [...crypto.getRandomValues(new Uint8Array(16))].map(b => b.toString(16).padStart(2, '0')).join('');
+  store.set('installId', id);
+  fetch('/api/install', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, os: isIOS ? 'ios' : isAndroid ? 'android' : 'other', lang }) })
+    .then(r => { if (r.ok) store.set('installPing', '1'); }).catch(() => {});
+}
 const forceHint = new URLSearchParams(location.search).get('hint'); // ?hint=ios or ?hint=android for testing
 let installEvent = null, hintTimer;
 function showInstall(kind) {
