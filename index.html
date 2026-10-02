@@ -1168,7 +1168,7 @@ table.ft td:first-child{color:var(--text2)}
       <div class="nav"><button class="ic" data-back aria-label="Back"><i class="i" style="--m:url(assets/ic-chevron-left.svg);width:8px;height:14px"></i></button><p class="ttl hd">App Info</p><span style="width:24px"></span></div>
       <div class="scroll" style="padding:16px;display:flex;flex-direction:column;align-items:center;gap:16px">
         <div style="display:flex;flex-direction:column;align-items:center;gap:12px">
-          <img src="assets/app-icon.png?v=4" alt="Pot app icon" style="width:134px;height:134px;border-radius:30px;box-shadow:0 4px 14px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.06)">
+          <img id="aboutIcon" src="assets/app-icon.png?v=4" alt="Pot app icon" draggable="false" style="-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;width:134px;height:134px;border-radius:30px;box-shadow:0 4px 14px rgba(0,0,0,.12),0 0 0 .5px rgba(0,0,0,.06)">
           <div style="text-align:center"><p class="lt">POT</p><p class="sh c-2">Version 1.0.0</p></div>
         </div>
         <div class="card" style="width:100%;box-sizing:border-box;padding:16px;display:flex;flex-direction:column;gap:24px">
@@ -2743,12 +2743,26 @@ const standalone = matchMedia('(display-mode: standalone)').matches || navigator
 const framed = window.self !== window.top; // e.g. the claude.ai artifact viewer: installing would add that page, not Pot
 const isAndroid = /Android/i.test(navigator.userAgent);
 const isIOS = !isAndroid && (/iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
-// one anonymous mark per installed copy, so installs can be counted: a random id, the kind of phone, the language
-if (standalone && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && store.get('installPing') !== '1') {
-  const id = store.get('installId') || [...crypto.getRandomValues(new Uint8Array(16))].map(b => b.toString(16).padStart(2, '0')).join('');
-  store.set('installId', id);
-  fetch('/api/install', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id, os: isIOS ? 'ios' : isAndroid ? 'android' : 'other', lang }) })
-    .then(r => { if (r.ok) store.set('installPing', '1'); }).catch(() => {});
+// one anonymous mark per installed copy, so installs can be counted: a random id, the kind of phone, the language.
+// The owner's own phone is left out: a long press on the icon in App Info switches the mark off for this device.
+const installId = () => { const id = store.get('installId') || [...crypto.getRandomValues(new Uint8Array(16))].map(b => b.toString(16).padStart(2, '0')).join(''); store.set('installId', id); return id; };
+const installPost = body => fetch('/api/install', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: installId(), ...body }) });
+function installMark() {
+  if (!standalone || /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || store.get('owner') === '1' || store.get('installPing') === '1') return;
+  installPost({ os: isIOS ? 'ios' : isAndroid ? 'android' : 'other', lang }).then(r => { if (r.ok) store.set('installPing', '1'); }).catch(() => {});
+}
+installMark();
+{
+  const icon = $('#aboutIcon'); let t;
+  const stop = () => clearTimeout(t);
+  icon.addEventListener('contextmenu', e => e.preventDefault());
+  icon.addEventListener('pointerdown', () => { stop(); t = setTimeout(() => {
+    const on = store.get('owner') !== '1';
+    store.set('owner', on ? '1' : ''); store.set('installPing', '');
+    if (on) installPost({ off: true }).catch(() => {}); else installMark();
+    toast(on ? L('This device is no longer counted as an install', 'Это устройство больше не считается в установках') : L('This device is counted as an install again', 'Это устройство снова считается в установках'));
+  }, 900); });
+  ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => icon.addEventListener(ev, stop));
 }
 const forceHint = new URLSearchParams(location.search).get('hint'); // ?hint=ios or ?hint=android for testing
 let installEvent = null, hintTimer;
