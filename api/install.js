@@ -1,7 +1,7 @@
 // POST /api/install — one anonymous mark per installed copy of the app: a random id made on the device,
 // the kind of phone and the language. No names, no IP, no user agent are kept.
 // GET /api/install?k=… — the owner's summary page (the key is the STATS_KEY env var).
-import { put, list } from '@vercel/blob';
+import { put, list, del } from '@vercel/blob';
 import { guard } from './_guard.js';
 import { json } from './_reminders.js';
 
@@ -28,6 +28,13 @@ export async function POST(request) {
 export async function GET(request) {
   const key = process.env.STATS_KEY;
   if (!key || new URL(request.url).searchParams.get('k') !== key) return new Response('Not found', { status: 404 });
+  // the owner can drop a mark (a test one, say): ?k=…&del=<id>
+  const drop = new URL(request.url).searchParams.get('del');
+  if (drop && /^[a-f0-9]{16,40}$/.test(drop)) {
+    const found = await list({ prefix: `${PREFIX}${drop}__`, limit: 10 });
+    await Promise.all(found.blobs.map((b) => del(b.url)));
+    return json({ ok: true, removed: found.blobs.length });
+  }
   const rows = [];
   let cursor;
   do {
