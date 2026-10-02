@@ -1255,6 +1255,25 @@ const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const phone = $('#phone');
 const store = { get(k){ try { return localStorage.getItem('pot:'+k); } catch { return null; } }, set(k,v){ try { localStorage.setItem('pot:'+k, v); } catch {} } };
 
+/* ---------- analytics (Yandex Metrika) ---------- */
+// One page, many screens: every screen goes out as its own page view, key actions as goals.
+// Off on localhost and on the owner's phone (the long press in App Info that also hides it from the install count).
+// No session recording: people type their name and write to Dr Pot here.
+const METRIKA = 0; // counter id; 0 = not connected
+const tracked = () => !!METRIKA && !/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && store.get('owner') !== '1';
+if (tracked()) {
+  (function (m, e, t, r, i, k, a) { m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments); }; m[i].l = 1 * new Date(); k = e.createElement(t); a = e.getElementsByTagName(t)[0]; k.async = 1; k.src = r; a.parentNode.insertBefore(k, a); })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
+  ym(METRIKA, 'init', { defer: true, clickmap: false, trackLinks: true, accurateTrackBounce: true, webvisor: false });
+  ym(METRIKA, 'params', { app: matchMedia('(display-mode: standalone)').matches || navigator.standalone === true ? 'installed' : 'browser', lang: store.get('lang') === 'en' ? 'en' : 'ru' });
+}
+let lastHit = '';
+function trackScreen(id) {
+  if (!tracked() || !window.ym || id === lastHit) return;
+  ym(METRIKA, 'hit', location.origin + '/' + id, { title: 'Pot — ' + (document.getElementById('s-' + id)?.dataset.title || id), referer: lastHit ? location.origin + '/' + lastHit : document.referrer });
+  lastHit = id;
+}
+const goal = name => { if (tracked() && window.ym) ym(METRIKA, 'reachGoal', name); };
+
 /* ---------- language: English is the source, Russian is layered on top ----------
    Every text node and label inside the phone is looked up in RU (exact strings), then in RU_RX
    (strings with plant names and numbers). The original English is remembered, so switching
@@ -1433,6 +1452,7 @@ function show(id, dir) {
   if (id !== 'recog') { recogT.forEach(clearTimeout); recogRun++; }
   if (id !== 'camera') stopCamera();
   paintTop(id);
+  trackScreen(id);
   // finish any transition still running, so exactly one screen is on stage
   clearTimeout(settleT);
   anims.forEach(a => a.cancel()); anims = [];
@@ -1784,6 +1804,7 @@ async function realRecognition(photo) {
   if (!res?.ok || data?.error) return recogUI('failed', 'What plant is this?', data?.message || 'Something went wrong. Try again.');
   if (!data.is_plant) return recogUI('failed', 'What plant is this?', 'Make sure a plant fills the frame and try again.');
   const id = saveScan(data, photo.keep);
+  goal('scan');
   recogUI('done', `It’s a ${PLANTS[id].name}!`, data.confidence === 'low' ? 'Best guess — the photo was hard to read.' : '');
   recogT = [setTimeout(() => { if (cur() !== 'recog') return; openPlant(id, true, { replace: true, dir: 'fade' }); firstScanPaywall(); }, data.confidence === 'low' ? 1800 : 1100)];
 }
@@ -2529,7 +2550,7 @@ $('#subscribe').onclick = () => {
   setTimeout(() => {
     if (!wrap.isConnected) return;
     wrap.remove();
-    store.set('premium', JSON.stringify({ plan, since: Date.now() }));
+    store.set('premium', JSON.stringify({ plan, since: Date.now() })); goal('premium');
     renderPremium();
     if (paywallFrom !== 'onb') { const then = paywallThen; paywallThen = null; back(); setTimeout(() => { toast('Premium is active'); refreshViews(); if (cur() === 'ai') renderChat(); if (then) then(); }, 350); }
     else { reset('signin', 'fwd'); toast('Free trial started'); }
@@ -2749,7 +2770,7 @@ const installId = () => { const id = store.get('installId') || [...crypto.getRan
 const installPost = body => fetch('/api/install', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ id: installId(), ...body }) });
 function installMark() {
   if (!standalone || /^(localhost|127\.0\.0\.1)$/.test(location.hostname) || store.get('owner') === '1' || store.get('installPing') === '1') return;
-  installPost({ os: isIOS ? 'ios' : isAndroid ? 'android' : 'other', lang }).then(r => { if (r.ok) store.set('installPing', '1'); }).catch(() => {});
+  installPost({ os: isIOS ? 'ios' : isAndroid ? 'android' : 'other', lang }).then(r => { if (r.ok) { store.set('installPing', '1'); goal('install'); } }).catch(() => {});
 }
 installMark();
 {
@@ -2970,6 +2991,7 @@ async function askAi(text) {
   if (aiBusy) return;
   if (!canChat()) return openPaywall('gate', () => { $('#aiInput').value = text; askAi(text); });
   const photo = aiPhoto;
+  goal(photo ? 'doctor_photo' : 'doctor');
   chat().push({ role: 'user', text, img: photo?.keep });
   aiPhoto = null; $('#aiPhotoWrap').innerHTML = '';
   $('#aiInput').value = ''; $('#aiInput').style.height = ''; $('#aiSend').disabled = true;
