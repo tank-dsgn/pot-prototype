@@ -15,6 +15,12 @@ export async function POST(request) {
   try { body = await request.json(); } catch { return json({ error: 'bad_request' }, 400); }
   const id = String(body.id || '');
   if (!/^[a-f0-9]{16,40}$/.test(id)) return json({ error: 'bad_request' }, 400);
+  // the owner's own phone asks not to be counted: drop its mark
+  if (body.off) {
+    const found = await list({ prefix: `${PREFIX}${id}__`, limit: 10 });
+    await Promise.all(found.blobs.map((b) => del(b.url)));
+    return json({ ok: true, off: true });
+  }
   const os = ['ios', 'android'].includes(body.os) ? body.os : 'other';
   const lang = body.lang === 'ru' ? 'ru' : 'en';
   // everything the summary needs is in the path and the upload date, so counting never opens a record;
@@ -33,7 +39,7 @@ export async function GET(request) {
   if (drop && /^[a-f0-9]{16,40}$/.test(drop)) {
     const found = await list({ prefix: `${PREFIX}${drop}__`, limit: 10 });
     await Promise.all(found.blobs.map((b) => del(b.url)));
-    return json({ ok: true, removed: found.blobs.length });
+    return new Response(null, { status: 302, headers: { location: `/api/install?k=${key}` } });
   }
   const rows = [];
   let cursor;
@@ -42,7 +48,7 @@ export async function GET(request) {
     cursor = page.hasMore ? page.cursor : undefined;
     for (const b of page.blobs) {
       const m = b.pathname.match(/__(ios|android|other)_(ru|en)\.json$/);
-      if (m) rows.push({ os: m[1], lang: m[2], at: new Date(b.uploadedAt) });
+      if (m) rows.push({ id: b.pathname.slice(PREFIX.length).split('__')[0], os: m[1], lang: m[2], at: new Date(b.uploadedAt) });
     }
   } while (cursor);
   rows.sort((a, b) => b.at - a.at);
@@ -58,12 +64,13 @@ main{max-width:480px;margin:0 auto}h1{font-size:28px;line-height:34px;margin:0 0
 .big{font-size:56px;line-height:64px;font-weight:700;color:#15803d;margin:24px 0 0}
 table{width:100%;border-collapse:collapse;margin-top:24px;background:#fff;border-radius:12px;overflow:hidden}
 td,th{text-align:left;padding:12px 16px;border-bottom:1px solid #f1efec;font-weight:400}th{color:#78716c;font-size:15px}td:last-child,th:last-child{text-align:right}
-h2{font-size:20px;line-height:25px;margin:32px 0 0}
+h2{font-size:20px;line-height:25px;margin:32px 0 0}a{color:#15803d}
 @media (prefers-color-scheme:dark){body{background:#0c0a09;color:#fff}table{background:#1c1917}td,th{border-color:#0c0a09}p,th{color:#d6d3d1}.big{color:#22c55e}}</style>
 <main><h1>Установки Pot</h1><p>Копии приложения, запущенные с экрана «Домой». Без имён: каждая отметка — одно устройство.</p>
 <div class="big">${rows.length}</div><p>всего · iPhone ${count((r) => r.os === 'ios')} · Android ${count((r) => r.os === 'android')} · другое ${count((r) => r.os === 'other')} · на русском ${count((r) => r.lang === 'ru')} · на английском ${count((r) => r.lang === 'en')}</p>
 <h2>По дням</h2><table><tr><th>День</th><th>Установок</th></tr>${Object.entries(days).map(([d, n]) => `<tr><td>${d.split('-').reverse().join('.')}</td><td>${n}</td></tr>`).join('') || '<tr><td>Пока нет</td><td>0</td></tr>'}</table>
-<h2>Последние</h2><table><tr><th>Когда (Минск)</th><th>Телефон · язык</th></tr>${rows.slice(0, 30).map((r) => `<tr><td>${fmt(r.at)}</td><td>${OS[r.os]} · ${r.lang}</td></tr>`).join('') || '<tr><td>Пока нет</td><td></td></tr>'}</table>
-<p style="margin-top:24px;font-size:15px">Переустановка считается новой установкой: при удалении с экрана «Домой» телефон стирает данные приложения.</p></main></html>`;
+<h2>Последние</h2><table><tr><th>Когда (Минск)</th><th>Телефон · язык</th><th></th></tr>${rows.slice(0, 30).map((r) => `<tr><td>${fmt(r.at)}</td><td style="text-align:left">${OS[r.os]} · ${r.lang}</td><td><a href="?k=${key}&del=${r.id}" onclick="return confirm('Удалить эту отметку?')">удалить</a></td></tr>`).join('') || '<tr><td>Пока нет</td><td></td><td></td></tr>'}</table>
+<p style="margin-top:24px;font-size:15px">Переустановка считается новой установкой: при удалении с экрана «Домой» телефон стирает данные приложения.</p>
+<p style="margin-top:12px;font-size:15px">Чтобы свой телефон не считался: в приложении Настройки → О приложении → долго нажать на иконку. После переустановки — повторить.</p></main></html>`;
   return new Response(html, { headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store' } });
 }
