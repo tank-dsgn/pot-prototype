@@ -21,3 +21,10 @@ export function keyRejected(err) {
   console.error('AI KEY REJECTED by Anthropic:', err.status, err.message);
   return true;
 }
+
+// one log line per model call: which feature, which model answered, how many tokens — no text, no images
+export function logUsage(kind, response) {
+  const u = response?.usage;
+  if (!u) return;
+  console.log('ai usage', JSON.stringify({ kind, model: response.model, in: u.input_tokens, out: u.output_tokens, cacheRead: u.cache_read_input_tokens || 0, cacheWrite: u.cache_creation_input_tokens || 0 }));
+}
