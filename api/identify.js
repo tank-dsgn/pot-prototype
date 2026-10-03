@@ -1,7 +1,7 @@
 // POST /api/identify — { image: "<base64 JPEG>" } → plant card data for the prototype.
 // Runs as a Vercel function; the key comes through ./_ai.js (ANTHROPIC_API_KEY in the project's environment variables).
 import Anthropic from '@anthropic-ai/sdk';
-import { client, aiDown, keyRejected } from './_ai.js';
+import { client, aiDown, keyRejected, logUsage } from './_ai.js';
 import { guard } from './_guard.js';
 
 const TAGS = ['heat', 'wild', 'pet', 'low', 'dry', 'bright'];
@@ -110,6 +110,7 @@ export async function POST(request) {
       }],
     });
 
+    logUsage('identify', response);
     if (response.stop_reason === 'refusal') {
       return json({ error: 'refused', message: 'This photo could not be analysed. Try another one.' }, 422);
     }
@@ -184,6 +185,7 @@ async function careGuide({ name, latin }, lang) {
       system: CARE_SYSTEM + inLanguage(lang, true),
       messages: [{ role: 'user', content: `Write the care guide for ${name}${latin ? ` (${latin})` : ''}.` }],
     });
+    logUsage('care', response);
     if (response.stop_reason === 'refusal') return json({ error: 'refused', message: 'No care guide for this plant.' }, 422);
     const text = response.content.find((b) => b.type === 'text')?.text;
     if (!text) return json({ error: 'empty', message: 'No care guide came back.' }, 502);
@@ -271,6 +273,7 @@ async function translateContent({ kind, data }, lang) {
       messages: [{ role: 'user', content: JSON.stringify(data).slice(0, 20000) }],
     });
     const text = response.content.find((b) => b.type === 'text')?.text;
+    logUsage('translate:' + kind, response);
     if (!text) return json({ error: 'empty', message: 'No translation came back.' }, 502);
     return json(JSON.parse(text));
   } catch (err) {

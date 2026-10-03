@@ -1,7 +1,7 @@
 // POST /api/chat — Dr Pot, the in-app assistant. Streams plain text back as it is generated.
 // Body: { messages: [{ role: 'user' | 'assistant', text }], plant?: { name, latin, care }, image?: "<base64 JPEG>" }
 import Anthropic from '@anthropic-ai/sdk';
-import { client, aiDown, keyRejected } from './_ai.js';
+import { client, aiDown, keyRejected, logUsage } from './_ai.js';
 import { guard } from './_guard.js';
 
 
@@ -110,6 +110,7 @@ export async function POST(request) {
               controller.enqueue(encoder.encode(event.delta.text));
             }
           }
+          logUsage(image ? 'chat+photo' : 'chat', await stream.finalMessage());
         } catch (err) {
           console.error('Dr Pot stream error', err?.status, err?.message);
           controller.enqueue(encoder.encode(keyRejected(err) ? 'Dr Pot is taking a short break. Try again a little later.' : '\n\n(The answer stopped early — try again.)'));
@@ -152,6 +153,7 @@ async function treatmentPlan(history, plant, langName, owner = '') {
       system: PLAN_SYSTEM + owner + `\n- Write cause, summary and steps in ${langName}, whatever language the conversation is in.`,
       messages: [{ role: 'user', content: `Plant: ${plant.name || 'houseplant'}${plant.latin ? ` (${plant.latin})` : ''}.${plant.care ? ` Care profile: ${String(plant.care).slice(0, 900)}` : ''}\n\nConversation:\n${transcript}` }],
     });
+    logUsage('plan', response);
     if (response.stop_reason === 'refusal') return json({ error: 'refused', message: 'No plan for this one.' }, 422);
     const text = response.content.find((b) => b.type === 'text')?.text;
     if (!text) return json({ error: 'empty', message: 'No plan came back.' }, 502);
