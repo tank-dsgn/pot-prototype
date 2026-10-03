@@ -72,13 +72,14 @@ const SYSTEM = `You identify plants from a single photo for Pot, a plant care ap
 - howto: each value 2-5 words — watering frequency ("Every 7-10 days"), when the soil should be dry, sun level, sun/shade tolerance, repotting season, repotting interval, repotting soil mix, soil type, drainage, USDA hardiness zone (just the number or range), ideal temperature range, humidity range in percent.
 - Be honest in confidence: use low when the photo is blurry or the species is ambiguous, and still give your best guess.`;
 
+const TRIAL_MODELS = ['claude-opus-5-5', 'claude-sonnet-5-5', 'claude-haiku-4-5'];
 
 export async function POST(request) {
   const blocked = guard(request);
   if (blocked) return blocked;
-  let image, care, lang, translate;
+  let image, care, lang, translate, model;
   try {
-    ({ image, care, lang, translate } = await request.json());
+    ({ image, care, lang, translate, model } = await request.json());
   } catch {
     return json({ error: 'bad_request', message: 'Send JSON with an "image" field.' }, 400);
   }
@@ -92,9 +93,19 @@ export async function POST(request) {
   if (process.env.POT_MOCK === '1') return json(mock());
   if (!client) return aiDown('Plant recognition is taking a short break. Try again a little later.');
 
+  // the owner can run the same photo through another model to compare quality and price (needs the stats key)
+  const trial = TRIAL_MODELS.includes(model) && process.env.STATS_KEY && request.headers.get('x-stats-key') === process.env.STATS_KEY ? model : null;
   try {
-    const response = await client.beta.messages.create({
-      model: 'claude-opus-5',
+    const response = await (trial === 'claude-haiku-4-5'
+      // Haiku 4.5 takes neither adaptive thinking nor effort nor server-side fallbacks
+      ? client.messages.create({
+        model: trial, max_tokens: 16000,
+        output_config: { format: { type: 'json_schema', schema: SCHEMA } },
+        system: SYSTEM + inLanguage(lang),
+        messages: [{ role: 'user', content: [{ type: 'image', source: { type: 'base64', media_type: 'image/jpeg', data: image } }, { type: 'text', text: 'Identify this plant.' }] }],
+      })
+      : client.beta.messages.create({
+      model: trial || 'claude-opus-5',
       max_tokens: 16000,
       betas: ['server-side-fallback-2026-07-01'],
       fallbacks: 'default',
@@ -108,7 +119,7 @@ export async function POST(request) {
           { type: 'text', text: 'Identify this plant.' },
         ],
       }],
-    });
+    }));
 
     logUsage('identify', response);
     if (response.stop_reason === 'refusal') {
