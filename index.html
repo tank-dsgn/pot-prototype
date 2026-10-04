@@ -1533,7 +1533,6 @@ phone.addEventListener('click', e => {
   if (t.hasAttribute('data-share')) return shareApp();
   if (t.id === 'detDelete') return removePlant();
   if (t.id === 'detDr') return go('aichats');
-  if (t.hasAttribute('data-premium')) return openPaywall('gate', () => { if (cur() === 'care') renderCare(); });
   if (t.hasAttribute('data-drpot')) return openDrPot(state.plant);
   if (t.hasAttribute('data-add')) return addPlant();
   if (t.hasAttribute('data-garden')) return reset('garden', 'fade');
@@ -2233,7 +2232,9 @@ const bulb = t => `<div class="alert"><i class="i" style="--m:url(assets/ic-bulb
 const accList = (items, openIdx) => `<div>${items.map((t, i) => acc(t[0], t[1] || '<ol><li>Slowly pour water directly onto the soil from above.</li><li>Stop watering when you see water begin to drain from the bottom of the pot.</li></ol>', i === openIdx)).join('')}</div>`;
 const phLabel = v => v <= 5 ? 'Acidic' : v === 6 ? 'Slightly acidic' : v === 7 ? 'Neutral' : v === 8 ? 'Slightly alkaline' : 'Alkaline';
 // a scanned plant carries its own care numbers and copy; the demo peanut keeps the written sample
-const C = () => (unlocked() ? P()?.care : null) || null;
+// the care guide comes with every scan, free ones too (a free plan has three): it is what makes the first plants worth keeping.
+// Dr Pot, photo checks and treatment plans stay in Premium.
+const C = () => P()?.care || null;
 const splitPair = t => { const i = t.indexOf(':'); return i < 0 ? ['', t] : [t.slice(0, i).trim() + '.', t.slice(i + 1).trim()]; };
 const pairs = list => (list || []).map(x => typeof x === 'string' ? splitPair(x) : [x.title, x.text]);
 const fertRows = list => (list || []).map(x => typeof x === 'string' ? x.split('|').map(t => t.trim()) : [x.month, x.liquid, x.slow]);
@@ -2319,10 +2320,7 @@ $('#carePills').innerHTML = TABS.map(([id, t]) => `<button role="tab" data-tab="
 $('#carePills').addEventListener('click', e => { const b = e.target.closest('button'); if (!b) return; careTab = b.dataset.tab; renderCare(); });
 function renderCare() {
   $$('#carePills button').forEach(b => { const on = b.dataset.tab === careTab; b.setAttribute('aria-selected', on); if (on) b.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' }); });
-  const upsell = !unlocked() && PLANTS[state.plant]?.scanned
-    ? `<button class="drcta ai-ring" data-premium><span class="av"><i class="i" style="--m:url(assets/ic-crown.svg);width:24px;height:24px;color:#15803d"></i></span><span style="flex:1;min-width:0"><span class="co s" style="display:block">Full care guide for ${esc(P().name)}</span><span class="fn sub" style="display:block">Feeding by month, soil pH, hardiness and diseases — Pot Premium</span></span><i class="i" style="--m:url(assets/ic-chevron-right.svg);color:#fff"></i></button>`
-    : '';
-  $('#careBody').innerHTML = upsell + CARE[careTab]().join('');
+  $('#careBody').innerHTML = CARE[careTab]().join('');
   $('#careScroll').scrollTop = 0;
 }
 
