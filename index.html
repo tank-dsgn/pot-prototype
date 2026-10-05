@@ -2956,7 +2956,7 @@ function renderGetApp() {
   const main = $('#getMain'), box = $('#getSteps');
   $('#getWeb').textContent = L('Continue in the browser', 'Продолжить в браузере');
   $('#getTitle').textContent = L('Install Pot', 'Установите Pot');
-  $('#getSub').textContent = L('Pot becomes an app on your phone: it opens in one tap, keeps your garden and reminds you when to water.', 'Pot станет приложением на телефоне: открывается одним касанием, хранит ваш сад и напоминает о поливе.');
+  $('#getSub').textContent = L('Use the full plant care app, with Dr Pot, an AI plant doctor, there to help you.', 'Пользуйтесь полноценным приложением для ухода за растениями. Вам помогает Доктор Пот на искусственном интеллекте.');
   if (kind === 'android') { // Chrome is ready to install: one button does it
     box.hidden = true; main.hidden = false; main.textContent = L('Install', 'Установить'); main.onclick = () => $('#installGo').onclick();
     return;
