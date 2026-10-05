@@ -85,6 +85,8 @@ p,h1,h2,h3{margin:0}
 .install .tx li>em{font-style:normal;color:var(--text3)}
 .install .tx .ico{display:flex;justify-content:center;min-width:15px}
 .install .tx .ico .i{margin:0}
+.install .tx .go{display:inline-flex;align-items:center;margin-top:8px}
+.install .tx li b{font-size:inherit;line-height:inherit}
 .install .tx .wide{grid-column:span 2} /* no icon: the name takes the icon's column too */
 .install .go{flex:none;height:34px;padding:0 14px;border-radius:99px;background:var(--brand);color:#fff;font-weight:600;font-size:15px}
 /* the close button sits in the corner, level with the title, so the steps get the full width */
@@ -450,6 +452,16 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .si-a{position:relative;justify-content:center;padding:40px 0}
 .si-a .si-acts{margin-top:56px;padding-bottom:0}
 .si-a .si-legal{margin:12px 8px 0}
+/* install welcome: the two steps as a card between the copy and the buttons */
+.get-steps{margin:24px 16px 0;padding:16px;border-radius:16px;background:var(--surface);box-shadow:var(--shadow-card);display:grid;grid-template-columns:auto auto auto 1fr;gap:12px 8px;align-items:center;font-size:17px;line-height:22px;color:var(--text)}
+.get-steps>div{display:contents}
+.get-steps em{font-style:normal;color:var(--text3)}
+.get-steps .ico{display:flex;justify-content:center;min-width:20px;color:var(--link)}
+.get-steps .ico .i{width:18px;height:20px;margin:0}
+.get-steps .ico .i[style*="add-home"]{width:18px!important;height:18px!important}
+.get-steps .wide{grid-column:span 2}
+.get-steps b{font-weight:600}
+#s-getapp .si-acts{margin-top:24px}
 /* dark theme: Apple stays the lead button but doesn't glare — one tone lighter than the email one */
 .phone.dark #s-signin .btn.alt{background:#57534e;color:#fafaf9}
 .phone.dark #s-signin .btn.alt .i{color:#e7e5e4!important}
@@ -751,6 +763,18 @@ table.ft td:first-child{color:var(--text2)}
     </section>
 
     <!-- 2.1 Sign in -->
+    <!-- Install welcome: phones that opened the link in a browser. Installing is the main way in; the web version stays one tap away. -->
+    <section class="screen" id="s-getapp" data-title="Install Pot" hidden>
+      <div class="sb"></div>
+      <div class="si si-a">
+        <div class="si-a-art"><span class="halo"></span><img src="assets/cactus-happy.png" alt="Pot, the cactus mascot"></div>
+        <div class="si-copy"><h1 class="si-h si-one" id="getTitle"></h1><p class="si-sub" id="getSub"></p></div>
+        <div class="get-steps" id="getSteps" hidden></div>
+        <div class="si-acts"><button class="btn pri r16" id="getMain" hidden></button><button class="btn ter" id="getWeb"></button></div>
+      </div>
+      <div class="hi"></div>
+    </section>
+
     <section class="screen" id="s-signin" data-title="Sign In" hidden>
       <div class="sb"></div>
       <!-- one image, one line: the mascot on a soft halo and a headline, then sign-in -->
@@ -1843,7 +1867,8 @@ const enter = {
   account() { renderAvatar(); fillAccount(); },
   care() { renderPlant(); renderCare(); },
   toxicity() { renderPlant(); },
-  loading() { setTimeout(() => cur() === 'loading' && reset(store.get('authed') ? gardenId() : 'signin'), 1800); },
+  loading() { setTimeout(() => cur() === 'loading' && reset(wantsGetApp() ? 'getapp' : store.get('authed') ? gardenId() : 'signin'), 1800); },
+  getapp() { renderGetApp(); },
   boot() { setTimeout(() => cur() === 'boot' && reset('loading'), 900); },
   onb() { renderOnb(); },
   garden() { gardenSkeleton(); },
@@ -2728,7 +2753,7 @@ $('#deleteAccount').onclick = () => iosAlert('Delete Account?', 'Your plants, sc
 ]);
 
 /* ---------- jump list ---------- */
-const JUMP = [['boot', '0'], ['onb', '0.1'], ['loading', '1'], ['paywall', '10.1'], ['review', '11.2'], ['signin', '2.1'], ['email', '2.4'], ['forgot', '2.5'], ['checkmail', '2.6'], ['garden-empty', '3.7'], ['garden', '3.8'], ['tips', '5.1'], ['camera', '5.2'], ['recog', '5.5'], ['details', '8'], ['care', '8.1'], ['faq', '8.8'], ['toxicity', '8.9'], ['ai', '14'], ['settings', '12.1'], ['account', '12.2'], ['appinfo', '12.3'], ['privacy', '13.1'], ['terms', '13.2']];
+const JUMP = [['boot', '0'], ['getapp', '1.1'], ['onb', '0.1'], ['loading', '1'], ['paywall', '10.1'], ['review', '11.2'], ['signin', '2.1'], ['email', '2.4'], ['forgot', '2.5'], ['checkmail', '2.6'], ['garden-empty', '3.7'], ['garden', '3.8'], ['tips', '5.1'], ['camera', '5.2'], ['recog', '5.5'], ['details', '8'], ['care', '8.1'], ['faq', '8.8'], ['toxicity', '8.9'], ['ai', '14'], ['settings', '12.1'], ['account', '12.2'], ['appinfo', '12.3'], ['privacy', '13.1'], ['terms', '13.2']];
 const JUMPLBL = { privacy: 'Privacy Policy', terms: 'Terms of Use' };
 JUMP.sort((a, b) => parseFloat(a[1]) - parseFloat(b[1]) || a[1].localeCompare(b[1]));
 $('#jump').innerHTML = JUMP.map(([id, n]) => `<button data-id="${id}"><b>${n}</b>${JUMPLBL[id] || screenEl(id).dataset.title}</button>`).join('');
@@ -2800,24 +2825,43 @@ installMark();
   }, 900); });
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => icon.addEventListener(ev, stop));
 }
-const forceHint = new URLSearchParams(location.search).get('hint'); // ?hint=ios or ?hint=android for testing
+const forceHint = new URLSearchParams(location.search).get('hint'); // ?hint=ios, android, android-manual or inapp for testing
 let installEvent = null, hintTimer;
-function showInstall(kind) {
-  if (!forceHint && hintBlocked()) return;
-  const B = t => `<b style="display:inline;font-size:15px">${t}</b>`, ru = lang === 'ru';
-  // written whole in each language: the hint mixes bold words into sentences, which word-by-word translation can't handle
-  // two numbered steps laid out as columns — number, verb, icon, name — so the icons line up and the names start from them
+// Browsers built into other apps (Telegram, Instagram, LinkedIn…) can't put a site on the home screen at all:
+// there the only honest advice is to open the link in the real browser.
+const inApp = /FBAN|FBAV|FB_IAB|Instagram|LinkedInApp|Line\/|MicroMessenger|TikTok|Snapchat|Telegram|Twitter|Pinterest|GSA\//i.test(navigator.userAgent)
+  || (isIOS && !/Safari\//.test(navigator.userAgent)) || (isAndroid && /; wv\)/.test(navigator.userAgent));
+const realBrowser = isAndroid ? 'Chrome' : 'Safari';
+const installKind = () => ['ios', 'android', 'android-manual', 'inapp'].includes(forceHint) ? forceHint
+  : inApp ? 'inapp' : isIOS ? 'ios' : isAndroid ? (installEvent ? 'android' : 'android-manual') : '';
+const B = t => `<b style="display:inline">${t}</b>`;
+// the two install steps as rows of [verb, icon, name]; written whole in each language
+function installSteps(kind) {
+  const ru = lang === 'ru';
   const share = '<i class="i" style="--m:url(assets/ic-share.svg)"></i>';
   const addHome = '<i class="i" style="--m:url(assets/ic-add-home.svg);width:15px;height:15px"></i>';
-  const steps = (title, ...rows) => `<b>${title}</b><ol>${rows.map(([verb, icon, name], i) =>
+  if (kind === 'ios') return ru ? [['Нажмите', share, B('«Поделиться»')], ['Выберите', addHome, B('«На экран Домой»')]]
+    : [['Tap', share, B('Share')], ['Choose', addHome, B('Add to Home Screen')]];
+  return ru ? [['Нажмите', B('⋮'), 'в Chrome'], ['Выберите', '', B('«Установить приложение»')]]
+    : [['Tap', B('⋮'), 'in Chrome'], ['Choose', '', B('Install app')]];
+}
+async function copyLink() {
+  const url = location.origin + '/';
+  try { await navigator.clipboard.writeText(url); }
+  catch { const t = document.createElement('textarea'); t.value = url; t.style.cssText = 'position:fixed;opacity:0'; document.body.append(t); t.select(); try { document.execCommand('copy'); } catch {} t.remove(); }
+  toast(L(`Link copied — paste it in ${realBrowser}`, `Ссылка скопирована. Вставьте её в ${realBrowser}`));
+  goal('copy_link');
+}
+function showInstall(kind) {
+  if (!forceHint && hintBlocked()) return;
+  const ru = lang === 'ru';
+  const steps = (title, rows) => `<b>${title}</b><ol>${rows.map(([verb, icon, name], i) =>
     `<li><em>${i + 1}.</em><span>${verb}</span>${icon ? `<span class="ico">${icon}</span><span>${name}</span>` : `<span class="wide">${name}</span>`}</li>`).join('')}</ol>`;
-  $('#installText').innerHTML = kind === 'android'
+  $('#installText').innerHTML = kind === 'inapp'
+    ? `<b>${L(`Open in ${realBrowser}`, `Откройте в ${realBrowser}`)}</b>${L('Pot can’t be installed from this browser.', 'Из этого браузера Pot не установить.')}<br><button class="go" data-copy-link>${L('Copy link', 'Скопировать ссылку')}</button>`
+    : kind === 'android'
     ? (ru ? '<b>Установите Pot</b>Открывайте на весь экран, как приложение.' : '<b>Install Pot</b>Use it full-screen like an app.')
-    : kind === 'ios'
-      ? (ru ? steps('Установите Pot на iPhone', ['Нажмите', share, B('«Поделиться»')], ['Выберите', addHome, B('«На экран Домой»')])
-            : steps('Install Pot on your iPhone', ['Tap', share, B('Share')], ['Choose', addHome, B('Add to Home Screen')]))
-      : (ru ? steps('Установите Pot', ['Нажмите', B('⋮'), 'в Chrome'], ['Выберите', '', B('«Установить приложение»')])
-            : steps('Install Pot', ['Tap', B('⋮'), 'in Chrome'], ['Choose', '', B('Install app')]));
+    : steps(kind === 'ios' ? L('Install Pot on your iPhone', 'Установите Pot на iPhone') : L('Install Pot', 'Установите Pot'), installSteps(kind));
   $('#installGo').hidden = kind !== 'android';
   if (kind === 'android' && !$('#installHint').hidden) return; // already visible: just swap in the Install button
   clearTimeout(hintTimer);
@@ -2877,6 +2921,8 @@ function sampleHero() {
 }
 
 $('#installX').onclick = () => hideInstall(true);
+// once the link is copied the hint has done its job: it leaves, so the toast is not drawn over it
+$('#installText').addEventListener('click', e => { if (e.target.closest('[data-copy-link]')) { hideInstall(true); copyLink(); } });
 swipeAway($('#installHint'), () => {
   const h = $('#installHint');
   h.hidden = true; h.style.transform = h.style.transition = h.style.animation = '';
@@ -2888,13 +2934,37 @@ $('#installGo').onclick = async () => {
   const { outcome } = await installEvent.userChoice.catch(() => ({}));
   installEvent = null; hideInstall(outcome === 'accepted');
 };
-addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvent = e; showInstall('android'); });
+addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvent = e; if (cur() === 'getapp') renderGetApp(); else if (!wantsGetApp()) showInstall('android'); });
 addEventListener('appinstalled', () => hideInstall(true));
 // Chrome only fires beforeinstallprompt after some engagement, and QR-scanner browsers never do —
 // so Android gets the manual steps right away and the Install button once Chrome allows it.
-if (['ios', 'android', 'android-manual'].includes(forceHint)) showInstall(forceHint);
-else if (isAndroid) showInstall('android-manual');
-else if (isIOS) showInstall('ios');
+// First visit on a phone in a browser: the install welcome comes first, so the banner waits for a later visit.
+const wantsGetApp = () => !!installKind() && !standalone && !framed && store.get('webOk') !== '1';
+function renderGetApp() {
+  const kind = installKind() || 'ios', ru = lang === 'ru';
+  const main = $('#getMain'), box = $('#getSteps');
+  $('#getWeb').textContent = L('Continue in the browser', 'Продолжить в браузере');
+  if (kind === 'inapp') {
+    $('#getTitle').textContent = L(`Open in ${realBrowser}`, `Откройте в ${realBrowser}`);
+    $('#getSub').textContent = L(`Pot can’t be installed from this browser. Copy the link and open it in ${realBrowser}.`, `Из этого браузера Pot не установить. Скопируйте ссылку и откройте её в ${realBrowser}.`);
+    box.hidden = true; main.hidden = false; main.textContent = L('Copy link', 'Скопировать ссылку'); main.onclick = copyLink;
+    return;
+  }
+  $('#getTitle').textContent = L('Install Pot', 'Установите Pot');
+  $('#getSub').textContent = L('It opens full-screen like an app and reminds you when to water.', 'Так Pot открывается на весь экран, как приложение, и напоминает о поливе.');
+  if (kind === 'android') { // Chrome is ready to install: one button does it
+    box.hidden = true; main.hidden = false; main.textContent = L('Install', 'Установить'); main.onclick = () => $('#installGo').onclick();
+    return;
+  }
+  main.hidden = true; box.hidden = false;
+  box.innerHTML = installSteps(kind).map(([verb, icon, name], i) =>
+    `<div><em>${i + 1}.</em><span>${verb}</span>${icon ? `<span class="ico">${icon}</span><span>${name}</span>` : `<span class="wide">${name}</span>`}</div>`).join('');
+}
+$('#getWeb').onclick = () => { store.set('webOk', '1'); goal('continue_web'); reset(store.get('authed') ? gardenId() : 'signin', 'fwd'); };
+if (!wantsGetApp()) {
+  const k = installKind();
+  if (k) showInstall(k === 'android' && !installEvent ? 'android-manual' : k);
+}
 
 
 /* ---------- Dr Pot ---------- */
