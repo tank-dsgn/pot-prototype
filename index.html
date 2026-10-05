@@ -458,10 +458,15 @@ html.dark-app{background:#0c0a09;--dim:#080706}
 .get-steps em{font-style:normal;color:var(--text3)}
 .get-steps .ico{display:flex;justify-content:center;min-width:20px;color:var(--link)}
 .get-steps .ico .i{width:18px;height:20px;margin:0}
-.get-steps .ico .i[style*="add-home"]{width:18px!important;height:18px!important}
+.get-steps .ico .i[style*="add-home"],.get-steps .ico .i[style*="compass"]{width:18px!important;height:18px!important}
 .get-steps .wide{grid-column:span 2}
 .get-steps b{font-weight:600}
 #s-getapp .si-acts{margin-top:24px}
+/* a browser's own bars leave less height than the installed app has: a smaller mascot keeps three steps and two buttons on screen */
+#s-getapp .si-a{padding:24px 0}
+#s-getapp .si-a-art{height:200px}
+#s-getapp .si-a-art .halo{width:220px;height:220px}
+#s-getapp .si-a-art img{width:184px;height:184px}
 /* dark theme: Apple stays the lead button but doesn't glare — one tone lighter than the email one */
 .phone.dark #s-signin .btn.alt{background:#57534e;color:#fafaf9}
 .phone.dark #s-signin .btn.alt .i{color:#e7e5e4!important}
@@ -2830,8 +2835,9 @@ let installEvent = null, hintTimer;
 // Browsers built into other apps (Telegram, Instagram, LinkedIn…) can't put a site on the home screen at all:
 // there the only honest advice is to open the link in the real browser.
 const inApp = /FBAN|FBAV|FB_IAB|Instagram|LinkedInApp|Line\/|MicroMessenger|TikTok|Snapchat|Telegram|Twitter|Pinterest|GSA\//i.test(navigator.userAgent)
-  || (isIOS && !/Safari\//.test(navigator.userAgent)) || (isAndroid && /; wv\)/.test(navigator.userAgent));
-const realBrowser = isAndroid ? 'Chrome' : 'Safari';
+  || (isIOS && !/Safari\//.test(navigator.userAgent)) || (isAndroid && /; wv\)/.test(navigator.userAgent))
+  || 'TelegramWebviewProxy' in window || 'TelegramWebview' in window; // Telegram's own browser copies Safari's user agent but leaves these on the page
+const realBrowser = () => isAndroid ? 'Chrome' : L('Safari or Chrome', 'Safari или Chrome'); // on iPhone both can add to the home screen
 const installKind = () => ['ios', 'android', 'android-manual', 'inapp'].includes(forceHint) ? forceHint
   : inApp ? 'inapp' : isIOS ? 'ios' : isAndroid ? (installEvent ? 'android' : 'android-manual') : '';
 const B = t => `<b style="display:inline">${t}</b>`;
@@ -2840,16 +2846,21 @@ function installSteps(kind) {
   const ru = lang === 'ru';
   const share = '<i class="i" style="--m:url(assets/ic-share.svg)"></i>';
   const addHome = '<i class="i" style="--m:url(assets/ic-add-home.svg);width:15px;height:15px"></i>';
-  if (kind === 'ios') return ru ? [['Нажмите', share, B('«Поделиться»')], ['Выберите', addHome, B('«На экран Домой»')]]
+  const compass = '<i class="i" style="--m:url(assets/ic-compass.svg);width:17px;height:17px"></i>';
+  const ios = ru ? [['Нажмите', share, B('«Поделиться»')], ['Выберите', addHome, B('«На экран Домой»')]]
     : [['Tap', share, B('Share')], ['Choose', addHome, B('Add to Home Screen')]];
-  return ru ? [['Нажмите', B('⋮'), 'в Chrome'], ['Выберите', '', B('«Установить приложение»')]]
+  const android = ru ? [['Нажмите', B('⋮'), 'в Chrome'], ['Выберите', '', B('«Установить приложение»')]]
     : [['Tap', B('⋮'), 'in Chrome'], ['Choose', '', B('Install app')]];
+  if (kind === 'inapp') return isAndroid
+    ? [[L('Open', 'Откройте'), compass, L('in ', 'в ') + B('Chrome')], [L('Tap', 'Нажмите'), B('⋮'), L('the menu', 'меню')], android[1]]
+    : [[L('Open', 'Откройте'), compass, L('in ', 'в ') + B('Safari') + L(' or ', ' или ') + B('Chrome')], ...ios];
+  return kind === 'ios' ? ios : android;
 }
 async function copyLink() {
   const url = location.origin + '/';
   try { await navigator.clipboard.writeText(url); }
   catch { const t = document.createElement('textarea'); t.value = url; t.style.cssText = 'position:fixed;opacity:0'; document.body.append(t); t.select(); try { document.execCommand('copy'); } catch {} t.remove(); }
-  toast(L(`Link copied — paste it in ${realBrowser}`, `Ссылка скопирована. Вставьте её в ${realBrowser}`));
+  toast(L(`Link copied — paste it in ${realBrowser()}`, `Ссылка скопирована. Вставьте её в ${realBrowser()}`));
   goal('copy_link');
 }
 function showInstall(kind) {
@@ -2858,7 +2869,7 @@ function showInstall(kind) {
   const steps = (title, rows) => `<b>${title}</b><ol>${rows.map(([verb, icon, name], i) =>
     `<li><em>${i + 1}.</em><span>${verb}</span>${icon ? `<span class="ico">${icon}</span><span>${name}</span>` : `<span class="wide">${name}</span>`}</li>`).join('')}</ol>`;
   $('#installText').innerHTML = kind === 'inapp'
-    ? `<b>${L(`Open in ${realBrowser}`, `Откройте в ${realBrowser}`)}</b>${L('Pot can’t be installed from this browser.', 'Из этого браузера Pot не установить.')}<br><button class="go" data-copy-link>${L('Copy link', 'Скопировать ссылку')}</button>`
+    ? `<b>${L(`Open in ${realBrowser()}`, `Откройте в ${realBrowser()}`)}</b>${L('Pot can’t be installed from this browser.', 'Из этого браузера Pot не установить.')}<br><button class="go" data-copy-link>${L('Copy link', 'Скопировать ссылку')}</button>`
     : kind === 'android'
     ? (ru ? '<b>Установите Pot</b>Открывайте на весь экран, как приложение.' : '<b>Install Pot</b>Use it full-screen like an app.')
     : steps(kind === 'ios' ? L('Install Pot on your iPhone', 'Установите Pot на iPhone') : L('Install Pot', 'Установите Pot'), installSteps(kind));
@@ -2944,19 +2955,16 @@ function renderGetApp() {
   const kind = installKind() || 'ios', ru = lang === 'ru';
   const main = $('#getMain'), box = $('#getSteps');
   $('#getWeb').textContent = L('Continue in the browser', 'Продолжить в браузере');
-  if (kind === 'inapp') {
-    $('#getTitle').textContent = L(`Open in ${realBrowser}`, `Откройте в ${realBrowser}`);
-    $('#getSub').textContent = L(`Pot can’t be installed from this browser. Copy the link and open it in ${realBrowser}.`, `Из этого браузера Pot не установить. Скопируйте ссылку и откройте её в ${realBrowser}.`);
-    box.hidden = true; main.hidden = false; main.textContent = L('Copy link', 'Скопировать ссылку'); main.onclick = copyLink;
-    return;
-  }
   $('#getTitle').textContent = L('Install Pot', 'Установите Pot');
-  $('#getSub').textContent = L('It opens full-screen like an app and reminds you when to water.', 'Так Pot открывается на весь экран, как приложение, и напоминает о поливе.');
+  $('#getSub').textContent = L('Pot becomes an app on your phone: it opens in one tap, keeps your garden and reminds you when to water.', 'Pot станет приложением на телефоне: открывается одним касанием, хранит ваш сад и напоминает о поливе.');
   if (kind === 'android') { // Chrome is ready to install: one button does it
     box.hidden = true; main.hidden = false; main.textContent = L('Install', 'Установить'); main.onclick = () => $('#installGo').onclick();
     return;
   }
-  main.hidden = true; box.hidden = false;
+  // a browser inside another app can't install: the steps start with opening the link in a real one, and the button copies it
+  main.hidden = kind !== 'inapp';
+  if (kind === 'inapp') { main.textContent = L('Copy link', 'Скопировать ссылку'); main.onclick = copyLink; }
+  box.hidden = false;
   box.innerHTML = installSteps(kind).map(([verb, icon, name], i) =>
     `<div><em>${i + 1}.</em><span>${verb}</span>${icon ? `<span class="ico">${icon}</span><span>${name}</span>` : `<span class="wide">${name}</span>`}</div>`).join('');
 }
