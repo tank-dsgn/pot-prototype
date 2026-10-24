@@ -50,6 +50,7 @@ const manifest = {
   ],
 };
 await writeFile(join(out, 'manifest.webmanifest'), JSON.stringify(manifest, null, 2));
+await writeFile(join(out, 'manifest-en.webmanifest'), JSON.stringify({ ...manifest, start_url: '/en' }, null, 2));
 
 const built = new Date().toISOString();
 let note = '';
@@ -105,6 +106,18 @@ if ('serviceWorker' in navigator) addEventListener('load', () => navigator.servi
 </html>
 `;
 await writeFile(join(out, 'index.html'), head + page + tail);
+// /en: the same app with English link previews; it opens in English and installs as the English version.
+// Messengers read previews without running scripts, so each language needs its own address.
+const EN_OG = {
+  'og:url': 'https://pot-prototype.vercel.app/en',
+  'og:title': 'Pot — your personal gardener',
+  'og:description': 'An iOS app prototype: snap a plant and Pot tells you what it is, how to care for it and what to do when it is unwell.',
+};
+let en = head.replace('<html lang="ru"', '<html lang="en"')
+  .replace('<link rel="manifest" href="/manifest.webmanifest">', '<link rel="manifest" href="/manifest-en.webmanifest">')
+  .replace('<script>window.POT_BUILD', '<script>window.POT_LANG = \'en\';</script>\n<script>window.POT_BUILD');
+for (const [k, v] of Object.entries(EN_OG)) en = en.replace(new RegExp(`(<meta property="${k}" content=")[^"]*`), `$1${v}`);
+await writeFile(join(out, 'en.html'), en + page + tail);
 
 // Service worker: precache every file so the installed app works offline.
 async function list(dir, base = '') {
@@ -131,7 +144,8 @@ self.addEventListener('fetch', e => {
   if (new URL(e.request.url).pathname === '/version.json') { e.respondWith(fetch(e.request)); return; }
   // Pages: network first, so a new deploy shows up on the next launch; fall back to cache offline.
   if (e.request.mode === 'navigate') {
-    e.respondWith(fetch(e.request).then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put('/', copy)); return r; }).catch(() => caches.match('/')));
+    const key = new URL(e.request.url).pathname.startsWith('/en') ? '/en.html' : '/'; // each language page keeps its own offline copy
+    e.respondWith(fetch(e.request).then(r => { const copy = r.clone(); caches.open(CACHE).then(c => c.put(key, copy)); return r; }).catch(() => caches.match(key)));
     return;
   }
   // assets: cache first; a changed image gets a new ?v= address, and offline that address falls back to the cached file
