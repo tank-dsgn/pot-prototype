@@ -63,6 +63,18 @@ const head = `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>${title}</title>
 <meta name="description" content="${description}">
+<!-- link previews in Telegram, WhatsApp, Slack, social networks: without og:image Telegram shows text only -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://pot-prototype.vercel.app/">
+<meta property="og:site_name" content="Pot">
+<meta property="og:title" content="Pot — ваш личный садовник">
+<meta property="og:description" content="Прототип iOS-приложения: сфотографируйте растение — Pot скажет, что это, как ухаживать и что делать, если ему плохо.">
+<meta property="og:image" content="https://pot-prototype.vercel.app/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Pot, the cactus mascot">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://pot-prototype.vercel.app/og-image.png">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
