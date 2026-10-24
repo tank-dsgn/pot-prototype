@@ -50,5 +50,15 @@
       "path": "/api/cron-remind",
       "schedule": "0 6 * * *"
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/en",
+      "destination": "/en.html"
+    },
+    {
+      "source": "/en/",
+      "destination": "/en.html"
+    }
   ]
 }
