@@ -1286,6 +1286,15 @@ const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const phone = $('#phone');
 const store = { get(k){ try { return localStorage.getItem('pot:'+k); } catch { return null; } }, set(k,v){ try { localStorage.setItem('pot:'+k, v); } catch {} } };
+// Owner's devices: ?notrack=1 does what the long press in App Info does (no Metrika, no install mark) in this browser, ?notrack=0 undoes it.
+// Set before Metrika starts; the toast and the install-mark removal happen further down, once they exist.
+let ownerChanged = null;
+{
+  const p = new URLSearchParams(location.search).get('notrack');
+  if ((p === '1' || p === '0') && (p === '1') !== (store.get('owner') === '1')) {
+    store.set('owner', p === '1' ? '1' : ''); store.set('installPing', ''); ownerChanged = p === '1';
+  }
+}
 
 /* ---------- analytics (Yandex Metrika) ---------- */
 // One page, many screens: every screen goes out as its own page view, key actions as goals.
@@ -2819,6 +2828,18 @@ function installMark() {
   installPost({ os: isIOS ? 'ios' : isAndroid ? 'android' : 'other', lang }).then(r => { if (r.ok) { store.set('installPing', '1'); goal('install'); } }).catch(() => {});
 }
 installMark();
+// A copy installed from the owner's browser starts with ?notrack=1, so it is left out from its first launch, reinstalls included.
+// The manifest is read when the app is added to the Home Screen; the live link is enough.
+function ownerManifest() {
+  const link = document.querySelector('link[rel="manifest"]'); if (!link) return;
+  const en = /manifest-en/.test(link.getAttribute('href'));
+  link.setAttribute('href', `/manifest${en ? '-en' : ''}${store.get('owner') === '1' ? '-owner' : ''}.webmanifest`);
+}
+ownerManifest();
+if (ownerChanged !== null) {
+  if (ownerChanged) installPost({ off: true }).catch(() => {});
+  setTimeout(() => toast(ownerChanged ? L('Analytics is off on this device', 'Статистика на этом устройстве выключена') : L('Analytics is on again on this device', 'Статистика на этом устройстве снова включена')), 1500);
+}
 {
   const icon = $('#aboutIcon'); let t;
   const stop = () => clearTimeout(t);
@@ -2827,6 +2848,7 @@ installMark();
     const on = store.get('owner') !== '1';
     store.set('owner', on ? '1' : ''); store.set('installPing', '');
     if (on) installPost({ off: true }).catch(() => {}); else installMark();
+    ownerManifest();
     toast(on ? L('This device is no longer counted as an install', 'Это устройство больше не считается в установках') : L('This device is counted as an install again', 'Это устройство снова считается в установках'));
   }, 900); });
   ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => icon.addEventListener(ev, stop));
