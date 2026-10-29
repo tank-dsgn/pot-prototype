@@ -51,6 +51,9 @@ const manifest = {
 };
 await writeFile(join(out, 'manifest.webmanifest'), JSON.stringify(manifest, null, 2));
 await writeFile(join(out, 'manifest-en.webmanifest'), JSON.stringify({ ...manifest, start_url: '/en' }, null, 2));
+// the owner's devices install from these (index.html swaps the link): the installed copy opens with ?notrack=1 and is not counted
+await writeFile(join(out, 'manifest-owner.webmanifest'), JSON.stringify({ ...manifest, start_url: '/?notrack=1' }, null, 2));
+await writeFile(join(out, 'manifest-en-owner.webmanifest'), JSON.stringify({ ...manifest, start_url: '/en?notrack=1' }, null, 2));
 
 const built = new Date().toISOString();
 let note = '';
