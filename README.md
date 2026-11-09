@@ -1,5 +1,13 @@
 # Pot — clickable iOS prototype
 
+**Problem.** People buy a plant and do not know what it is or how to care for it.
+
+**Idea.** Take a photo. The app names the plant and makes a care card. An AI doctor helps when the plant is sick.
+
+**Built.** A clickable HTML prototype of the iOS app, built from the Figma design. Real camera and plant recognition with Claude, light and dark themes, English and Russian, watering reminders. It installs on iPhone and works offline.
+
+**Decision.** The first plant is free with all features. Only the AI features are paid: the doctor, photo diagnosis and treatment plans.
+
 Pot identifies plants from a photo and keeps a care guide for each one. This repository is a clickable HTML prototype of the iOS app, built from the Figma design, with light and dark themes.
 
 **Live:** https://pot-prototype.vercel.app — open it in Safari on an iPhone and choose Share → Add to Home Screen to install it as an app. It works offline after the first launch.
