@@ -1,12 +1,12 @@
 # Pot — clickable iOS prototype
 
-**Problem.** People buy a plant and do not know what it is or how to care for it.
+**Problem.** Most plant care apps are overloaded with features and do not create an emotional connection with the user.
 
-**Idea.** Take a photo. The app names the plant and makes a care card. An AI doctor helps when the plant is sick.
+**Idea.** Make plant care simple, clear and enjoyable: recognise a plant with the camera, get a care card, and talk to a friendly AI assistant.
 
 **Built.** A clickable HTML prototype of the iOS app, built from the Figma design. Real camera and plant recognition with Claude, light and dark themes, English and Russian, watering reminders. It installs on iPhone and works offline.
 
-**Decision.** The first plant is free with all features. Only the AI features are paid: the doctor, photo diagnosis and treatment plans.
+**Decision.** The AI assistant is a friendly character, Pot, not a faceless chat. Competitor apps felt mechanical, and the character lowers the barrier before the first action.
 
 Pot identifies plants from a photo and keeps a care guide for each one. This repository is a clickable HTML prototype of the iOS app, built from the Figma design, with light and dark themes.
 
