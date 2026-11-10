@@ -8,8 +8,6 @@
 
 **Decision.** The AI assistant is a friendly character, Pot, not a faceless chat. Competitor apps felt mechanical, and the character lowers the barrier before the first action.
 
-Pot identifies plants from a photo and keeps a care guide for each one. This repository is a clickable HTML prototype of the iOS app, built from the Figma design, with light and dark themes.
-
 **Live:** https://pot-prototype.vercel.app — open it in Safari on an iPhone and choose Share → Add to Home Screen to install it as an app. It works offline after the first launch.
 
 ## Plant recognition
